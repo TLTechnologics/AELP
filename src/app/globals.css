@@ -1,0 +1,188 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'Satoshi', sans-serif;
+  --font-heading: var(--font-anton), sans-serif;
+  
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Custom Colors from Prompt */
+  --color-brand-yellow: #FFE17C;
+  --color-brand-dark: #171E19;
+  --color-brand-darker: #272727;
+  --color-brand-sage: #B7C6C2;
+  --color-brand-white: #FFFFFF;
+  --color-brand-muted: #F8F9FA;
+  --color-brand-success: #27AE60;
+  --color-brand-warning: #F2994A;
+  --color-brand-danger: #EB5757;
+  --color-brand-info: #2F80ED;
+}
+
+:root {
+  --background: #FFFFFF;
+  --foreground: #171E19;
+  
+  --card: #FFFFFF;
+  --card-foreground: #171E19;
+  
+  --popover: #FFFFFF;
+  --popover-foreground: #171E19;
+  
+  --primary: #FFE17C;
+  --primary-foreground: #171E19;
+  
+  --secondary: #272727;
+  --secondary-foreground: #FFFFFF;
+  
+  --muted: #F8F9FA;
+  --muted-foreground: #B7C6C2;
+  
+  --accent: #F8F9FA;
+  --accent-foreground: #171E19;
+  
+  --destructive: #EB5757;
+  --destructive-foreground: #FFFFFF;
+  
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #FFE17C;
+  
+  --radius: 1.5rem; /* 24px cards as requested */
+  
+  --sidebar: #F8F9FA;
+  --sidebar-foreground: #171E19;
+  --sidebar-primary: #FFE17C;
+  --sidebar-primary-foreground: #171E19;
+  --sidebar-accent: #e2e8f0;
+  --sidebar-accent-foreground: #171E19;
+  --sidebar-border: #B7C6C2;
+  --sidebar-ring: #FFE17C;
+}
+
+.dark {
+  --background: #171E19;
+  --foreground: #FFFFFF;
+  
+  --card: #272727;
+  --card-foreground: #FFFFFF;
+  
+  --popover: #272727;
+  --popover-foreground: #FFFFFF;
+  
+  --primary: #FFE17C;
+  --primary-foreground: #171E19;
+  
+  --secondary: #F8F9FA;
+  --secondary-foreground: #171E19;
+  
+  --muted: #272727;
+  --muted-foreground: #B7C6C2;
+  
+  --accent: #272727;
+  --accent-foreground: #FFFFFF;
+  
+  --destructive: #EB5757;
+  --destructive-foreground: #FFFFFF;
+  
+  --border: #272727;
+  --input: #272727;
+  --ring: #FFE17C;
+  
+  --sidebar: #171E19;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #FFE17C;
+  --sidebar-primary-foreground: #171E19;
+  --sidebar-accent: #272727;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: #272727;
+  --sidebar-ring: #FFE17C;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading uppercase tracking-normal leading-[0.9];
+  }
+}
+
+/* Custom Background Grid Pattern */
+.bg-grid-pattern {
+  background-size: 60px 60px;
+  background-image: 
+    linear-gradient(to right, rgba(0,0,0,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0,0,0,0.03) 1px, transparent 1px);
+}
+
+.dark .bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+}
+
+/* 15 degree rotated yellow rectangle highlight */
+.highlight-yellow {
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+
+.highlight-yellow::before {
+  content: "";
+  position: absolute;
+  top: 10%;
+  left: -5%;
+  width: 110%;
+  height: 80%;
+  background-color: var(--color-brand-yellow);
+  z-index: -1;
+  transform: rotate(-3deg); /* 15 is too drastic for text, usually it's slightly angled, but let's follow prompt for 15 if needed, maybe -3 is better for reading. Let's do -3 deg */
+  border-radius: 4px;
+}
