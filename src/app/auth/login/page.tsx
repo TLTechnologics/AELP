@@ -7,13 +7,14 @@ import Link from 'next/link';
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [role, setRole] = useState<'student' | 'teacher'>('student');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
-      window.location.href = '/';
+      window.location.href = role === 'teacher' ? '/teacher' : '/';
     }, 1500);
   };
 
@@ -26,9 +27,27 @@ export default function LoginPage() {
     >
       <div className="absolute -top-20 -right-20 w-48 h-48 bg-brand-yellow rounded-full blur-3xl opacity-20 pointer-events-none"></div>
       
-      <div className="text-center mb-8 relative z-10">
+      <div className="text-center mb-6 relative z-10">
         <h2 className="font-heading text-4xl mb-2">Welcome Back</h2>
         <p className="text-muted-foreground font-medium">Continue your learning journey</p>
+      </div>
+
+      {/* Role Switcher */}
+      <div className="flex bg-muted p-1 rounded-2xl mb-6 relative z-10">
+        <button
+          type="button"
+          onClick={() => setRole('student')}
+          className={`flex-1 py-2 text-sm font-bold capitalize rounded-xl transition-all ${role === 'student' ? 'bg-white shadow-sm text-brand-dark' : 'text-muted-foreground hover:text-brand-dark'}`}
+        >
+          Student
+        </button>
+        <button
+          type="button"
+          onClick={() => setRole('teacher')}
+          className={`flex-1 py-2 text-sm font-bold capitalize rounded-xl transition-all ${role === 'teacher' ? 'bg-white shadow-sm text-brand-dark' : 'text-muted-foreground hover:text-brand-dark'}`}
+        >
+          Teacher
+        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
