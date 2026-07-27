@@ -3,6 +3,8 @@
 import { MainLayout } from '@/components/layout/main-layout';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
+import { useDashboard } from '@/hooks/use-dashboard';
 import { 
   Play, 
   Target, 
@@ -10,8 +12,6 @@ import {
   BookOpen, 
   Clock, 
   ArrowRight,
-  Headphones,
-  Mic,
   PenTool
 } from 'lucide-react';
 
@@ -25,11 +25,23 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } }
 };
 
 export default function Home() {
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const { data, isLoading } = useDashboard();
+
+  if (authLoading || isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="w-10 h-10 border-4 border-brand-yellow/30 border-t-brand-yellow rounded-full animate-spin"></div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -42,7 +54,7 @@ export default function Home() {
         {/* Header Section */}
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
-            <h2 className="text-xl text-muted-foreground font-medium mb-2">Welcome back, Alex! 👋</h2>
+            <h2 className="text-xl text-muted-foreground font-medium mb-2">Welcome back, {user?.user_metadata?.full_name || data?.user_name || 'Student'}! 👋</h2>
             <h1 className="text-5xl md:text-7xl font-heading uppercase">
               Time to <span className="highlight-yellow inline-block px-2">Level Up</span>
             </h1>
@@ -60,10 +72,10 @@ export default function Home() {
         {/* Stats Grid */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {[
-            { label: 'Overall Score', value: 'B2', sub: 'Upper Intermediate', icon: Target, color: 'text-brand-info', bg: 'bg-blue-100' },
-            { label: 'Weekly Goal', value: '80%', sub: '4/5 Lessons Done', icon: TrendingUp, color: 'text-brand-success', bg: 'bg-green-100' },
-            { label: 'Time Spent', value: '4.2h', sub: 'This week', icon: Clock, color: 'text-brand-warning', bg: 'bg-yellow-100' },
-            { label: 'Words Learned', value: '142', sub: '+12 today', icon: BookOpen, color: 'text-brand-danger', bg: 'bg-red-100' },
+            { label: 'Overall Score', value: data?.overall_score_label || '-', sub: data?.overall_score_sub || '-', icon: Target, color: 'text-brand-info', bg: 'bg-blue-100' },
+            { label: 'Weekly Goal', value: data?.weekly_goal_value || '-', sub: data?.weekly_goal_sub || '-', icon: TrendingUp, color: 'text-brand-success', bg: 'bg-green-100' },
+            { label: 'Time Spent', value: data?.time_spent_value || '-', sub: data?.time_spent_sub || '-', icon: Clock, color: 'text-brand-warning', bg: 'bg-yellow-100' },
+            { label: 'Words Learned', value: data?.words_learned_value || '-', sub: data?.words_learned_sub || '-', icon: BookOpen, color: 'text-brand-danger', bg: 'bg-red-100' },
           ].map((stat, i) => (
             <div key={i} className="bg-white rounded-[24px] p-6 shadow-sm border border-border/40 hover:shadow-md transition-shadow relative overflow-hidden group">
               <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-transparent to-brand-muted rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
@@ -89,39 +101,44 @@ export default function Home() {
             </div>
             
             <div className="space-y-4">
-              {[
-                { title: 'Advanced Reading Comprehension', type: 'Reading', time: '15 min', status: 'Next', icon: BookOpen, color: 'bg-blue-100 text-blue-700' },
-                { title: 'Listening to Podcasts', type: 'Listening', time: '10 min', status: 'Locked', icon: Headphones, color: 'bg-purple-100 text-purple-700' },
-                { title: 'Argumentative Essay Structure', type: 'Writing', time: '20 min', status: 'Locked', icon: PenTool, color: 'bg-orange-100 text-orange-700' },
-              ].map((lesson, i) => (
-                <div key={i} className={`bg-white rounded-[24px] p-5 border flex items-center justify-between transition-all ${i === 0 ? 'border-brand-yellow shadow-lg shadow-brand-yellow/10' : 'border-border/40 opacity-70 grayscale'}`}>
-                  <div className="flex items-center gap-5">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${lesson.color}`}>
-                      <lesson.icon className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{lesson.type}</span>
-                        <span className="text-xs font-medium bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{lesson.time}</span>
+              {data?.lessons?.map((lesson: any, i: number) => {
+                let Icon = BookOpen;
+                let color = 'bg-blue-100 text-blue-700';
+                if (lesson.type === 'Writing') {
+                  Icon = PenTool;
+                  color = 'bg-orange-100 text-orange-700';
+                }
+
+                return (
+                  <div key={i} className={`bg-white rounded-[24px] p-5 border flex items-center justify-between transition-all ${lesson.status === 'Next' ? 'border-brand-yellow shadow-lg shadow-brand-yellow/10' : 'border-border/40 opacity-70 grayscale'}`}>
+                    <div className="flex items-center gap-5">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${color}`}>
+                        <Icon className="w-6 h-6" />
                       </div>
-                      <h4 className="text-lg font-bold">{lesson.title}</h4>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{lesson.type}</span>
+                          <span className="text-xs font-medium bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{lesson.time}</span>
+                        </div>
+                        <h4 className="text-lg font-bold">{lesson.title}</h4>
+                      </div>
                     </div>
+                    
+                    {lesson.status === 'Next' ? (
+                      <button 
+                        onClick={() => router.push('/lesson')}
+                        className="w-12 h-12 rounded-full bg-brand-yellow flex items-center justify-center hover:scale-110 transition-transform shadow-md"
+                      >
+                        <Play className="w-5 h-5 fill-brand-dark text-brand-dark ml-1" />
+                      </button>
+                    ) : (
+                      <div className="px-4 py-2 rounded-full bg-muted text-sm font-bold text-muted-foreground">
+                        {lesson.status}
+                      </div>
+                    )}
                   </div>
-                  
-                  {i === 0 ? (
-                    <button 
-                      onClick={() => router.push('/lesson')}
-                      className="w-12 h-12 rounded-full bg-brand-yellow flex items-center justify-center hover:scale-110 transition-transform shadow-md"
-                    >
-                      <Play className="w-5 h-5 fill-brand-dark text-brand-dark ml-1" />
-                    </button>
-                  ) : (
-                    <div className="px-4 py-2 rounded-full bg-muted text-sm font-bold text-muted-foreground">
-                      Locked
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </motion.div>
 
@@ -152,13 +169,11 @@ export default function Home() {
                 {/* Labels */}
                 <span className="absolute -top-6 text-xs font-bold">Reading</span>
                 <span className="absolute -right-10 text-xs font-bold">Writing</span>
-                <span className="absolute -bottom-6 text-xs font-bold">Speaking</span>
-                <span className="absolute -left-12 text-xs font-bold">Listening</span>
               </div>
 
               <div className="mt-8 text-center z-10">
                 <p className="text-sm text-muted-foreground">Strongest Skill</p>
-                <p className="font-bold text-xl">Reading (84%)</p>
+                <p className="font-bold text-xl">Reading ({data?.reading_score || 0}%)</p>
               </div>
             </div>
           </motion.div>

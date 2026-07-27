@@ -6,10 +6,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 const skills = [
-  { id: 'listening', title: 'Listening', icon: Headphones, color: 'text-purple-600', bg: 'bg-purple-100', desc: 'Understand spoken English in various accents and contexts.' },
   { id: 'reading', title: 'Reading', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-100', desc: 'Comprehend complex texts, articles, and literature.' },
   { id: 'writing', title: 'Writing', icon: PenTool, color: 'text-orange-600', bg: 'bg-orange-100', desc: 'Express your thoughts clearly with proper grammar and structure.' },
-  { id: 'speaking', title: 'Speaking', icon: Mic, color: 'text-green-600', bg: 'bg-green-100', desc: 'Converse fluently and confidently in real-world scenarios.' },
 ];
 
 export default function SkillsHubPage() {

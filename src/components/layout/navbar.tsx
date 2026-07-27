@@ -5,11 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 const navItems = [
-  { name: 'Path', href: '/path' },
+  { name: 'Dashboard', href: '/' },
+  { name: 'Assessment', href: '/assessment' },
   { name: 'Skills', href: '/skills' },
   { name: 'Progress', href: '/progress' },
   { name: 'Leaderboard', href: '/leaderboard' },
-  { name: 'Certificates', href: '/certificates' },
 ];
 
 export function Navbar() {

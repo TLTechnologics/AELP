@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Anton } from "next/font/google";
 import "./globals.css";
+import QueryProvider from "@/components/providers/query-provider";
 
 const anton = Anton({
   weight: "400",
@@ -24,7 +25,9 @@ export default function RootLayout({
         <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet" />
       </head>
       <body className={`${anton.variable} font-sans antialiased bg-muted text-foreground bg-grid-pattern min-h-screen flex flex-col`}>
-        {children}
+        <QueryProvider>
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );

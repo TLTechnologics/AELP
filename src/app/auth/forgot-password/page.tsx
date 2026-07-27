@@ -2,54 +2,63 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Mail, Lock } from 'lucide-react';
+import { ArrowRight, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/lib/supabaseClient';
 
-const loginSchema = z.object({
+const resetSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type ResetFormValues = z.infer<typeof resetSchema>;
 
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const [success, setSuccess] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "9265568001@silveroak.com",
-      password: "9265568001",
-    }
+  } = useForm<ResetFormValues>({
+    resolver: zodResolver(resetSchema),
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
+  const onSubmit = async (data: ResetFormValues) => {
     setIsLoading(true);
     setError(null);
     
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
+    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
     });
 
     if (error) {
       setError(error.message);
-      setIsLoading(false);
     } else {
-      router.push('/');
+      setSuccess(true);
     }
+    setIsLoading(false);
   };
+
+  if (success) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-md bg-white rounded-[32px] shadow-2xl p-8 relative overflow-hidden text-center"
+      >
+        <h2 className="font-heading text-3xl mb-4 text-brand-dark">Check your email!</h2>
+        <p className="text-muted-foreground font-medium mb-6">We've sent you a link to reset your password.</p>
+        <Link href="/auth/login" className="text-brand-info font-bold hover:underline">
+          Return to Login
+        </Link>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div 
@@ -58,11 +67,9 @@ export default function LoginPage() {
       transition={{ duration: 0.5, type: 'spring' }}
       className="w-full max-w-md bg-white rounded-[32px] shadow-2xl p-8 relative overflow-hidden"
     >
-      <div className="absolute -top-20 -right-20 w-48 h-48 bg-brand-yellow rounded-full blur-3xl opacity-20 pointer-events-none"></div>
-      
       <div className="text-center mb-8 relative z-10">
-        <h2 className="font-heading text-4xl mb-2">Welcome Back</h2>
-        <p className="text-muted-foreground font-medium">Continue your learning journey</p>
+        <h2 className="font-heading text-4xl mb-2">Reset Password</h2>
+        <p className="text-muted-foreground font-medium">Enter your email to receive a reset link</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 relative z-10">
@@ -86,24 +93,6 @@ export default function LoginPage() {
           {errors.email && <p className="text-red-500 text-xs px-1 font-medium">{errors.email.message}</p>}
         </div>
 
-        <div className="space-y-1">
-          <label className="text-sm font-bold text-brand-dark px-1">Password</label>
-          <div className="relative">
-            <Lock className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground" />
-            <input 
-              type="password" 
-              {...register('password')}
-              placeholder="••••••••"
-              className={`w-full bg-muted border ${errors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-border/50 focus:border-brand-yellow focus:ring-brand-yellow/20'} rounded-2xl py-3 pl-12 pr-4 outline-none focus:ring-2 transition-all font-medium`}
-            />
-          </div>
-          {errors.password && <p className="text-red-500 text-xs px-1 font-medium">{errors.password.message}</p>}
-        </div>
-
-        <div className="flex justify-end">
-          <Link href="/auth/forgot-password" className="text-sm font-bold text-brand-info hover:underline">Forgot password?</Link>
-        </div>
-
         <button 
           type="submit" 
           disabled={isLoading}
@@ -117,10 +106,14 @@ export default function LoginPage() {
             />
           ) : (
             <>
-              Sign In <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              Send Reset Link <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </>
           )}
         </button>
+
+        <div className="flex justify-center pt-2">
+          <Link href="/auth/login" className="text-sm font-bold text-brand-info hover:underline">Back to login</Link>
+        </div>
       </form>
     </motion.div>
   );

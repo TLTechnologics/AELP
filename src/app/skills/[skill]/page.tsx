@@ -2,21 +2,19 @@
 
 import { MainLayout } from '@/components/layout/main-layout';
 import { useParams, useRouter } from 'next/navigation';
-import { Headphones, BookOpen, PenTool, Mic, ArrowRight, PlayCircle, Star, Trophy, Lock } from 'lucide-react';
+import { BookOpen, PenTool, ArrowRight, PlayCircle, Star, Trophy, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const skillConfig: Record<string, { title: string, icon: any, color: string, bg: string, level: string, progress: number }> = {
-  listening: { title: 'Listening', icon: Headphones, color: 'text-purple-600', bg: 'bg-purple-100', level: 'Beginner', progress: 38 },
   reading: { title: 'Reading', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-100', level: 'Advanced', progress: 84 },
   writing: { title: 'Writing', icon: PenTool, color: 'text-orange-600', bg: 'bg-orange-100', level: 'Intermediate', progress: 59 },
-  speaking: { title: 'Speaking', icon: Mic, color: 'text-green-600', bg: 'bg-green-100', level: 'Beginner', progress: 42 },
 };
 
 export default function SkillPage() {
   const params = useParams();
   const router = useRouter();
   const skillId = params.skill as string;
-  const config = skillConfig[skillId] || skillConfig.listening;
+  const config = skillConfig[skillId] || skillConfig.reading;
   const Icon = config.icon;
 
   return (
