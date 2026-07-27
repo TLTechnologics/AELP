@@ -3,6 +3,7 @@
 import { MainLayout } from '@/components/layout/main-layout';
 import { motion } from 'framer-motion';
 import { Settings, Shield, Award, Edit3, Camera, MapPin, Mail } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 const badges = [
   { id: 1, name: 'First Steps', icon: '🐣', unlocked: true },
@@ -14,6 +15,20 @@ const badges = [
 ];
 
 export default function ProfilePage() {
+  const { user, loading } = useAuth();
+
+  const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'You';
+  const userEmail = user?.email || 'student@college.edu';
+  const userInitial = userName.charAt(0).toUpperCase();
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="flex h-[50vh] items-center justify-center">Loading...</div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="max-w-4xl mx-auto space-y-8 pb-12">
@@ -23,8 +38,8 @@ export default function ProfilePage() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-brand-yellow/10 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative group">
-            <div className="w-32 h-32 rounded-full bg-brand-yellow flex items-center justify-center font-heading text-6xl text-brand-dark shadow-xl border-4 border-white">
-              U
+            <div className="w-32 h-32 rounded-full bg-brand-yellow flex items-center justify-center font-heading text-6xl text-brand-dark shadow-xl border-4 border-white uppercase">
+              {userInitial}
             </div>
             <button className="absolute bottom-0 right-0 w-10 h-10 bg-brand-dark text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
               <Camera className="w-5 h-5" />
@@ -32,15 +47,15 @@ export default function ProfilePage() {
           </div>
 
           <div className="flex-1 text-center md:text-left z-10">
-            <h1 className="font-heading text-4xl mb-2 flex items-center justify-center md:justify-start gap-3">
-              You
+            <h1 className="font-heading text-4xl mb-2 flex items-center justify-center md:justify-start gap-3 capitalize">
+              {userName}
               <button className="text-muted-foreground hover:text-brand-dark transition-colors">
                 <Edit3 className="w-5 h-5" />
               </button>
             </h1>
             
             <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm font-medium text-muted-foreground mb-6">
-              <span className="flex items-center gap-1"><Mail className="w-4 h-4" /> student@college.edu</span>
+              <span className="flex items-center gap-1"><Mail className="w-4 h-4" /> {userEmail}</span>
               <span className="flex items-center gap-1"><MapPin className="w-4 h-4" /> New York, USA</span>
               <span className="flex items-center gap-1"><Shield className="w-4 h-4" /> Member since 2026</span>
             </div>

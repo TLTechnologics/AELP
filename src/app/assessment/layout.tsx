@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function AssessmentLayout({
   children,
 }: {
@@ -14,9 +16,9 @@ export default function AssessmentLayout({
       
       {/* Exit Button */}
       <div className="absolute top-8 right-8 z-50">
-        <button className="text-muted-foreground font-bold hover:text-brand-dark transition-colors">
+        <Link href="/" className="text-muted-foreground font-bold hover:text-brand-dark transition-colors">
           Exit Assessment
-        </button>
+        </Link>
       </div>
 
       <div className="flex-1 flex flex-col justify-center items-center">
