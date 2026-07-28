@@ -12,6 +12,11 @@ def seed_db():
     try:
         # Clear existing assessments and lessons for clean state
         print("Cleaning up old data...")
+        from models.models import StudentAnswer, StudentAssessment, WritingSubmission, AIEvaluation
+        db.query(AIEvaluation).delete()
+        db.query(WritingSubmission).delete()
+        db.query(StudentAnswer).delete()
+        db.query(StudentAssessment).delete()
         db.query(QuestionOption).delete()
         db.query(Question).delete()
         db.query(Lesson).delete()
@@ -162,15 +167,14 @@ However, not everyone follows the same routine. Some people prefer to wake up la
         db.commit()
         db.refresh(q14)
         db.add_all([
-            QuestionOption(question_id=q14.id, text="Reading a book", is_correct=True),
-            QuestionOption(question_id=q14.id, text="Listening to music", is_correct=True)
+            QuestionOption(question_id=q14.id, text="Reading a book / Listening to music", is_correct=True)
         ])
 
         q15 = Question(assessment_id=reading_assessment.id, type=QuestionType.FILL_IN_BLANK, text="15. What do people decide after writing their tasks?", marks=1.0)
         db.add(q15)
         db.commit()
         db.refresh(q15)
-        db.add(QuestionOption(question_id=q15.id, text="Which ones are most important", is_correct=True))
+        db.add(QuestionOption(question_id=q15.id, text="Which tasks are most important", is_correct=True))
 
         # Vocabulary Match
         q16 = Question(assessment_id=reading_assessment.id, type=QuestionType.MATCHING, text="16. Hydrated", marks=1.0)

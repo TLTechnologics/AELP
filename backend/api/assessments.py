@@ -50,7 +50,9 @@ def get_reading_assessment(db: Session = Depends(get_db)):
     
     questions = []
     for q in assessment.questions:
-        options = [{"id": o.id, "text": o.text} for o in q.options]
+        options = []
+        if q.type.value not in ['fill_in_blank', 'writing']:
+            options = [{"id": o.id, "text": o.text} for o in q.options]
         questions.append(QuestionResponse(
             id=q.id,
             type=q.type.value,
@@ -108,6 +110,9 @@ def submit_reading(request: SubmitReadingRequest, db: Session = Depends(get_db))
     ensure_student(db, request.student_id)
     assessment = db.query(Assessment).filter(Assessment.type == AssessmentType.READING).first()
     
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Reading assessment not found in database")
+        
     student_assessment = StudentAssessment(
         student_id=request.student_id,
         assessment_id=assessment.id
@@ -134,10 +139,15 @@ def submit_reading(request: SubmitReadingRequest, db: Session = Depends(get_db))
                 is_correct = True
                 marks_awarded = question.marks
         elif ans.text_answer:
-            correct_option = db.query(QuestionOption).filter(QuestionOption.question_id == question.id, QuestionOption.is_correct == True).first()
-            if correct_option and correct_option.text.strip().lower() == ans.text_answer.strip().lower():
-                is_correct = True
-                marks_awarded = question.marks
+            correct_options = db.query(QuestionOption).filter(QuestionOption.question_id == question.id, QuestionOption.is_correct == True).all()
+            student_text = ans.text_answer.strip().lower().rstrip('.!?,')
+            
+            for opt in correct_options:
+                opt_text = opt.text.strip().lower().rstrip('.!?,')
+                if student_text == opt_text:
+                    is_correct = True
+                    marks_awarded = question.marks
+                    break
                 
         student_answer = StudentAnswer(
             student_assessment_id=student_assessment.id,
