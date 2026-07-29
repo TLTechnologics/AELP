@@ -78,6 +78,7 @@ class AssessmentType(enum.Enum):
     LISTENING = "listening"
     READING = "reading"
     WRITING = "writing"
+    SPEAKING = "speaking"
 
 class Assessment(Base):
     __tablename__ = "assessments"
@@ -218,3 +219,38 @@ class SystemSettings(Base):
     id = Column(Integer, primary_key=True, index=True)
     key = Column(String, unique=True, index=True)
     value = Column(Text)
+
+class SpeakingRecording(Base):
+    __tablename__ = "speaking_recordings"
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id"))
+    assessment_id = Column(Integer, ForeignKey("assessments.id"))
+    audio_url = Column(String)
+    duration = Column(Integer)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    student = relationship("Student")
+    assessment = relationship("Assessment")
+    evaluation = relationship("SpeakingEvaluation", back_populates="recording", uselist=False)
+
+class SpeakingEvaluation(Base):
+    __tablename__ = "speaking_evaluations"
+    id = Column(Integer, primary_key=True, index=True)
+    recording_id = Column(Integer, ForeignKey("speaking_recordings.id"))
+    transcript = Column(Text)
+    grammar = Column(Float)
+    vocabulary = Column(Float)
+    pronunciation = Column(Float)
+    fluency = Column(Float)
+    coherence = Column(Float)
+    confidence = Column(Float)
+    communication = Column(Float)
+    overall = Column(Float)
+    cefr_level = Column(String)
+    feedback = Column(Text)
+    strengths = Column(Text) # JSON string array
+    weaknesses = Column(Text) # JSON string array
+    recommended_lessons = Column(Text) # JSON string array
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    recording = relationship("SpeakingRecording", back_populates="evaluation")

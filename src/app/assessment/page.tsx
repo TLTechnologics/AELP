@@ -1,35 +1,51 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, BookOpen, FileText, CheckCircle, AlertCircle, Award, Sparkles, ArrowLeft } from 'lucide-react';
+import { ArrowRight, BookOpen, FileText, CheckCircle, AlertCircle, Award, Sparkles, ArrowLeft, Mic, Square, Play, Pause, Trash2, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useReadingAssessment, useSubmitReading, useSubmitWriting } from '@/hooks/use-assessment';
+import { useReadingAssessment, useSubmitReading, useSubmitWriting, useSpeakingAssessment, useSubmitSpeaking } from '@/hooks/use-assessment';
 
 const STAGES = {
   SELECTION: 0,
   READING: 1,
   WRITING: 2,
-  RESULTS: 3,
+  SPEAKING: 3,
+  RESULTS: 4,
 };
 
 export default function AssessmentPage() {
   const router = useRouter();
   const [stage, setStage] = useState(STAGES.SELECTION);
-  const [activeModule, setActiveModule] = useState<'reading' | 'writing' | null>(null);
+  const [activeModule, setActiveModule] = useState<'reading' | 'writing' | 'speaking' | null>(null);
   
   const [readingAnswers, setReadingAnswers] = useState<Record<number, { selected_option_id?: number; text_answer?: string }>>({});
   const [writingSubmission, setWritingSubmission] = useState('');
   
+  // Speaking State
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
   const [readingResult, setReadingResult] = useState<{ total_marks: number; accuracy: number } | null>(null);
   const [writingResult, setWritingResult] = useState<any>(null);
+  const [speakingResult, setSpeakingResult] = useState<any>(null);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { data: readingData, isLoading: loadingReading } = useReadingAssessment();
+  const { data: speakingData, isLoading: loadingSpeaking } = useSpeakingAssessment();
   const submitReadingMutation = useSubmitReading();
   const submitWritingMutation = useSubmitWriting();
+  const submitSpeakingMutation = useSubmitSpeaking();
 
   const passage = readingData?.reading_passage || `Many people believe that a good morning routine helps them have a productive day. Waking up early gives people enough time to prepare for the day without feeling rushed. Some people begin their morning by drinking a glass of water because it helps the body stay hydrated after a night's sleep.
 
@@ -127,6 +143,149 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     }
   };
 
+  // --- SPEAKING LOGIC ---
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isRecording && !isPaused) {
+      interval = setInterval(() => {
+        setRecordingDuration(prev => {
+          if (prev >= 120) {
+            stopRecording();
+            return 120;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+      timerIntervalRef.current = interval;
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRecording, isPaused]);
+
+  useEffect(() => {
+    if (audioBlob) {
+      const url = URL.createObjectURL(audioBlob);
+      setAudioUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setAudioUrl(null);
+  }, [audioBlob]);
+
+  const startRecording = async () => {
+    setErrorMessage(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setAudioBlob(blob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start(100);
+      setIsRecording(true);
+      setIsPaused(false);
+      setRecordingDuration(0);
+      setAudioBlob(null);
+    } catch (error) {
+      setErrorMessage('Microphone access denied or not available.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      setIsPaused(false);
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    }
+  };
+
+  const pauseRecording = () => {
+    if (mediaRecorderRef.current && isRecording && !isPaused) {
+      mediaRecorderRef.current.pause();
+      setIsPaused(true);
+    }
+  };
+
+  const resumeRecording = () => {
+    if (mediaRecorderRef.current && isRecording && isPaused) {
+      mediaRecorderRef.current.resume();
+      setIsPaused(false);
+    }
+  };
+
+  const deleteRecording = () => {
+    setAudioBlob(null);
+    setAudioUrl(null);
+    setRecordingDuration(0);
+  };
+
+  const formatDuration = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
+  const togglePlayback = () => {
+    if (!audioPlayerRef.current || !audioUrl) return;
+    if (isPlaying) {
+      audioPlayerRef.current.pause();
+    } else {
+      audioPlayerRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleSpeakingSubmit = async () => {
+    setErrorMessage(null);
+    
+    if (!audioBlob) {
+      setErrorMessage('Please record your answer before submitting.');
+      return;
+    }
+    
+    if (recordingDuration < 30) {
+      setErrorMessage('Please speak for at least 30 seconds.');
+      return;
+    }
+
+    if (audioBlob.size > 25 * 1024 * 1024) {
+      setErrorMessage('Recording is too large (max 25MB).');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const formData = new FormData();
+    formData.append('audio_file', audioBlob, 'recording.webm');
+    formData.append('student_id', '1');
+    formData.append('assessment_id', speakingData?.id || '1');
+    formData.append('duration', recordingDuration.toString());
+    formData.append('prompt', speakingData?.questions?.[0]?.text || 'Introduce yourself.');
+
+    try {
+      const res = await submitSpeakingMutation.mutateAsync(formData);
+      setSpeakingResult(res);
+      setActiveModule('speaking');
+      setStage(STAGES.RESULTS);
+    } catch (e: any) {
+      const msg = e?.response?.data?.detail || 'Unable to evaluate speaking assessment. Please try again later.';
+      setErrorMessage(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-5xl mx-auto py-8 px-4">
       {/* ERROR BANNER */}
@@ -162,7 +321,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left max-w-6xl mx-auto">
               {/* READING ASSESSMENT CARD */}
               <motion.div
                 whileHover={{ y: -6 }}
@@ -225,7 +384,40 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                   }}
                   className="mt-8 w-full bg-brand-yellow text-brand-dark rounded-full py-4 font-bold text-base flex items-center justify-center gap-3 hover:scale-105 transition-transform active:scale-95 shadow-lg"
                 >
-                  Start Writing Assessment <ArrowRight className="w-5 h-5" />
+                  Start Writing <ArrowRight className="w-5 h-5" />
+                </button>
+              </motion.div>
+
+              {/* SPEAKING ASSESSMENT CARD */}
+              <motion.div
+                whileHover={{ y: -6 }}
+                className="bg-white rounded-[32px] p-8 border border-border shadow-md hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-40 h-40 bg-purple-100 rounded-full blur-3xl opacity-50" />
+                <div className="space-y-6 relative z-10">
+                  <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center shadow-inner">
+                    <Mic className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Real Gemini AI Evaluation</span>
+                    <h2 className="font-heading text-3xl mt-3">🎤 Speaking Assessment</h2>
+                    <p className="text-muted-foreground text-sm font-medium mt-2 leading-relaxed">
+                      Record yourself speaking. Evaluated by Gemini AI on Pronunciation, Fluency, Grammar & Vocabulary.
+                    </p>
+                  </div>
+                  <div className="text-xs font-bold text-muted-foreground space-y-1">
+                    <p>• Min duration: 30 seconds</p>
+                    <p>• Max duration: 2 minutes</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setErrorMessage(null);
+                    setStage(STAGES.SPEAKING);
+                  }}
+                  className="mt-8 w-full bg-purple-600 text-white rounded-full py-4 font-bold text-base flex items-center justify-center gap-3 hover:bg-purple-700 transition-transform active:scale-95 shadow-lg"
+                >
+                  Start Speaking <ArrowRight className="w-5 h-5" />
                 </button>
               </motion.div>
             </div>
@@ -381,7 +573,119 @@ However, not everyone follows the same routine. Some people prefer to wake up la
           </motion.div>
         )}
 
-        {/* STAGE 3: RESULTS */}
+        {/* STAGE 3: SPEAKING ASSESSMENT */}
+        {stage === STAGES.SPEAKING && (
+          <motion.div
+            key="speaking"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            className="space-y-8"
+          >
+            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-border">
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => {
+                    stopRecording();
+                    deleteRecording();
+                    setStage(STAGES.SELECTION);
+                  }} 
+                  className="p-2 rounded-full hover:bg-muted transition-colors text-brand-dark"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Speaking Module</span>
+                  <h2 className="text-2xl font-heading mt-1">Speaking Assessment</h2>
+                </div>
+              </div>
+              <button
+                onClick={handleSpeakingSubmit}
+                disabled={isSubmitting || !audioBlob}
+                className="bg-purple-600 text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-purple-700 transition-transform shadow-md disabled:opacity-50"
+              >
+                {isSubmitting ? 'Evaluating...' : 'Submit Recording'} <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-white p-8 rounded-[32px] border border-border shadow-xl space-y-8 text-center max-w-3xl mx-auto">
+              <div className="space-y-4">
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Prompt (Min: 30s | Max: 2m)</span>
+                <h3 className="text-2xl font-heading text-brand-dark leading-snug whitespace-pre-line">
+                  {speakingData?.questions?.[0]?.text || "Introduce yourself.\nTalk about:\n• Your name\n• Your hobbies\n• Your family\n• Your favourite subject\n\nSpeak for approximately one minute."}
+                </h3>
+              </div>
+
+              <div className="py-8">
+                {isRecording ? (
+                  <div className="space-y-6">
+                    <div className="text-5xl font-heading text-red-500 animate-pulse">
+                      {formatDuration(recordingDuration)}
+                    </div>
+                    {/* Fake Waveform Animation */}
+                    <div className="flex items-center justify-center gap-1 h-12">
+                      {[1, 2, 3, 4, 5, 6, 7].map(i => (
+                        <motion.div
+                          key={i}
+                          animate={{ height: isPaused ? 8 : [8, 30, 8, 40, 8] }}
+                          transition={{ repeat: Infinity, duration: 1, delay: i * 0.1 }}
+                          className="w-2 bg-red-500 rounded-full"
+                        />
+                      ))}
+                    </div>
+                    <div className="flex justify-center gap-4">
+                      {isPaused ? (
+                        <button onClick={resumeRecording} className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center hover:bg-red-200 shadow-md">
+                          <Play className="w-8 h-8 fill-current" />
+                        </button>
+                      ) : (
+                        <button onClick={pauseRecording} className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center hover:bg-amber-200 shadow-md">
+                          <Pause className="w-8 h-8 fill-current" />
+                        </button>
+                      )}
+                      <button onClick={stopRecording} className="w-16 h-16 bg-brand-dark text-white rounded-full flex items-center justify-center hover:bg-brand-dark/90 shadow-md">
+                        <Square className="w-6 h-6 fill-current" />
+                      </button>
+                    </div>
+                  </div>
+                ) : audioBlob ? (
+                  <div className="space-y-6">
+                    <div className="text-4xl font-heading text-brand-dark">
+                      {formatDuration(recordingDuration)}
+                    </div>
+                    
+                    <audio 
+                      ref={audioPlayerRef} 
+                      src={audioUrl || ''} 
+                      onEnded={() => setIsPlaying(false)}
+                      className="hidden" 
+                    />
+                    
+                    <div className="flex justify-center gap-4">
+                      <button onClick={togglePlayback} className="px-6 py-3 bg-blue-100 text-blue-700 font-bold rounded-full flex items-center gap-2 hover:bg-blue-200 transition-colors">
+                        {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
+                        {isPlaying ? 'Pause' : 'Preview'}
+                      </button>
+                      <button onClick={deleteRecording} className="px-6 py-3 bg-red-100 text-red-600 font-bold rounded-full flex items-center gap-2 hover:bg-red-200 transition-colors">
+                        <Trash2 className="w-5 h-5" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <button onClick={startRecording} className="w-24 h-24 bg-red-50 text-red-500 rounded-full flex items-center justify-center border-4 border-red-100 hover:scale-110 hover:bg-red-100 transition-all shadow-lg mx-auto">
+                      <Mic className="w-10 h-10" />
+                    </button>
+                    <p className="font-bold text-muted-foreground">Click to start recording</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* STAGE 4: RESULTS */}
         {stage === STAGES.RESULTS && (
           <motion.div
             key="results"
@@ -525,6 +829,121 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     <span className="text-xs font-bold uppercase tracking-wider text-blue-800">Recommended Next Steps</span>
                     <ul className="list-disc list-inside text-xs font-medium text-blue-900 space-y-1">
                       {writingResult.recommended_lessons.map((rec: string, idx: number) => (
+                        <li key={idx}>{rec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* SPEAKING RESULT DISPLAY */}
+            {activeModule === 'speaking' && speakingResult && (
+              <div className="bg-white p-8 rounded-[32px] border border-border shadow-md space-y-8 max-w-3xl mx-auto">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                      <Mic className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-2xl">Speaking Evaluation</h3>
+                      <p className="text-xs text-muted-foreground font-bold">Evaluated by Gemini 2.5 Flash</p>
+                    </div>
+                  </div>
+                  {speakingResult.cefr_level && (
+                    <div className="bg-brand-yellow text-brand-dark font-heading text-2xl px-6 py-2 rounded-full border border-brand-dark/20 shadow-sm">
+                      CEFR {speakingResult.cefr_level}
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-purple-50/60 p-6 rounded-2xl text-center space-y-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Overall Speaking Score</span>
+                  <div className="text-5xl font-heading text-purple-600">
+                    {speakingResult.overall} / 70 Marks
+                  </div>
+                </div>
+
+                {/* Rubric Criteria Progress Bars */}
+                <div className="space-y-4">
+                  <h4 className="font-heading text-xl">Rubric Breakdown</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                      { label: 'Grammar', score: speakingResult.grammar },
+                      { label: 'Vocabulary', score: speakingResult.vocabulary },
+                      { label: 'Pronunciation', score: speakingResult.pronunciation },
+                      { label: 'Fluency', score: speakingResult.fluency },
+                      { label: 'Coherence', score: speakingResult.coherence },
+                      { label: 'Confidence', score: speakingResult.confidence },
+                      { label: 'Communication', score: speakingResult.communication },
+                    ].map((item) => (
+                      <div key={item.label} className="bg-muted/50 p-4 rounded-2xl space-y-2 border border-border/40">
+                        <div className="flex justify-between font-bold text-sm">
+                          <span>{item.label}</span>
+                          <span className="text-purple-600">{item.score || 0} / 10</span>
+                        </div>
+                        <div className="h-2 w-full bg-border/50 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-purple-500 rounded-full transition-all duration-1000"
+                            style={{ width: `${((item.score || 0) / 10) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Transcript */}
+                {speakingResult.transcript && (
+                  <div className="p-6 bg-muted/40 rounded-2xl space-y-2 border border-border/40">
+                    <span className="text-xs font-bold uppercase tracking-wider text-brand-dark flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-purple-600" /> Generated Transcript
+                    </span>
+                    <p className="text-sm text-brand-dark font-medium leading-relaxed italic">"{speakingResult.transcript}"</p>
+                  </div>
+                )}
+
+                {/* Feedback */}
+                {speakingResult.feedback && (
+                  <div className="p-6 bg-muted/40 rounded-2xl space-y-2 border border-border/40">
+                    <span className="text-xs font-bold uppercase tracking-wider text-brand-dark flex items-center gap-1.5">
+                      <CheckCircle className="w-4 h-4 text-green-600" /> Examiner Feedback
+                    </span>
+                    <p className="text-sm text-brand-dark font-medium leading-relaxed">{speakingResult.feedback}</p>
+                  </div>
+                )}
+
+                {/* Strengths & Weaknesses */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {speakingResult.strengths && speakingResult.strengths.length > 0 && (
+                    <div className="p-5 bg-green-50/50 rounded-2xl border border-green-200 space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-green-800">Strengths</span>
+                      <ul className="list-disc list-inside text-xs font-medium text-green-900 space-y-1">
+                        {speakingResult.strengths.map((s: string, idx: number) => (
+                          <li key={idx}>{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {speakingResult.weaknesses && speakingResult.weaknesses.length > 0 && (
+                    <div className="p-5 bg-amber-50/50 rounded-2xl border border-amber-200 space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-amber-800">Areas for Improvement</span>
+                      <ul className="list-disc list-inside text-xs font-medium text-amber-900 space-y-1">
+                        {speakingResult.weaknesses.map((w: string, idx: number) => (
+                          <li key={idx}>{w}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+
+                {/* Recommended Lessons */}
+                {speakingResult.recommended_lessons && speakingResult.recommended_lessons.length > 0 && (
+                  <div className="p-5 bg-blue-50/50 rounded-2xl border border-blue-200 space-y-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-blue-800">Recommended Next Steps</span>
+                    <ul className="list-disc list-inside text-xs font-medium text-blue-900 space-y-1">
+                      {speakingResult.recommended_lessons.map((rec: string, idx: number) => (
                         <li key={idx}>{rec}</li>
                       ))}
                     </ul>
