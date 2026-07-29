@@ -40,7 +40,13 @@ export const lessonService = {
 export const assessmentService = {
   getReadingAssessment: () => apiClient.get('/assessments/reading'),
   getWritingAssessment: () => apiClient.get('/assessments/writing'),
+  getSpeakingAssessment: () => apiClient.get('/assessments/speaking'),
   submitReadingAssessment: (payload: any) => apiClient.post('/assessments/submit/reading', payload),
+  submitSpeakingAssessment: (payload: FormData) => apiClient.post('/speaking/submit', payload, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
   getAssessment: (id: string) => apiClient.get(`/assessments/${id}`),
   submitAssessment: (id: string, payload: any) => apiClient.post(`/assessments/${id}/submit`, payload),
 };

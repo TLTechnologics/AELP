@@ -94,6 +94,31 @@ def get_writing_assessment(db: Session = Depends(get_db)):
         questions=questions
     )
 
+@router.get("/speaking", response_model=AssessmentResponse)
+def get_speaking_assessment(db: Session = Depends(get_db)):
+    assessment = db.query(Assessment).filter(Assessment.type == AssessmentType.SPEAKING).first()
+    if not assessment:
+        raise HTTPException(status_code=404, detail="Speaking assessment not found")
+        
+    questions = []
+    for q in assessment.questions:
+        questions.append(QuestionResponse(
+            id=q.id,
+            type=q.type.value,
+            text=q.text,
+            marks=q.marks,
+            options=[]
+        ))
+        
+    return AssessmentResponse(
+        id=assessment.id,
+        title=assessment.title,
+        type=assessment.type.value,
+        difficulty=assessment.difficulty,
+        topic=assessment.topic,
+        questions=questions
+    )
+
 class StudentAnswerInput(BaseModel):
     question_id: int
     selected_option_id: int | None = None

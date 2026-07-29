@@ -21,6 +21,16 @@ export function useWritingAssessment() {
   });
 }
 
+export function useSpeakingAssessment() {
+  return useQuery({
+    queryKey: ['speakingAssessment'],
+    queryFn: async () => {
+      const { data } = await assessmentService.getSpeakingAssessment();
+      return data;
+    }
+  });
+}
+
 export function useSubmitReading() {
   const queryClient = useQueryClient();
   
@@ -41,6 +51,20 @@ export function useSubmitWriting() {
   return useMutation({
     mutationFn: async (payload: { prompt: string; submission: string }) => {
       const { data } = await writingService.submitEvaluation({ student_id: 1, ...payload });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    }
+  });
+}
+
+export function useSubmitSpeaking() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (payload: FormData) => {
+      const { data } = await assessmentService.submitSpeakingAssessment(payload);
       return data;
     },
     onSuccess: () => {

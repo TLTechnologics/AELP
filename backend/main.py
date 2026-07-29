@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-from api import auth, assessments, writing, lessons, progress, notifications, achievements
+from api import auth, assessments, writing, speaking, lessons, progress, notifications, achievements
 
 app = FastAPI(
     title="AELP Backend API",
@@ -27,6 +27,7 @@ def health_check():
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(assessments.router, prefix="/api/assessments", tags=["Assessments"])
 app.include_router(writing.router, prefix="/api/writing", tags=["Writing"])
+app.include_router(speaking.router, prefix="/api/speaking", tags=["Speaking"])
 app.include_router(writing.router, prefix="/api", tags=["Writing Direct"])
 app.include_router(lessons.router, prefix="/api/lessons", tags=["Lessons"])
 app.include_router(progress.router, prefix="/api/progress", tags=["Progress"])

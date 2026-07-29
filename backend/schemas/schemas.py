@@ -75,3 +75,46 @@ class AIEvaluationSchema(BaseModel):
     
     class Config:
         from_attributes = True
+
+class SpeakingSubmissionCreate(BaseModel):
+    assessment_id: int
+    audio_url: str
+    duration: int
+
+class SpeakingEvaluationSchema(BaseModel):
+    transcript: str
+    grammar: float
+    vocabulary: float
+    pronunciation: float
+    fluency: float
+    coherence: float
+    confidence: float
+    communication: float
+    overall: float
+    cefr_level: str
+    feedback: str
+    strengths: str
+    weaknesses: str
+    recommended_lessons: str
+    
+    class Config:
+        from_attributes = True
+
+class SpeakingEvaluationSchema(BaseModel):
+    transcript: str
+    grammar: float
+    vocabulary: float
+    pronunciation: float
+    fluency: float
+    coherence: float
+    confidence: float
+    communication: float
+    overall: float
+    cefr_level: str
+    feedback: str
+    strengths: str
+    weaknesses: str
+    recommended_lessons: str
+    
+    class Config:
+        from_attributes = True

@@ -12,7 +12,8 @@ import {
   BookOpen, 
   Clock, 
   ArrowRight,
-  PenTool
+  PenTool,
+  Mic
 } from 'lucide-react';
 
 const containerVariants = {
@@ -107,6 +108,9 @@ export default function Home() {
                 if (lesson.type === 'Writing') {
                   Icon = PenTool;
                   color = 'bg-orange-100 text-orange-700';
+                } else if (lesson.type === 'Speaking') {
+                  Icon = Mic;
+                  color = 'bg-purple-100 text-purple-700';
                 }
 
                 return (
@@ -169,11 +173,22 @@ export default function Home() {
                 {/* Labels */}
                 <span className="absolute -top-6 text-xs font-bold">Reading</span>
                 <span className="absolute -right-10 text-xs font-bold">Writing</span>
+                <span className="absolute -left-10 text-xs font-bold">Speaking</span>
               </div>
 
-              <div className="mt-8 text-center z-10">
-                <p className="text-sm text-muted-foreground">Strongest Skill</p>
-                <p className="font-bold text-xl">Reading ({data?.reading_score || 0}%)</p>
+              <div className="mt-8 text-center z-10 flex gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Reading</p>
+                  <p className="font-bold text-xl">{data?.reading_score || 0}%</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Writing</p>
+                  <p className="font-bold text-xl">{data?.writing_score || 0}%</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Speaking</p>
+                  <p className="font-bold text-xl">{data?.speaking_score || 0}%</p>
+                </div>
               </div>
             </div>
           </motion.div>
