@@ -17,6 +17,7 @@ import {
   Mic
 } from 'lucide-react';
 import React from 'react';
+import { LiquidLoader } from '@/components/ui/liquid-loader';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -43,13 +44,7 @@ export default function ResultDetailsPage() {
   });
 
   if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-10 h-10 border-4 border-brand-yellow/30 border-t-brand-yellow rounded-full animate-spin"></div>
-        </div>
-      </MainLayout>
-    );
+    return <LiquidLoader isLooping={true} />;
   }
 
   if (!data) {

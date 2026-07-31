@@ -2,6 +2,7 @@
 
 import { MainLayout } from '@/components/layout/main-layout';
 import { motion } from 'framer-motion';
+import { LiquidLoader } from '@/components/ui/liquid-loader';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useDashboard } from '@/hooks/use-dashboard';
@@ -38,13 +39,7 @@ export default function Home() {
   const { data, isLoading } = useDashboard();
 
   if (authLoading || isLoading) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-10 h-10 border-4 border-brand-yellow/30 border-t-brand-yellow rounded-full animate-spin"></div>
-        </div>
-      </MainLayout>
-    );
+    return <LiquidLoader isLooping={true} />;
   }
 
   return (

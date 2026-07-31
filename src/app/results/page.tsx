@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { resultsService } from '@/services/api';
+import { LiquidLoader } from '@/components/ui/liquid-loader';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { FeatureLocked } from '@/components/feature-locked';
 import { useState } from 'react';
@@ -129,9 +130,7 @@ export default function ResultsPage() {
         {/* Results List */}
         <motion.div variants={itemVariants} className="space-y-4">
           {isLoading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="w-10 h-10 border-4 border-brand-yellow/30 border-t-brand-yellow rounded-full animate-spin"></div>
-            </div>
+            <LiquidLoader isLooping={true} />
           ) : data?.items?.length > 0 ? (
             data.items.map((item: any) => (
               <div key={item.id} className="bg-white rounded-[24px] p-5 border border-border/40 hover:border-brand-yellow hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group">

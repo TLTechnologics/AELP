@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { learningPathService } from '@/services/api';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { FeatureLocked } from '@/components/feature-locked';
+import { LiquidLoader } from '@/components/ui/liquid-loader';
 import React from 'react';
 
 export default function LearningPathPage() {
@@ -24,13 +25,7 @@ export default function LearningPathPage() {
   const { data: dashboardData, isLoading: dashboardLoading } = useDashboard();
 
   if (isLoading || dashboardLoading) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-10 h-10 border-4 border-brand-yellow/30 border-t-brand-yellow rounded-full animate-spin"></div>
-        </div>
-      </MainLayout>
-    );
+    return <LiquidLoader isLooping={true} />;
   }
 
   const isLocked = dashboardData?.profile_stage === 1;

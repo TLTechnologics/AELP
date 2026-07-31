@@ -12,7 +12,10 @@ import {
   ChevronRight,
   UserCheck
 } from 'lucide-react';
-import { mockStudents, mockClasses } from '@/lib/teacherMockData';
+import { mockClasses } from '@/lib/teacherMockData';
+import { useQuery } from '@tanstack/react-query';
+import { teacherService } from '@/services/api';
+import { LiquidLoader } from '@/components/ui/liquid-loader';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -39,8 +42,16 @@ export default function StudentManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  const { data: mockStudents = [], isLoading } = useQuery({
+    queryKey: ['teacherStudents'],
+    queryFn: async () => {
+      const res = await teacherService.getStudents();
+      return res.data;
+    }
+  });
+
   // Filter logic
-  const filteredStudents = mockStudents.filter(student => {
+  const filteredStudents = mockStudents.filter((student: any) => {
     const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           student.id.toLowerCase().includes(searchQuery.toLowerCase());
@@ -84,6 +95,9 @@ export default function StudentManagement() {
   const handleRowClick = (id: string) => {
     router.push(`/teacher/students/${id}`);
   };
+  if (isLoading) {
+    return <LiquidLoader isLooping={true} />;
+  }
 
   return (
     <MainLayout>

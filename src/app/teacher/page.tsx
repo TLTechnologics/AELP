@@ -5,6 +5,9 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { teacherService } from '@/services/api';
+import { LiquidLoader } from '@/components/ui/liquid-loader';
 import { 
   Users, 
   GraduationCap, 
@@ -21,7 +24,6 @@ import {
   PenTool
 } from 'lucide-react';
 import { 
-  mockStudents, 
   mockClasses, 
   mockAssessments, 
   mockAlerts, 
@@ -46,10 +48,18 @@ export default function TeacherDashboard() {
   const router = useRouter();
   const [selectedClass, setSelectedClass] = useState<string>('All');
   
+  const { data: dbStudents = [], isLoading } = useQuery({
+    queryKey: ['teacherStudents'],
+    queryFn: async () => {
+      const res = await teacherService.getStudents();
+      return res.data;
+    }
+  });
+
   // Filtered stats
   const students = selectedClass === 'All' 
-    ? mockStudents 
-    : mockStudents.filter(s => s.class === selectedClass);
+    ? dbStudents 
+    : dbStudents.filter((s: any) => s.class === selectedClass);
     
   const pendingAssessments = mockAssessments.filter(a => a.status === 'Pending');
   const gradedAssessments = mockAssessments.filter(a => a.status === 'Graded');
@@ -59,7 +69,11 @@ export default function TeacherDashboard() {
   const totalClasses = mockClasses.length;
   const pendingCount = pendingAssessments.length;
   const completedWeekly = gradedAssessments.length;
-  const needingAttention = students.filter(s => s.status !== 'Good').length;
+  const needingAttention = students.filter((s: any) => s.status !== 'Good').length;
+
+  if (isLoading) {
+    return <LiquidLoader isLooping={true} />;
+  }
   
   const avgClassScore = Math.round(
     students.reduce((acc, s) => acc + s.overallScore, 0) / (totalStudents || 1)

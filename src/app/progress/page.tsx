@@ -5,18 +5,13 @@ import { motion } from 'framer-motion';
 import { Flame, Target, Zap, Clock, TrendingUp } from 'lucide-react';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { FeatureLocked } from '@/components/feature-locked';
+import { LiquidLoader } from '@/components/ui/liquid-loader';
 
 export default function ProgressPage() {
   const { data, isLoading } = useDashboard();
 
   if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-10 h-10 border-4 border-brand-yellow/30 border-t-brand-yellow rounded-full animate-spin"></div>
-        </div>
-      </MainLayout>
-    );
+    return <LiquidLoader isLooping={true} />;
   }
 
   const isLocked = data?.profile_stage === 1;

@@ -76,21 +76,7 @@ export function Navbar() {
 
       {/* Right side Profile/Action */}
       <div className="flex items-center gap-4">
-        {isTeacher ? (
-          <Link 
-            href="/path" 
-            className="text-[10px] font-bold tracking-widest uppercase bg-brand-yellow text-brand-dark px-3 py-1.5 rounded-full hover:scale-105 transition-transform"
-          >
-            Student Mode
-          </Link>
-        ) : (
-          <Link 
-            href="/teacher" 
-            className="text-[10px] font-bold tracking-widest uppercase bg-brand-yellow text-brand-dark px-3 py-1.5 rounded-full hover:scale-105 transition-transform"
-          >
-            Teacher Mode
-          </Link>
-        )}
+
         <Link 
           href="/profile" 
           className="text-xs font-bold tracking-wide text-brand-dark hover:text-muted-foreground transition-colors uppercase"
