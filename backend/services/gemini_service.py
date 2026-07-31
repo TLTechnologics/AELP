@@ -1,15 +1,11 @@
 import json
-import google.generativeai as genai
+import requests
 from config import settings
-import tempfile
-import os
-
-genai.configure(api_key=settings.GEMINI_API_KEY)
 
 def evaluate_speaking(audio_file_bytes: bytes, mime_type: str, prompt: str) -> dict:
     """
-    Evaluates a student's speaking submission using Gemini 2.5 Flash API.
-    Returns strict JSON formatted response according to Cambridge English rubric.
+    Evaluates a student's speaking submission using Gemini 2.5 Flash via REST API.
+    Bypasses grpcio DLL blocks.
     """
     system_instruction = f"""You are an experienced Cambridge English and IELTS Speaking Examiner.
 Evaluate ONLY the student's spoken English from the provided audio.
@@ -46,33 +42,63 @@ Required format:
   "recommended_lessons": []
 }}
 """
+
+    api_key = settings.GEMINI_API_KEY
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is not set.")
+
+    # 1. Upload the file using Gemini REST API
+    upload_url = f"https://generativelanguage.googleapis.com/upload/v1beta/files?key={api_key}"
+    headers = {
+        "X-Goog-Upload-Protocol": "raw",
+        "X-Goog-Upload-Header-Content-Length": str(len(audio_file_bytes)),
+        "X-Goog-Upload-Header-Content-Type": mime_type,
+        "Content-Type": mime_type,
+    }
     
-    # Save the bytes to a temporary file because Gemini File API requires a path
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_file:
-        temp_file.write(audio_file_bytes)
-        temp_file_path = temp_file.name
+    upload_res = requests.post(upload_url, headers=headers, data=audio_file_bytes)
+    if not upload_res.ok:
+        print("Upload Error:", upload_res.text)
+        raise ValueError(f"Failed to upload file to Gemini: {upload_res.status_code}")
+        
+    file_info = upload_res.json()
+    file_uri = file_info.get("file", {}).get("uri")
+    
+    if not file_uri:
+        raise ValueError("File URI not returned from Gemini API")
 
     try:
-        # Upload the file to Gemini
-        gemini_file = genai.upload_file(path=temp_file_path, mime_type=mime_type)
+        # 2. Generate Content
+        generate_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={api_key}"
+        payload = {
+            "systemInstruction": {
+                "parts": [{"text": system_instruction}]
+            },
+            "contents": [{
+                "parts": [
+                    {"fileData": {"mimeType": mime_type, "fileUri": file_uri}},
+                    {"text": f"Please evaluate the student's speaking. The prompt was: '{prompt}'"}
+                ]
+            }],
+            "generationConfig": {
+                "temperature": 0.1,
+                "responseMimeType": "application/json"
+            }
+        }
         
-        # Use Gemini 2.5 Flash
-        model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash",
-            system_instruction=system_instruction,
-            generation_config={"temperature": 0.1, "response_mime_type": "application/json"}
-        )
-        
-        response = model.generate_content([
-            gemini_file,
-            f"Please evaluate the student's speaking. The prompt was: '{prompt}'"
-        ])
-        
-        content = response.text
-        if not content:
-            raise ValueError("Empty response from Gemini API")
+        gen_res = requests.post(generate_url, json=payload)
+        if not gen_res.ok:
+            print("Generate Error:", gen_res.text, flush=True)
+            raise ValueError(f"Failed to generate content: {gen_res.status_code} - {gen_res.text}")
             
-        data = json.loads(content)
+        gen_data = gen_res.json()
+        
+        try:
+            content_text = gen_data["candidates"][0]["content"]["parts"][0]["text"]
+            data = json.loads(content_text)
+        except (KeyError, IndexError, json.JSONDecodeError) as e:
+            print("Parse Error:", e, "Response:", gen_data)
+            raise ValueError("Failed to parse Gemini API response")
         
         # Calculate overall score if not set properly
         if "overall" not in data or data["overall"] == 0:
@@ -89,9 +115,4 @@ Required format:
         return data
         
     finally:
-        # Clean up the temporary file and Gemini file
-        os.remove(temp_file_path)
-        try:
-            genai.delete_file(gemini_file.name)
-        except Exception:
-            pass
+        pass # REST API handles cleanup based on expiration, or we could send a DELETE request.

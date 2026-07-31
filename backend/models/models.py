@@ -139,6 +139,9 @@ class StudentAssessment(Base):
     time_taken = Column(Integer, nullable=True) # in seconds
     total_marks = Column(Float, nullable=True)
     accuracy = Column(Float, nullable=True)
+    cefr_level = Column(String, nullable=True)
+    status = Column(String, default="Completed")
+    evaluation_id = Column(Integer, nullable=True)
     
     student = relationship("Student", back_populates="assessments")
     assessment = relationship("Assessment", back_populates="student_assessments")
@@ -254,3 +257,45 @@ class SpeakingEvaluation(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     recording = relationship("SpeakingRecording", back_populates="evaluation")
+
+class StudentSkillAnalysis(Base):
+    __tablename__ = "student_skill_analysis"
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id"))
+    assessment_id = Column(Integer, ForeignKey("assessments.id"), nullable=True)
+    skill_name = Column(String, index=True)
+    skill_score = Column(Float)
+    priority = Column(String) # HIGH, MEDIUM, LOW
+    recommended = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class StudentLearningPaths(Base):
+    __tablename__ = "student_learning_paths"
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id"))
+    path_name = Column(String, index=True)
+    progress = Column(Float, default=0.0)
+    status = Column(String, default="Active")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class StudentLessonRecommendations(Base):
+    __tablename__ = "student_lesson_recommendations"
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id"))
+    lesson_id = Column(Integer, ForeignKey("lessons.id"))
+    reason = Column(Text)
+    priority = Column(String) # HIGH, MEDIUM, LOW
+    assessment_id = Column(Integer, ForeignKey("assessments.id"), nullable=True)
+    completed = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    lesson = relationship("Lesson")
+
+class StudentWeakSkills(Base):
+    __tablename__ = "student_weak_skills"
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id"))
+    skill_name = Column(String, index=True)
+    latest_score = Column(Float)
+    priority = Column(String) # HIGH, MEDIUM, LOW
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

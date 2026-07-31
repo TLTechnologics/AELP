@@ -4,6 +4,8 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { Headphones, BookOpen, PenTool, Mic, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useDashboard } from '@/hooks/use-dashboard';
+import { FeatureLocked } from '@/components/feature-locked';
 
 const skills = [
   { id: 'reading', title: 'Reading', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-100', desc: 'Comprehend complex texts, articles, and literature.' },
@@ -11,6 +13,31 @@ const skills = [
 ];
 
 export default function SkillsHubPage() {
+  const { data, isLoading } = useDashboard();
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="w-10 h-10 border-4 border-brand-yellow/30 border-t-brand-yellow rounded-full animate-spin"></div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const isLocked = data?.profile_stage === 1;
+
+  if (isLocked) {
+    return (
+      <MainLayout>
+        <FeatureLocked 
+          title="Skills Hub Locked" 
+          message="Complete your first assessment to unlock detailed skill breakdowns." 
+        />
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="max-w-5xl mx-auto space-y-12 pb-12">

@@ -2,35 +2,22 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.database import get_db
 from models.models import Assessment, AssessmentType, WritingSubmission, AIEvaluation, StudentAssessment, Student, User
+from sqlalchemy.sql import func
+from services.recommendation_engine import process_evaluation
 from pydantic import BaseModel
 from services.ai_evaluation import evaluate_writing
 import json
 
+from api.deps import get_current_student
+
 router = APIRouter()
 
-def ensure_student(db: Session, student_id: int = 1) -> Student:
-    student = db.query(Student).filter(Student.id == student_id).first()
-    if not student:
-        user = db.query(User).filter(User.id == "default_student_user").first()
-        if not user:
-            user = User(id="default_student_user", email="student@aelp.com", full_name="Student")
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-        student = Student(id=student_id, user_id=user.id)
-        db.add(student)
-        db.commit()
-        db.refresh(student)
-    return student
-
 class SubmitWritingRequest(BaseModel):
-    student_id: int = 1
     prompt: str
     submission: str
 
-def process_writing_submission(request: SubmitWritingRequest, db: Session):
-    ensure_student(db, request.student_id)
-    submission_text = request.submission.strip()
+def process_writing_submission(student: Student, prompt: str, submission: str, db: Session):
+    submission_text = submission.strip()
     if not submission_text:
         raise HTTPException(status_code=400, detail="Please write your essay before submitting.")
 
@@ -39,15 +26,14 @@ def process_writing_submission(request: SubmitWritingRequest, db: Session):
         raise HTTPException(status_code=400, detail="Your essay is too short.")
 
     try:
-        evaluation = evaluate_writing(prompt=request.prompt, submission=submission_text)
+        assessment = db.query(Assessment).filter(Assessment.type == AssessmentType.WRITING).first()
+        evaluation = evaluate_writing(prompt=prompt, submission=submission_text)
     except Exception as e:
         print(f"Groq Evaluation Error: {e}")
         raise HTTPException(status_code=500, detail="Unable to evaluate your writing. Please try again.")
 
-    assessment = db.query(Assessment).filter(Assessment.type == AssessmentType.WRITING).first()
-    
     student_assessment = StudentAssessment(
-        student_id=request.student_id,
+        student_id=student.id,
         assessment_id=assessment.id if assessment else None
     )
     db.add(student_assessment)
@@ -75,19 +61,33 @@ def process_writing_submission(request: SubmitWritingRequest, db: Session):
         raw_response=json.dumps(evaluation)
     )
     db.add(ai_eval)
+    db.commit()
+    db.refresh(ai_eval)
     
     student_assessment.total_marks = ai_eval.overall
-    student_assessment.accuracy = (ai_eval.overall / 50.0) * 100 if ai_eval.overall else 0
+    accuracy = (ai_eval.overall / 50.0) * 100 if ai_eval.overall else 0
+    student_assessment.accuracy = accuracy
+    student_assessment.cefr_level = evaluation.get("cefr_level", "B1")
+    student_assessment.status = "Completed"
+    student_assessment.evaluation_id = ai_eval.id
+    student_assessment.completed_at = func.now()
     
     db.commit()
+    
+    # Trigger Adaptive Recommendation Engine
+    if assessment:
+        try:
+            process_evaluation(db, student.id, assessment.id, assessment.type, eval_data=ai_eval, accuracy=accuracy)
+        except Exception as e:
+            print(f"Engine Error: {e}")
 
     return evaluation
 
 @router.post("/evaluate")
-def submit_and_evaluate_writing(request: SubmitWritingRequest, db: Session = Depends(get_db)):
-    return process_writing_submission(request, db)
+def submit_writing_evaluation(request: SubmitWritingRequest, db: Session = Depends(get_db), student: Student = Depends(get_current_student)):
+    return process_writing_submission(student, request.prompt, request.submission, db)
 
 @router.post("/assess-writing")
-def assess_writing(request: SubmitWritingRequest, db: Session = Depends(get_db)):
-    return process_writing_submission(request, db)
+def assess_writing(request: SubmitWritingRequest, db: Session = Depends(get_db), student: Student = Depends(get_current_student)):
+    return process_writing_submission(student, request.prompt, request.submission, db)
 

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   Users, 
   GraduationCap, 
@@ -16,7 +17,8 @@ import {
   Sparkles,
   ArrowRight,
   ChevronRight,
-  Filter
+  Filter,
+  PenTool
 } from 'lucide-react';
 import { 
   mockStudents, 
@@ -96,8 +98,17 @@ export default function TeacherDashboard() {
             </h1>
           </div>
           
-          {/* Class Filters */}
-          <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-2xl border border-border/50 shadow-sm">
+          <div className="flex items-center gap-4 flex-wrap">
+            {/* Assessment Builder Link */}
+            <Link 
+              href="/teacher/assessments" 
+              className="flex items-center gap-2 bg-brand-dark text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-md hover:bg-brand-dark/90 transition-all hover:scale-105 active:scale-95"
+            >
+              <PenTool className="w-4 h-4" /> Assessment Builder
+            </Link>
+
+            {/* Class Filters */}
+            <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-2xl border border-border/50 shadow-sm">
             <Filter className="w-4 h-4 text-muted-foreground" />
             <span className="text-xs font-bold uppercase text-muted-foreground">Class Cohort:</span>
             <select 
@@ -111,6 +122,7 @@ export default function TeacherDashboard() {
               ))}
             </select>
           </div>
+        </div>
         </motion.div>
 
         {/* Smart Alerts Section */}

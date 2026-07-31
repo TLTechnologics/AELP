@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { progressService } from '@/services/api';
+import { dashboardService } from '@/services/api';
 
 export function useDashboard() {
   return useQuery({
     queryKey: ['dashboard'],
     queryFn: async () => {
-      const { data } = await progressService.getDashboard();
+      const { data } = await dashboardService.getDashboard();
       return data;
     }
   });

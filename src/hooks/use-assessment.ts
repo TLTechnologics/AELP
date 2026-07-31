@@ -31,6 +31,16 @@ export function useSpeakingAssessment() {
   });
 }
 
+export function useListeningAssessment() {
+  return useQuery({
+    queryKey: ['listeningAssessment'],
+    queryFn: async () => {
+      const { data } = await assessmentService.getListeningAssessment();
+      return data;
+    }
+  });
+}
+
 export function useSubmitReading() {
   const queryClient = useQueryClient();
   
@@ -63,8 +73,22 @@ export function useSubmitSpeaking() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (payload: FormData) => {
-      const { data } = await assessmentService.submitSpeakingAssessment(payload);
+    mutationFn: async (formData: FormData) => {
+      const { data } = await assessmentService.submitSpeakingAssessment(formData);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    }
+  });
+}
+
+export function useSubmitListening() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (answers: Array<{ question_id: number; selected_option_id?: number; text_answer?: string }>) => {
+      const { data } = await assessmentService.submitListeningAssessment({ student_id: 1, answers });
       return data;
     },
     onSuccess: () => {

@@ -28,8 +28,20 @@ export const authService = {
 };
 
 export const progressService = {
-  getDashboard: () => apiClient.get('/progress/dashboard'),
   getHistory: () => apiClient.get('/progress/history'),
+};
+
+export const dashboardService = {
+  getDashboard: () => apiClient.get('/dashboard'),
+};
+
+export const learningPathService = {
+  getRoadmap: () => apiClient.get('/path'),
+};
+
+export const resultsService = {
+  getResults: (params?: any) => apiClient.get('/results', { params }),
+  getResultDetails: (id: string | number) => apiClient.get(`/results/${id}`),
 };
 
 export const lessonService = {
@@ -41,7 +53,9 @@ export const assessmentService = {
   getReadingAssessment: () => apiClient.get('/assessments/reading'),
   getWritingAssessment: () => apiClient.get('/assessments/writing'),
   getSpeakingAssessment: () => apiClient.get('/assessments/speaking'),
+  getListeningAssessment: () => apiClient.get('/assessments/listening'),
   submitReadingAssessment: (payload: any) => apiClient.post('/assessments/submit/reading', payload),
+  submitListeningAssessment: (payload: any) => apiClient.post('/assessments/listening/submit', payload),
   submitSpeakingAssessment: (payload: FormData) => apiClient.post('/speaking/submit', payload, {
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -53,4 +67,20 @@ export const assessmentService = {
 
 export const writingService = {
   submitEvaluation: (payload: any) => apiClient.post('/writing/evaluate', payload),
+};
+
+export const teacherService = {
+  uploadSpeakingAssessment: (payload: { title: string; difficulty: string; topic: string }) => apiClient.post('/teacher/assessments/speaking', payload),
+  uploadWritingAssessment: (payload: { title: string; difficulty: string; topic: string }) => apiClient.post('/teacher/assessments/writing', payload),
+  uploadReadingAssessment: (payload: { 
+    title: string; 
+    difficulty: string; 
+    reading_passage: string; 
+    questions: Array<{ type?: string; text: string; marks: number; options: Array<{ text: string; is_correct: boolean }> }> 
+  }) => apiClient.post('/teacher/assessments/reading', payload),
+  uploadListeningAssessment: (payload: FormData) => apiClient.post('/teacher/assessments/listening', payload, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
 };

@@ -2,40 +2,30 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from database.database import get_db
 from models.models import Assessment, AssessmentType, SpeakingRecording, SpeakingEvaluation, StudentAssessment, Student, User
+from sqlalchemy.sql import func
+from services.recommendation_engine import process_evaluation
 from services.gemini_service import evaluate_speaking
 import json
 import uuid
 import time
 from config import settings
 from supabase import create_client, Client
+from api.deps import get_current_student
 
 router = APIRouter()
 
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
 
-def ensure_student(db: Session, student_id: int = 1) -> Student:
-    student = db.query(Student).filter(Student.id == student_id).first()
-    if not student:
-        user = db.query(User).filter(User.id == "default_student_user").first()
-        if not user:
-            user = User(id="default_student_user", email="student@aelp.com", full_name="Student")
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-        student = Student(id=student_id, user_id=user.id)
-        db.add(student)
-        db.commit()
-        db.refresh(student)
-    return student
-
 @router.post("/submit")
 async def submit_speaking(
-    student_id: int = Form(1),
+    audio_file: UploadFile = File(...),
     assessment_id: int = Form(...),
     prompt: str = Form(...),
     duration: int = Form(...),
-    audio_file: UploadFile = File(...)
+    db: Session = Depends(get_db),
+    student: Student = Depends(get_current_student)
 ):
+    student_id = student.id
     # Enforce duration limits
     if duration < 30:
         raise HTTPException(status_code=400, detail="Please speak for at least 30 seconds.")
@@ -110,6 +100,18 @@ async def submit_speaking(
     # Update student_assessment score
     student_assessment.total_marks = db_eval.overall
     student_assessment.accuracy = (db_eval.overall / 70.0) * 100 if db_eval.overall else 0
+    student_assessment.cefr_level = evaluation.get("cefr_level", "B1")
+    student_assessment.status = "Completed"
+    student_assessment.evaluation_id = db_eval.id
+    student_assessment.completed_at = func.now()
     db.commit()
+
+    # Trigger Adaptive Recommendation Engine
+    assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
+    if assessment:
+        try:
+            process_evaluation(db, student_id, assessment_id, assessment.type, eval_data=db_eval)
+        except Exception as e:
+            print(f"Engine Error: {e}")
 
     return evaluation

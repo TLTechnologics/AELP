@@ -4,11 +4,13 @@ from database.database import get_db
 from models.models import Student, StudentAssessment, Assessment, AssessmentType, AIEvaluation, WritingSubmission
 from sqlalchemy.sql import func
 
+from api.deps import get_current_student
+
 router = APIRouter()
 
 @router.get("/dashboard")
-def get_dashboard_data(student_id: int = 1, db: Session = Depends(get_db)):
-    student = db.query(Student).filter(Student.id == student_id).first()
+def get_dashboard_data(student: Student = Depends(get_current_student), db: Session = Depends(get_db)):
+    student_id = student.id
     
     # Calculate latest Reading score
     latest_reading = (

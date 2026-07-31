@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, BookOpen, FileText, CheckCircle, AlertCircle, Award, Sparkles, ArrowLeft, Mic, Square, Play, Pause, Trash2, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useReadingAssessment, useSubmitReading, useSubmitWriting, useSpeakingAssessment, useSubmitSpeaking } from '@/hooks/use-assessment';
+import { useReadingAssessment, useSubmitReading, useSubmitWriting, useSpeakingAssessment, useSubmitSpeaking, useWritingAssessment, useListeningAssessment, useSubmitListening } from '@/hooks/use-assessment';
+import { Headphones } from 'lucide-react';
 
 const STAGES = {
   SELECTION: 0,
@@ -12,14 +13,16 @@ const STAGES = {
   WRITING: 2,
   SPEAKING: 3,
   RESULTS: 4,
+  LISTENING: 5,
 };
 
 export default function AssessmentPage() {
   const router = useRouter();
   const [stage, setStage] = useState(STAGES.SELECTION);
-  const [activeModule, setActiveModule] = useState<'reading' | 'writing' | 'speaking' | null>(null);
+  const [activeModule, setActiveModule] = useState<'reading' | 'writing' | 'speaking' | 'listening' | null>(null);
   
   const [readingAnswers, setReadingAnswers] = useState<Record<number, { selected_option_id?: number; text_answer?: string }>>({});
+  const [listeningAnswers, setListeningAnswers] = useState<Record<number, { selected_option_id?: number; text_answer?: string }>>({});
   const [writingSubmission, setWritingSubmission] = useState('');
   
   // Speaking State
@@ -35,6 +38,7 @@ export default function AssessmentPage() {
   const [isPlaying, setIsPlaying] = useState(false);
 
   const [readingResult, setReadingResult] = useState<{ total_marks: number; accuracy: number } | null>(null);
+  const [listeningResult, setListeningResult] = useState<{ total_marks: number; accuracy: number } | null>(null);
   const [writingResult, setWritingResult] = useState<any>(null);
   const [speakingResult, setSpeakingResult] = useState<any>(null);
   
@@ -42,8 +46,11 @@ export default function AssessmentPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { data: readingData, isLoading: loadingReading } = useReadingAssessment();
+  const { data: writingData, isLoading: loadingWriting } = useWritingAssessment();
   const { data: speakingData, isLoading: loadingSpeaking } = useSpeakingAssessment();
+  const { data: listeningData, isLoading: loadingListening } = useListeningAssessment();
   const submitReadingMutation = useSubmitReading();
+  const submitListeningMutation = useSubmitListening();
   const submitWritingMutation = useSubmitWriting();
   const submitSpeakingMutation = useSubmitSpeaking();
 
@@ -90,6 +97,20 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     }));
   };
 
+  const handleSelectListeningOption = (questionId: number, optionId: number) => {
+    setListeningAnswers((prev) => ({
+      ...prev,
+      [questionId]: { selected_option_id: optionId },
+    }));
+  };
+
+  const handleListeningTextAnswer = (questionId: number, text: string) => {
+    setListeningAnswers((prev) => ({
+      ...prev,
+      [questionId]: { text_answer: text },
+    }));
+  };
+
   const words = writingSubmission.trim().split(/\s+/).filter(Boolean);
   const wordCount = words.length;
 
@@ -112,6 +133,35 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     }
   };
 
+  const handleListeningSubmit = async () => {
+    setErrorMessage(null);
+    const requiredQuestions = listeningData?.questions?.length || 0;
+    const answeredCount = Object.keys(listeningAnswers).length;
+    
+    if (answeredCount < requiredQuestions) {
+      setErrorMessage('Please answer all listening questions before submitting.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = Object.entries(listeningAnswers).map(([qId, ans]) => ({
+        question_id: parseInt(qId),
+        selected_option_id: ans.selected_option_id,
+        text_answer: ans.text_answer,
+      }));
+      
+      const res = await submitListeningMutation.mutateAsync(payload);
+      setListeningResult({ total_marks: res.total_marks, accuracy: res.accuracy });
+      setActiveModule('listening');
+      setStage(STAGES.RESULTS);
+    } catch (e: any) {
+      setErrorMessage(e?.response?.data?.detail || 'Failed to submit listening assessment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleWritingSubmit = async () => {
     setErrorMessage(null);
     const submissionText = writingSubmission.trim();
@@ -128,8 +178,9 @@ However, not everyone follows the same routine. Some people prefer to wake up la
 
     setIsSubmitting(true);
     try {
+      const promptText = writingData?.topic || "Describe a time when someone helped you or when you helped someone else. How did it make you feel?";
       const res = await submitWritingMutation.mutateAsync({
-        prompt: "Describe a time when someone helped you or when you helped someone else. How did it make you feel?",
+        prompt: promptText,
         submission: submissionText,
       });
       setWritingResult(res);
@@ -271,7 +322,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     formData.append('student_id', '1');
     formData.append('assessment_id', speakingData?.id || '1');
     formData.append('duration', recordingDuration.toString());
-    formData.append('prompt', speakingData?.questions?.[0]?.text || 'Introduce yourself.');
+    formData.append('prompt', speakingData?.topic || 'Introduce yourself.');
 
     try {
       const res = await submitSpeakingMutation.mutateAsync(formData);
@@ -321,7 +372,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-left max-w-[1400px] mx-auto">
               {/* READING ASSESSMENT CARD */}
               <motion.div
                 whileHover={{ y: -6 }}
@@ -420,6 +471,39 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                   Start Speaking <ArrowRight className="w-5 h-5" />
                 </button>
               </motion.div>
+
+              {/* LISTENING ASSESSMENT CARD */}
+              <motion.div
+                whileHover={{ y: -6 }}
+                className="bg-white rounded-[32px] p-8 border border-border shadow-md hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-40 h-40 bg-pink-100 rounded-full blur-3xl opacity-50" />
+                <div className="space-y-6 relative z-10">
+                  <div className="w-16 h-16 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center shadow-inner">
+                    <Headphones className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-3 py-1 rounded-full">Listening Module</span>
+                    <h2 className="font-heading text-3xl mt-3">🎧 Listening Assessment</h2>
+                    <p className="text-muted-foreground text-sm font-medium mt-2 leading-relaxed">
+                      Listen to audio tracks and answer questions to test your listening comprehension.
+                    </p>
+                  </div>
+                  <div className="text-xs font-bold text-muted-foreground space-y-1">
+                    <p>• {listeningData?.questions?.length || 0} Questions total</p>
+                    <p>• Custom Audio Track</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setErrorMessage(null);
+                    setStage(STAGES.LISTENING);
+                  }}
+                  className="mt-8 w-full bg-pink-600 text-white rounded-full py-4 font-bold text-base flex items-center justify-center gap-3 hover:bg-pink-700 transition-transform active:scale-95 shadow-lg"
+                >
+                  Start Listening <ArrowRight className="w-5 h-5" />
+                </button>
+              </motion.div>
             </div>
           </motion.div>
         )}
@@ -461,7 +545,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                 <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-wider text-xs">
                   <BookOpen className="w-4 h-4" /> Reading Passage
                 </div>
-                <h3 className="font-heading text-2xl">A Healthy Morning Routine</h3>
+                <h3 className="font-heading text-2xl">{readingData?.title || 'A Healthy Morning Routine'}</h3>
                 <div className="text-muted-foreground space-y-4 font-medium leading-relaxed whitespace-pre-line text-sm">
                   {passage}
                 </div>
@@ -544,8 +628,8 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             <div className="bg-white p-8 rounded-[32px] border border-border shadow-xl space-y-6">
               <div className="space-y-2">
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Prompt (Word limit: 120–150 words)</span>
-                <h3 className="text-2xl font-heading text-brand-dark leading-snug">
-                  Describe a time when someone helped you or when you helped someone else. How did it make you feel?
+                <h3 className="text-2xl font-heading text-brand-dark leading-snug whitespace-pre-line">
+                  {writingData?.topic || "Describe a time when someone helped you or when you helped someone else. How did it make you feel?"}
                 </h3>
               </div>
 
@@ -612,7 +696,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               <div className="space-y-4">
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Prompt (Min: 30s | Max: 2m)</span>
                 <h3 className="text-2xl font-heading text-brand-dark leading-snug whitespace-pre-line">
-                  {speakingData?.questions?.[0]?.text || "Introduce yourself.\nTalk about:\n• Your name\n• Your hobbies\n• Your family\n• Your favourite subject\n\nSpeak for approximately one minute."}
+                  {speakingData?.topic || "Introduce yourself.\nTalk about:\n• Your name\n• Your hobbies\n• Your family\n• Your favourite subject\n\nSpeak for approximately one minute."}
                 </h3>
               </div>
 
@@ -656,7 +740,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     
                     <audio 
                       ref={audioPlayerRef} 
-                      src={audioUrl || ''} 
+                      src={audioUrl || undefined} 
                       onEnded={() => setIsPlaying(false)}
                       className="hidden" 
                     />
@@ -678,6 +762,115 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                       <Mic className="w-10 h-10" />
                     </button>
                     <p className="font-bold text-muted-foreground">Click to start recording</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* STAGE 5: LISTENING ASSESSMENT */}
+        {stage === STAGES.LISTENING && (
+          <motion.div
+            key="listening"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            className="space-y-8"
+          >
+            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-border">
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => setStage(STAGES.SELECTION)} 
+                  className="p-2 rounded-full hover:bg-muted transition-colors text-brand-dark"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-3 py-1 rounded-full">Listening Module</span>
+                  <h2 className="text-2xl font-heading mt-1">Listening Assessment</h2>
+                </div>
+              </div>
+              <button
+                onClick={handleListeningSubmit}
+                disabled={isSubmitting}
+                className="bg-brand-yellow text-brand-dark px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
+              >
+                {isSubmitting ? 'Evaluating...' : 'Submit Listening Test'} <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Audio Column */}
+              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-8 h-fit sticky top-24">
+                <div className="flex items-center gap-2 text-pink-600 font-bold uppercase tracking-wider text-xs">
+                  <Headphones className="w-4 h-4" /> Audio Track
+                </div>
+                <h3 className="font-heading text-2xl">{listeningData?.title || 'Listening Test'}</h3>
+                
+                {listeningData?.audio_url ? (
+                  <div className="bg-pink-50/50 p-6 rounded-2xl border border-pink-100">
+                    <audio 
+                      controls 
+                      src={listeningData.audio_url} 
+                      className="w-full custom-audio-player" 
+                      controlsList="nodownload"
+                    />
+                    <p className="text-xs text-muted-foreground mt-4 font-medium text-center">
+                      Listen to the audio carefully. You can play, pause, and replay as needed.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-6 bg-muted rounded-xl text-center text-muted-foreground font-medium">
+                    No audio track available.
+                  </div>
+                )}
+              </div>
+
+              {/* Questions Column */}
+              <div className="space-y-6 h-[650px] overflow-y-auto pr-2 custom-scrollbar">
+                {(listeningData?.questions || []).map((q: any, idx: number) => (
+                  <div key={q.id} className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-4">
+                    <h4 className="font-bold text-base text-brand-dark">
+                      <span className="text-pink-600 mr-2">{idx + 1}.</span>
+                      {q.text}
+                    </h4>
+
+                    {/* Options */}
+                    {q.options && q.options.length > 0 ? (
+                      <div className="space-y-2">
+                        {q.options.map((opt: any) => {
+                          const selected = listeningAnswers[q.id]?.selected_option_id === opt.id;
+                          return (
+                            <button
+                              key={opt.id}
+                              onClick={() => handleSelectListeningOption(q.id, opt.id)}
+                              className={`w-full text-left p-3.5 rounded-xl border text-sm font-medium transition-all ${
+                                selected
+                                  ? 'border-pink-600 bg-pink-50 font-bold text-pink-700'
+                                  : 'border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground'
+                              }`}
+                            >
+                              {opt.text}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <textarea
+                        rows={3}
+                        placeholder="Type your answer here..."
+                        value={listeningAnswers[q.id]?.text_answer || ''}
+                        onChange={(e) => handleListeningTextAnswer(q.id, e.target.value)}
+                        className="w-full bg-muted/50 border border-border/60 rounded-xl p-4 text-sm font-medium outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-200 transition-all resize-y min-h-[90px]"
+                      />
+                    )}
+                  </div>
+                ))}
+                
+                {listeningData?.questions?.length === 0 && (
+                  <div className="p-8 text-center text-muted-foreground font-medium bg-white rounded-2xl border border-border">
+                    No questions provided for this listening assessment.
                   </div>
                 )}
               </div>
@@ -724,11 +917,44 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                 <div className="space-y-3 text-sm font-medium text-muted-foreground">
                   <div className="flex justify-between py-2 border-b border-border/40">
                     <span>Correct Answered Marks</span>
-                    <span className="font-bold text-brand-dark">{readingResult.total_marks} / 18</span>
+                    <span className="font-bold text-brand-dark">{readingResult.total_marks} / {questions.length}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b border-border/40">
                     <span>Passage Title</span>
-                    <span className="font-bold text-brand-dark">A Healthy Morning Routine</span>
+                    <span className="font-bold text-brand-dark">{readingData?.title || 'A Healthy Morning Routine'}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* LISTENING RESULT DISPLAY */}
+            {activeModule === 'listening' && listeningResult && (
+              <div className="bg-white p-8 rounded-[32px] border border-border shadow-md space-y-8 max-w-3xl mx-auto">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center">
+                    <Headphones className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-2xl">Listening Assessment Result</h3>
+                    <p className="text-xs text-muted-foreground font-bold">Automated Database Answer Evaluation</p>
+                  </div>
+                </div>
+
+                <div className="bg-pink-50 p-6 rounded-2xl text-center space-y-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Score & Accuracy</span>
+                  <div className="text-5xl font-heading text-pink-700">
+                    {listeningResult.total_marks} Marks ({listeningResult.accuracy.toFixed(1)}%)
+                  </div>
+                </div>
+
+                <div className="space-y-3 text-sm font-medium text-muted-foreground">
+                  <div className="flex justify-between py-2 border-b border-border/40">
+                    <span>Correct Answered Marks</span>
+                    <span className="font-bold text-brand-dark">{listeningResult.total_marks} / {listeningData?.questions?.length || 0}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b border-border/40">
+                    <span>Assessment Title</span>
+                    <span className="font-bold text-brand-dark">{listeningData?.title || 'Listening Test'}</span>
                   </div>
                 </div>
               </div>
