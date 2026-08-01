@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { supabase } from '@/lib/supabaseClient';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = 'https://aelp.onrender.com/api';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
