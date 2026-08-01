@@ -44,4 +44,10 @@ def get_current_student(user: User = Depends(get_current_user), db: Session = De
     # if not student:
     #     raise HTTPException(status_code=404, detail="Student profile not found")
     
-    return user # Return user instead of student for testing
+    student = db.query(Student).filter(Student.user_id == user.id).first()
+    if not student:
+        student = Student(user_id=user.id, semester='Semester 1', current_level='Beginner')
+        db.add(student)
+        db.commit()
+        db.refresh(student)
+    return student
