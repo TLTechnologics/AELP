@@ -369,7 +369,6 @@ However, not everyone follows the same routine. Some people prefer to wake up la
         msg = `Upload Error (V2): ${e.message}`;
       }
       setErrorMessage(msg);
-      setAudioBlob(null);
     } finally {
       setIsSubmitting(false);
     }
