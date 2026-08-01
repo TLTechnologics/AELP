@@ -56,11 +56,8 @@ export const assessmentService = {
   getListeningAssessment: () => apiClient.get('/assessments/listening'),
   submitReadingAssessment: (payload: any) => apiClient.post('/assessments/submit/reading', payload),
   submitListeningAssessment: (payload: any) => apiClient.post('/assessments/listening/submit', payload),
-  submitSpeakingAssessment: (payload: FormData) => apiClient.post('/speaking/submit', payload, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  }),
+  submitSpeakingAssessment: (payload: FormData) => apiClient.post('/speaking/submit', payload),
+  uploadAudio: (payload: FormData) => apiClient.post('/teacher/assessments/listening', payload),
   getAssessment: (id: string) => apiClient.get(`/assessments/${id}`),
   submitAssessment: (id: string, payload: any) => apiClient.post(`/assessments/${id}/submit`, payload),
 };
