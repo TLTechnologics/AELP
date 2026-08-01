@@ -19,12 +19,6 @@ apiClient.interceptors.request.use(async (config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
   
-  // If we are sending FormData, remove the default application/json Content-Type
-  // so the browser can automatically set multipart/form-data with the correct boundary
-  if (config.data instanceof FormData) {
-    delete config.headers['Content-Type'];
-  }
-  
   return config;
 }, (error) => {
   return Promise.reject(error);
@@ -63,8 +57,21 @@ export const assessmentService = {
   getListeningAssessment: () => apiClient.get('/assessments/listening'),
   submitReadingAssessment: (payload: any) => apiClient.post('/assessments/submit/reading', payload),
   submitListeningAssessment: (payload: any) => apiClient.post('/assessments/listening/submit', payload),
-  submitSpeakingAssessment: (payload: FormData) => apiClient.post('/speaking/submit', payload),
-  uploadAudio: (payload: FormData) => apiClient.post('/teacher/assessments/listening', payload),
+  submitSpeakingAssessment: async (payload: FormData) => {
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+    const res = await fetch(`${API_BASE_URL}/speaking/submit`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: payload
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw { response: { data: errorData } };
+    }
+    const json = await res.json();
+    return { data: json };
+  },
   getAssessment: (id: string) => apiClient.get(`/assessments/${id}`),
   submitAssessment: (id: string, payload: any) => apiClient.post(`/assessments/${id}/submit`, payload),
 };
