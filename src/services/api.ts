@@ -62,6 +62,7 @@ export const assessmentService = {
       'Content-Type': undefined,
     }
   }),
+  submitSpeakingAssessmentText: (payload: { assessment_id: number, prompt: string, duration: number, transcript: string }) => apiClient.post('/speaking/evaluate-text', payload),
   getAssessment: (id: string) => apiClient.get(`/assessments/${id}`),
   submitAssessment: (id: string, payload: any) => apiClient.post(`/assessments/${id}/submit`, payload),
 };

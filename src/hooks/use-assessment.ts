@@ -83,6 +83,20 @@ export function useSubmitSpeaking() {
   });
 }
 
+export function useSubmitSpeakingText() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (payload: { assessment_id: number; prompt: string; duration: number; transcript: string }) => {
+      const { data } = await assessmentService.submitSpeakingAssessmentText(payload);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    }
+  });
+}
+
 export function useSubmitListening() {
   const queryClient = useQueryClient();
   

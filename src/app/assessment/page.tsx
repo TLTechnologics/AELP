@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, BookOpen, FileText, CheckCircle, AlertCircle, Award, Sparkles, ArrowLeft, Mic, Square, Play, Pause, Trash2, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useReadingAssessment, useSubmitReading, useSubmitWriting, useSpeakingAssessment, useSubmitSpeaking, useWritingAssessment, useListeningAssessment, useSubmitListening } from '@/hooks/use-assessment';
+import { useReadingAssessment, useSubmitReading, useSubmitWriting, useSpeakingAssessment, useSubmitSpeaking, useSubmitSpeakingText, useWritingAssessment, useListeningAssessment, useSubmitListening } from '@/hooks/use-assessment';
 import { Headphones } from 'lucide-react';
 
 const STAGES = {
@@ -36,6 +36,9 @@ export default function AssessmentPage() {
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  
+  const [liveTranscript, setLiveTranscript] = useState('');
+  const recognitionRef = useRef<any>(null);
 
   const [readingResult, setReadingResult] = useState<{ total_marks: number; accuracy: number } | null>(null);
   const [listeningResult, setListeningResult] = useState<{ total_marks: number; accuracy: number } | null>(null);
@@ -53,6 +56,7 @@ export default function AssessmentPage() {
   const submitListeningMutation = useSubmitListening();
   const submitWritingMutation = useSubmitWriting();
   const submitSpeakingMutation = useSubmitSpeaking();
+  const submitSpeakingTextMutation = useSubmitSpeakingText();
 
   const passage = readingData?.reading_passage || `Many people believe that a good morning routine helps them have a productive day. Waking up early gives people enough time to prepare for the day without feeling rushed. Some people begin their morning by drinking a glass of water because it helps the body stay hydrated after a night's sleep.
 
@@ -244,10 +248,38 @@ However, not everyone follows the same routine. Some people prefer to wake up la
       };
 
       mediaRecorder.start(100);
+      
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        
+        let finalTranscript = '';
+        recognition.onresult = (event: any) => {
+          let interimTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcriptSegment = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcriptSegment + ' ';
+            } else {
+              interimTranscript += transcriptSegment;
+            }
+          }
+          setLiveTranscript(finalTranscript + interimTranscript);
+        };
+        
+        recognitionRef.current = recognition;
+        recognition.start();
+      } else {
+        console.warn('Speech Recognition API not supported in this browser.');
+      }
+
       setIsRecording(true);
       setIsPaused(false);
       setRecordingDuration(0);
       setAudioBlob(null);
+      setLiveTranscript('');
     } catch (error) {
       setErrorMessage('Microphone access denied or not available.');
     }
@@ -259,6 +291,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
       setIsRecording(false);
       setIsPaused(false);
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      if (recognitionRef.current) recognitionRef.current.stop();
     }
   };
 
@@ -266,6 +299,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     if (mediaRecorderRef.current && isRecording && !isPaused) {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
+      if (recognitionRef.current) recognitionRef.current.stop();
     }
   };
 
@@ -273,6 +307,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     if (mediaRecorderRef.current && isRecording && isPaused) {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
+      if (recognitionRef.current) recognitionRef.current.start();
     }
   };
 
@@ -280,6 +315,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     setAudioBlob(null);
     setAudioUrl(null);
     setRecordingDuration(0);
+    setLiveTranscript('');
   };
 
   const formatDuration = (seconds: number) => {
@@ -301,31 +337,25 @@ However, not everyone follows the same routine. Some people prefer to wake up la
   const handleSpeakingSubmit = async () => {
     setErrorMessage(null);
     
-    if (!audioBlob) {
-      setErrorMessage('Please record your answer before submitting.');
-      return;
-    }
-    
-    if (recordingDuration < 30) {
-      setErrorMessage('Please speak for at least 30 seconds.');
+    if (recordingDuration < 10) {
+      setErrorMessage('Please speak for at least 10 seconds.');
       return;
     }
 
-    if (audioBlob.size > 25 * 1024 * 1024) {
-      setErrorMessage('Recording is too large (max 25MB).');
+    if (!liveTranscript.trim()) {
+      setErrorMessage('No speech detected. Please ensure your microphone is working and speak clearly.');
       return;
     }
 
     setIsSubmitting(true);
-    const formData = new FormData();
-    formData.append('audio_file', audioBlob, 'recording.webm');
-    formData.append('student_id', '1');
-    formData.append('assessment_id', speakingData?.id || '1');
-    formData.append('duration', recordingDuration.toString());
-    formData.append('prompt', speakingData?.topic || 'Introduce yourself.');
 
     try {
-      const res = await submitSpeakingMutation.mutateAsync(formData);
+      const res = await submitSpeakingTextMutation.mutateAsync({
+        assessment_id: parseInt(speakingData?.id || '1'),
+        prompt: speakingData?.topic || 'Introduce yourself.',
+        duration: recordingDuration,
+        transcript: liveTranscript
+      });
       setSpeakingResult(res);
       setActiveModule('speaking');
       setStage(STAGES.RESULTS);
