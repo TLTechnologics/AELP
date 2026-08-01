@@ -336,9 +336,10 @@ However, not everyone follows the same routine. Some people prefer to wake up la
       } else if (e?.response?.data) {
         msg = typeof e.response.data === 'string' ? e.response.data.substring(0, 100) : JSON.stringify(e.response.data).substring(0, 100);
       } else if (e?.message) {
-        msg = `Network/Unknown Error: ${e.message}`;
+        msg = `Upload Error (V2): ${e.message}`;
       }
       setErrorMessage(msg);
+      setAudioBlob(null);
     } finally {
       setIsSubmitting(false);
     }
