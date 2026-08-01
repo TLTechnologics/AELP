@@ -58,19 +58,12 @@ export const assessmentService = {
   submitReadingAssessment: (payload: any) => apiClient.post('/assessments/submit/reading', payload),
   submitListeningAssessment: (payload: any) => apiClient.post('/assessments/listening/submit', payload),
   submitSpeakingAssessment: async (payload: FormData) => {
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
-    const res = await fetch(`${API_BASE_URL}/speaking/evaluate`, {
-      method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: payload
+    const res = await apiClient.post('/speaking/evaluate', payload, {
+      headers: {
+        'Content-Type': undefined, // Let the browser set the boundary
+      }
     });
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw { response: { data: errorData } };
-    }
-    const json = await res.json();
-    return { data: json };
+    return res;
   },
   getAssessment: (id: string) => apiClient.get(`/assessments/${id}`),
   submitAssessment: (id: string, payload: any) => apiClient.post(`/assessments/${id}/submit`, payload),
