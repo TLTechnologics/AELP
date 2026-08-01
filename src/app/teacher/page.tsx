@@ -76,14 +76,14 @@ export default function TeacherDashboard() {
   }
   
   const avgClassScore = Math.round(
-    students.reduce((acc, s) => acc + s.overallScore, 0) / (totalStudents || 1)
+    students.reduce((acc: number, s: any) => acc + s.overallScore, 0) / (totalStudents || 1)
   );
 
   // Skill averages
-  const avgL = Math.round(students.reduce((acc, s) => acc + s.listeningScore, 0) / (totalStudents || 1));
-  const avgR = Math.round(students.reduce((acc, s) => acc + s.readingScore, 0) / (totalStudents || 1));
-  const avgW = Math.round(students.reduce((acc, s) => acc + s.writingScore, 0) / (totalStudents || 1));
-  const avgS = Math.round(students.reduce((acc, s) => acc + s.speakingScore, 0) / (totalStudents || 1));
+  const avgL = Math.round(students.reduce((acc: number, s: any) => acc + s.listeningScore, 0) / (totalStudents || 1));
+  const avgR = Math.round(students.reduce((acc: number, s: any) => acc + s.readingScore, 0) / (totalStudents || 1));
+  const avgW = Math.round(students.reduce((acc: number, s: any) => acc + s.writingScore, 0) / (totalStudents || 1));
+  const avgS = Math.round(students.reduce((acc: number, s: any) => acc + s.speakingScore, 0) / (totalStudents || 1));
 
   // Radar points
   const rCenter = 50;

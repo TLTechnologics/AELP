@@ -11,14 +11,14 @@ import {
   ArrowRight,
   Sparkles
 } from 'lucide-react';
-import { mockAssessments, AssessmentSubmission } from '@/lib/teacherMockData';
+import { mockAssessments } from '@/lib/teacherMockData';
 
 export default function WritingAssessment() {
-  const [submissions, setSubmissions] = useState<AssessmentSubmission[]>(
+  const [submissions, setSubmissions] = useState<any[]>(
     mockAssessments.filter(a => a.type === 'Writing')
   );
   
-  const [selectedSubmission, setSelectedSubmission] = useState<AssessmentSubmission | null>(
+  const [selectedSubmission, setSelectedSubmission] = useState<any | null>(
     submissions.find(s => s.status === 'Pending') || submissions[0] || null
   );
 
@@ -39,7 +39,7 @@ export default function WritingAssessment() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const handleSelectSubmission = (sub: AssessmentSubmission) => {
+  const handleSelectSubmission = (sub: any) => {
     setSelectedSubmission(sub);
     
     // Reset rubrics
