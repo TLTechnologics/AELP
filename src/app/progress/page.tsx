@@ -95,7 +95,7 @@ export default function ProgressPage() {
           </div>
 
           <div className="flex items-end justify-between gap-4 h-64 mt-8">
-            {weeklyData.map((data, i) => (
+            {weeklyData.map((data: any, i: number) => (
               <div key={i} className="flex flex-col items-center gap-4 flex-1 group">
                 {/* Tooltip */}
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-brand-dark text-white text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap mb-2 pointer-events-none">
