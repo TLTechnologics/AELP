@@ -59,7 +59,7 @@ export const assessmentService = {
   submitListeningAssessment: (payload: any) => apiClient.post('/assessments/listening/submit', payload),
   submitSpeakingAssessment: (payload: FormData) => apiClient.post('/speaking/evaluate', payload, {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': undefined,
     }
   }),
   getAssessment: (id: string) => apiClient.get(`/assessments/${id}`),
