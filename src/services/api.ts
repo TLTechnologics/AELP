@@ -57,15 +57,11 @@ export const assessmentService = {
   getListeningAssessment: () => apiClient.get('/assessments/listening'),
   submitReadingAssessment: (payload: any) => apiClient.post('/assessments/submit/reading', payload),
   submitListeningAssessment: (payload: any) => apiClient.post('/assessments/listening/submit', payload),
-  submitSpeakingAssessment: async (payload: FormData) => {
-    const res = await apiClient.post('/api/speaking', payload, {
-      baseURL: '', // Override baseURL to use the relative Next.js API route
-      headers: {
-        'Content-Type': undefined, // Let the browser set the boundary
-      }
-    });
-    return res;
-  },
+  submitSpeakingAssessment: (payload: FormData) => apiClient.post('/speaking/evaluate', payload, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    }
+  }),
   getAssessment: (id: string) => apiClient.get(`/assessments/${id}`),
   submitAssessment: (id: string, payload: any) => apiClient.post(`/assessments/${id}/submit`, payload),
 };
