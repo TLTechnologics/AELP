@@ -144,8 +144,6 @@ async def submit_speaking_text(
         print(f"Groq Text Evaluation Error: {e}")
         raise HTTPException(status_code=500, detail=f"Evaluation failed: {str(e)}")
 
-    db = next(get_db())
-    ensure_student(db, student_id)
     
     student_assessment = StudentAssessment(
         student_id=student_id,
