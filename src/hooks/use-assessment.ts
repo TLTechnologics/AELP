@@ -88,8 +88,22 @@ export function useSubmitSpeakingText() {
   
   return useMutation({
     mutationFn: async (payload: { assessment_id: number; prompt: string; duration: number; transcript: string }) => {
-      const { data } = await assessmentService.submitSpeakingAssessmentText(payload);
-      return data;
+      let lastError;
+      for (let i = 0; i < 3; i++) {
+        try {
+          const { data } = await assessmentService.submitSpeakingAssessmentText(payload);
+          return data;
+        } catch (e: any) {
+          lastError = e;
+          // Don't retry client errors (4xx) except timeouts/network errors
+          if (e.response && e.response.status >= 400 && e.response.status < 500 && e.response.status !== 408 && e.response.status !== 429) {
+            throw e; 
+          }
+          console.warn(`Retry ${i + 1}/3 for submitSpeakingAssessmentText due to error:`, e.message);
+          await new Promise(res => setTimeout(res, 2000 * (i + 1))); // Exponential backoff
+        }
+      }
+      throw lastError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
