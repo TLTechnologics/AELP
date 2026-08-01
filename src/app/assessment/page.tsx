@@ -839,7 +839,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Audio Column */}
-              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-8 h-fit sticky top-24">
+              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-8 h-fit lg:sticky lg:top-24">
                 <div className="flex items-center gap-2 text-pink-600 font-bold uppercase tracking-wider text-xs">
                   <Headphones className="w-4 h-4" /> Audio Track
                 </div>
