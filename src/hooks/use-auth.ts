@@ -11,29 +11,40 @@ export function useAuth(requireAuth = true) {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      
-      if (requireAuth && !session) {
-        router.push('/auth/login');
-      } else if (session) {
-        try {
-          const { data: profile } = await authService.getProfile();
-          if (profile.role === 'teacher' && pathname === '/') {
-            setLoading(false);
-            router.push('/teacher');
-            return;
-          }
-          if (!requireAuth) {
-            setLoading(false);
-            router.push(profile.role === 'teacher' ? '/teacher' : '/');
-            return;
-          }
-        } catch (e) {
-          console.error('Error fetching profile', e);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Supabase auth error:", error.message);
         }
+        
+        setUser(session?.user || null);
+        
+        if (requireAuth && !session) {
+          router.push('/auth/login');
+        } else if (session) {
+          try {
+            const { data: profile } = await authService.getProfile();
+            if (profile?.role === 'teacher' && pathname === '/') {
+              router.push('/teacher');
+              return;
+            }
+            if (!requireAuth) {
+              router.push(profile?.role === 'teacher' ? '/teacher' : '/');
+              return;
+            }
+          } catch (e) {
+            console.error('Error fetching profile', e);
+          }
+        }
+      } catch (err) {
+        console.error('Unexpected auth error:', err);
+        if (requireAuth) {
+          router.push('/auth/login');
+        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     getSession();
