@@ -48,7 +48,7 @@ export default function TeacherDashboard() {
   const router = useRouter();
   const [selectedClass, setSelectedClass] = useState<string>('All');
   
-  const { data: dbStudents = [], isLoading } = useQuery({
+  const { data: dbStudents = [], isLoading, isError } = useQuery({
     queryKey: ['teacherStudents'],
     queryFn: async () => {
       const res = await teacherService.getStudents();
@@ -73,6 +73,19 @@ export default function TeacherDashboard() {
 
   if (isLoading) {
     return <LiquidLoader isLooping={true} />;
+  }
+  
+  if (isError) {
+    return (
+      <MainLayout>
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <AlertTriangle className="w-12 h-12 text-red-500" />
+          <p className="text-xl font-heading text-gray-800">Cannot load students data</p>
+          <p className="text-sm text-gray-500">Please make sure NEXT_PUBLIC_API_URL is correct and the backend is running.</p>
+          <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-brand-dark text-white rounded-lg">Retry</button>
+        </div>
+      </MainLayout>
+    );
   }
   
   const avgClassScore = Math.round(

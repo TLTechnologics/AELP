@@ -37,10 +37,21 @@ const itemVariants = {
 export default function Home() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { data, isLoading } = useDashboard();
+  const { data, isLoading, isError } = useDashboard();
 
   if (authLoading || isLoading) {
     return <LiquidLoader isLooping={true} />;
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 flex-col gap-4">
+        <AlertCircle className="w-12 h-12 text-red-500" />
+        <p className="text-xl font-heading text-gray-800">Cannot connect to the server</p>
+        <p className="text-sm text-gray-500">Please make sure NEXT_PUBLIC_API_URL is correct and the backend is running.</p>
+        <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-brand-dark text-white rounded-lg">Retry</button>
+      </div>
+    );
   }
 
   return (

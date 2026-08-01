@@ -9,8 +9,8 @@ key: str = os.environ.get("SUPABASE_SERVICE_KEY")
 
 supabase: Client = create_client(url, key)
 
-email = "9265568001@silveroak.com"
-password = "9265568001"
+email = "teacher@silveroak.com"
+password = "silveroak123"
 
 try:
     user = supabase.auth.admin.create_user({
