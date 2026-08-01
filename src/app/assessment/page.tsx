@@ -330,7 +330,12 @@ However, not everyone follows the same routine. Some people prefer to wake up la
       setActiveModule('speaking');
       setStage(STAGES.RESULTS);
     } catch (e: any) {
-      const msg = e?.response?.data?.detail || 'Unable to evaluate speaking assessment. Please try again later.';
+      let msg = 'Unable to evaluate speaking assessment. Please try again later.';
+      if (e?.response?.data?.detail) {
+        msg = typeof e.response.data.detail === 'string' ? e.response.data.detail : JSON.stringify(e.response.data.detail);
+      } else if (e?.message) {
+        msg = `Network/Unknown Error: ${e.message}`;
+      }
       setErrorMessage(msg);
     } finally {
       setIsSubmitting(false);
