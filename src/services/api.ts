@@ -10,7 +10,7 @@ export const apiClient = axios.create({
   },
 });
 
-// Interceptor to inject Supabase Auth Token
+// Interceptor to inject Supabase Auth Token and handle FormData
 apiClient.interceptors.request.use(async (config) => {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
@@ -18,6 +18,13 @@ apiClient.interceptors.request.use(async (config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
+  // If we are sending FormData, remove the default application/json Content-Type
+  // so the browser can automatically set multipart/form-data with the correct boundary
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
+  
   return config;
 }, (error) => {
   return Promise.reject(error);
