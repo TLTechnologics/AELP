@@ -219,7 +219,7 @@ function WritingReport({ report }: { report: any }) {
                   <span>{s.value}/10</span>
                 </div>
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-brand-info rounded-full" style={{ width: \`\${(s.value / 10) * 100}%\` }} />
+                  <div className="h-full bg-brand-info rounded-full" style={{ width: `${(s.value / 10) * 100}%` }} />
                 </div>
               </div>
             ))}
@@ -284,7 +284,7 @@ function SpeakingReport({ report }: { report: any }) {
                   <span>{s.value}/10</span>
                 </div>
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-purple-500 rounded-full" style={{ width: \`\${(s.value / 10) * 100}%\` }} />
+                  <div className="h-full bg-purple-500 rounded-full" style={{ width: `${(s.value / 10) * 100}%` }} />
                 </div>
               </div>
             ))}
