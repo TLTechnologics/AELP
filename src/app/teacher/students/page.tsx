@@ -137,7 +137,7 @@ export default function StudentManagement() {
             />
           </div>
 
-          {/* Class Filter */}
+          {/* Semester Filter */}
           <div className="relative">
             <select 
               value={selectedClass}
@@ -147,10 +147,9 @@ export default function StudentManagement() {
               }}
               className="w-full bg-muted border border-border/50 rounded-2xl py-3 px-4 outline-none focus:border-brand-yellow font-bold text-sm text-brand-dark cursor-pointer appearance-none"
             >
-              <option value="All">All Classes</option>
-              {mockClasses.map(c => (
-                <option key={c.id} value={c.name}>{c.name}</option>
-              ))}
+              <option value="All">All Semesters</option>
+              <option value="Semester 1">Semester 1</option>
+              <option value="Semester 2">Semester 2</option>
             </select>
             <Filter className="absolute right-4 top-4 w-4 h-4 text-muted-foreground pointer-events-none" />
           </div>
@@ -186,7 +185,7 @@ export default function StudentManagement() {
                   >
                     <div className="flex items-center gap-1">Student <ArrowUpDown className="w-3 h-3" /></div>
                   </th>
-                  <th className="p-6">Class</th>
+                  <th className="p-6">Semester</th>
                   <th className="p-6 text-center">List.</th>
                   <th className="p-6 text-center">Read.</th>
                   <th className="p-6 text-center">Writ.</th>
@@ -212,8 +211,8 @@ export default function StudentManagement() {
                       {/* Name Card */}
                       <td className="p-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-brand-yellow text-brand-dark font-bold text-xs flex items-center justify-center border border-brand-dark/10 group-hover:scale-105 transition-transform">
-                            {student.avatar}
+                          <div className="w-9 h-9 rounded-full bg-brand-yellow text-brand-dark font-bold text-xs flex items-center justify-center border border-brand-dark/10 overflow-hidden group-hover:scale-105 transition-transform shrink-0">
+                            <img src={student.avatar} alt={student.name} className="w-full h-full object-cover" />
                           </div>
                           <div>
                             <p className="font-bold group-hover:text-brand-yellow transition-colors">{student.name}</p>
@@ -222,9 +221,9 @@ export default function StudentManagement() {
                         </div>
                       </td>
 
-                      {/* Class */}
+                      {/* Semester */}
                       <td className="p-6">
-                        <span className="font-bold text-xs uppercase tracking-wider bg-muted px-2.5 py-1 rounded-lg border border-border/30">
+                        <span className="font-bold text-xs uppercase tracking-wider bg-muted px-2.5 py-1 rounded-lg border border-border/30 whitespace-nowrap">
                           {student.class}
                         </span>
                       </td>

@@ -18,6 +18,7 @@ const navItems = [
 const teacherNavItems = [
   { name: 'Dashboard', href: '/teacher' },
   { name: 'Students', href: '/teacher/students' },
+  { name: 'Add Student', href: '/teacher/add-student' },
   { name: 'Class Analytics', href: '/teacher/class-analytics' },
   { name: 'Speaking Eval', href: '/teacher/speaking' },
   { name: 'Writing Eval', href: '/teacher/writing' },

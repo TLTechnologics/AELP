@@ -20,7 +20,6 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [role, setRole] = useState<'student' | 'teacher'>('student');
   const router = useRouter();
 
   const {
@@ -30,8 +29,8 @@ export default function LoginPage() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "9265568001@silveroak.com",
-      password: "9265568001",
+      email: "teacher@silveroak.com",
+      password: "silveroak123",
     }
   });
 
@@ -39,7 +38,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
     
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: data.email,
       password: data.password,
     });
@@ -48,7 +47,21 @@ export default function LoginPage() {
       setError(error.message);
       setIsLoading(false);
     } else {
-      router.push(role === 'teacher' ? '/teacher' : '/');
+      if (authData.user) {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', authData.user.id)
+          .single();
+          
+        if (userData && userData.role === 'teacher') {
+          router.push('/teacher');
+        } else {
+          router.push('/');
+        }
+      } else {
+        router.push('/');
+      }
     }
   };
 
@@ -62,26 +75,10 @@ export default function LoginPage() {
       <div className="absolute -top-20 -right-20 w-48 h-48 bg-brand-yellow rounded-full blur-3xl opacity-20 pointer-events-none"></div>
       
       <div className="text-center mb-6 relative z-10">
-        <h2 className="font-heading text-4xl mb-2">Welcome Back</h2>
-        <p className="text-muted-foreground font-medium">Continue your learning journey</p>
-      </div>
-
-      {/* Role Switcher */}
-      <div className="flex bg-muted p-1 rounded-2xl mb-6 relative z-10">
-        <button
-          type="button"
-          onClick={() => setRole('student')}
-          className={`flex-1 py-2 text-sm font-bold capitalize rounded-xl transition-all ${role === 'student' ? 'bg-white shadow-sm text-brand-dark' : 'text-muted-foreground hover:text-brand-dark'}`}
-        >
-          Student
-        </button>
-        <button
-          type="button"
-          onClick={() => setRole('teacher')}
-          className={`flex-1 py-2 text-sm font-bold capitalize rounded-xl transition-all ${role === 'teacher' ? 'bg-white shadow-sm text-brand-dark' : 'text-muted-foreground hover:text-brand-dark'}`}
-        >
-          Teacher
-        </button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
+          <p className="text-gray-500">Sign in to your account</p>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 relative z-10">

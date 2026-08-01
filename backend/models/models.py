@@ -24,6 +24,7 @@ class Student(Base):
     __tablename__ = "students"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(String, ForeignKey("users.id"))
+    semester = Column(String, default="Semester 1")
     current_level = Column(String, default="Beginner")
     overall_progress = Column(Float, default=0.0)
     listening_score = Column(Float, default=0.0)

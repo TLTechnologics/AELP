@@ -71,6 +71,7 @@ export const writingService = {
 
 export const teacherService = {
   getStudents: () => apiClient.get('/teacher/students'),
+  addStudent: (data: { full_name: string; email: string; password: string; semester: string }) => apiClient.post('/teacher/students', data),
   uploadSpeakingAssessment: (payload: { title: string; difficulty: string; topic: string }) => apiClient.post('/teacher/assessments/speaking', payload),
   uploadWritingAssessment: (payload: { title: string; difficulty: string; topic: string }) => apiClient.post('/teacher/assessments/writing', payload),
   uploadReadingAssessment: (payload: { 
