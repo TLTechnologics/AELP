@@ -4,7 +4,7 @@ from database.database import get_db
 from models.models import Assessment, AssessmentType, SpeakingRecording, SpeakingEvaluation, StudentAssessment, Student, User
 from sqlalchemy.sql import func
 from services.recommendation_engine import process_evaluation
-from services.gemini_service import evaluate_speaking
+from services.ai_evaluation import evaluate_speaking_groq
 import json
 import uuid
 import time
@@ -49,12 +49,13 @@ async def submit_speaking(
         print(f"Supabase Upload Error: {e}")
         raise HTTPException(status_code=500, detail="Unable to upload recording. Please try again.")
 
-    # Evaluate with Gemini
+    # Evaluate with Groq
     try:
         mime_type = audio_file.content_type or "audio/webm"
-        evaluation = evaluate_speaking(audio_bytes, mime_type, prompt)
+        filename = audio_file.filename or "recording.webm"
+        evaluation = evaluate_speaking_groq(audio_bytes, filename, prompt)
     except Exception as e:
-        print(f"Gemini Evaluation Error: {e}")
+        print(f"Groq Evaluation Error: {e}")
         raise HTTPException(status_code=500, detail=f"Evaluation failed: {str(e)}")
 
     # Save to Database
