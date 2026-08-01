@@ -51,10 +51,11 @@ async def submit_speaking(
 
     # Evaluate with Gemini
     try:
-        evaluation = evaluate_speaking(audio_bytes, audio_file.content_type, prompt)
+        mime_type = audio_file.content_type or "audio/webm"
+        evaluation = evaluate_speaking(audio_bytes, mime_type, prompt)
     except Exception as e:
         print(f"Gemini Evaluation Error: {e}")
-        raise HTTPException(status_code=500, detail="Unable to evaluate speaking assessment. Please try again later.")
+        raise HTTPException(status_code=500, detail=f"Evaluation failed: {str(e)}")
 
     # Save to Database
     db = next(get_db())
