@@ -578,7 +578,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Passage Column */}
-              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-4 h-[650px] overflow-y-auto sticky top-24">
+              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-4 lg:h-[650px] lg:overflow-y-auto lg:sticky lg:top-24">
                 <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-wider text-xs">
                   <BookOpen className="w-4 h-4" /> Reading Passage
                 </div>
@@ -589,7 +589,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               </div>
 
               {/* Questions Column */}
-              <div className="space-y-6 h-[650px] overflow-y-auto pr-2">
+              <div className="space-y-6 lg:h-[650px] lg:overflow-y-auto pr-2">
                 {questions.map((q: any) => (
                   <div key={q.id} className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-4">
                     <h4 className="font-bold text-base text-brand-dark">{q.text}</h4>
@@ -865,7 +865,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               </div>
 
               {/* Questions Column */}
-              <div className="space-y-6 h-[650px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-6 lg:h-[650px] lg:overflow-y-auto pr-2 custom-scrollbar">
                 {(listeningData?.questions || []).map((q: any, idx: number) => (
                   <div key={q.id} className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-4">
                     <h4 className="font-bold text-base text-brand-dark">
