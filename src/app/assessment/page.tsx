@@ -333,6 +333,8 @@ However, not everyone follows the same routine. Some people prefer to wake up la
       let msg = 'Unable to evaluate speaking assessment. Please try again later.';
       if (e?.response?.data?.detail) {
         msg = typeof e.response.data.detail === 'string' ? e.response.data.detail : JSON.stringify(e.response.data.detail);
+      } else if (e?.response?.data) {
+        msg = typeof e.response.data === 'string' ? e.response.data.substring(0, 100) : JSON.stringify(e.response.data).substring(0, 100);
       } else if (e?.message) {
         msg = `Network/Unknown Error: ${e.message}`;
       }
