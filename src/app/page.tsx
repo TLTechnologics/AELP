@@ -17,7 +17,8 @@ import {
   AlertCircle,
   Lock,
   CheckCircle2,
-  Trophy
+  Trophy,
+  PenTool
 } from 'lucide-react';
 
 const containerVariants = {
