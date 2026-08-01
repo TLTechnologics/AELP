@@ -29,9 +29,9 @@ export default function LoginPage() {
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "teacher@silveroak.com",
-      password: "silveroak123",
-    }
+      email: "",
+      password: "",
+    },
   });
 
   const onSubmit = async (data: LoginFormValues) => {
