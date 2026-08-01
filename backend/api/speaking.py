@@ -16,7 +16,7 @@ router = APIRouter()
 
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
 
-@router.post("/submit")
+@router.post("/evaluate")
 async def submit_speaking(
     audio_file: UploadFile = File(...),
     assessment_id: int = Form(...),

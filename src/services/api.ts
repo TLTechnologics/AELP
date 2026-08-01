@@ -60,7 +60,7 @@ export const assessmentService = {
   submitSpeakingAssessment: async (payload: FormData) => {
     const { data } = await supabase.auth.getSession();
     const token = data.session?.access_token;
-    const res = await fetch(`${API_BASE_URL}/speaking/submit`, {
+    const res = await fetch(`${API_BASE_URL}/speaking/evaluate`, {
       method: 'POST',
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: payload
