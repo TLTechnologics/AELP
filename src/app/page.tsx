@@ -160,9 +160,6 @@ export default function Home() {
             <motion.div variants={itemVariants} className="lg:col-span-2 space-y-4 sm:space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading text-2xl sm:text-3xl">Your Path</h3>
-                <button className="text-xs sm:text-sm font-bold text-brand-dark flex items-center gap-1 hover:gap-2 transition-all">
-                  View Journey <ArrowRight className="w-4 h-4" />
-                </button>
               </div>
               
               <div className="space-y-3 sm:space-y-4">
