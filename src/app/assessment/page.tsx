@@ -218,6 +218,8 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     };
   }, [isRecording, isPaused]);
 
+  const selectedMimeTypeRef = useRef<string>('');
+
   useEffect(() => {
     if (audioBlob) {
       const url = URL.createObjectURL(audioBlob);
@@ -227,52 +229,87 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     setAudioUrl(null);
   }, [audioBlob]);
 
+  const getBestMimeType = () => {
+    if (typeof window === 'undefined' || !window.MediaRecorder) return '';
+    const candidates = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/mp4',
+      'audio/aac',
+      'audio/ogg;codecs=opus',
+      'audio/ogg'
+    ];
+    for (const mime of candidates) {
+      if (MediaRecorder.isTypeSupported(mime)) {
+        return mime;
+      }
+    }
+    return '';
+  };
+
   const startRecording = async () => {
     setErrorMessage(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        }
+      });
+      
+      const mimeType = getBestMimeType();
+      selectedMimeTypeRef.current = mimeType;
+      
+      const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
+        if (event.data && event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const type = selectedMimeTypeRef.current || 'audio/webm';
+        const blob = new Blob(audioChunksRef.current, { type });
         setAudioBlob(blob);
         stream.getTracks().forEach(track => track.stop());
       };
 
-      mediaRecorder.start(100);
+      mediaRecorder.start(250);
       
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        
-        let finalTranscript = '';
-        recognition.onresult = (event: any) => {
-          let interimTranscript = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcriptSegment = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              finalTranscript += transcriptSegment + ' ';
-            } else {
-              interimTranscript += transcriptSegment;
+      try {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (SpeechRecognition) {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          
+          let finalTranscript = '';
+          recognition.onresult = (event: any) => {
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcriptSegment = event.results[i][0].transcript;
+              if (event.results[i].isFinal) {
+                finalTranscript += transcriptSegment + ' ';
+              } else {
+                interimTranscript += transcriptSegment;
+              }
             }
-          }
-          setLiveTranscript(finalTranscript + interimTranscript);
-        };
-        
-        recognitionRef.current = recognition;
-        recognition.start();
-      } else {
-        console.warn('Speech Recognition API not supported in this browser.');
+            setLiveTranscript(finalTranscript + interimTranscript);
+          };
+          recognition.onerror = (err: any) => {
+            console.warn('SpeechRecognition error (non-fatal):', err);
+          };
+          
+          recognitionRef.current = recognition;
+          recognition.start();
+        }
+      } catch (recErr) {
+        console.warn('Speech recognition start failed (non-fatal):', recErr);
       }
 
       setIsRecording(true);
@@ -280,34 +317,59 @@ However, not everyone follows the same routine. Some people prefer to wake up la
       setRecordingDuration(0);
       setAudioBlob(null);
       setLiveTranscript('');
-    } catch (error) {
-      setErrorMessage('Microphone access denied or not available.');
+    } catch (error: any) {
+      console.error('Recording start error:', error);
+      setErrorMessage('Microphone access denied or not supported on this device/browser.');
     }
   };
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
+      try {
+        if (mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      } catch (err) {
+        console.warn('Error stopping mediaRecorder:', err);
+      }
       setIsRecording(false);
       setIsPaused(false);
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
-      if (recognitionRef.current) recognitionRef.current.stop();
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (_) {}
+      }
     }
   };
 
   const pauseRecording = () => {
     if (mediaRecorderRef.current && isRecording && !isPaused) {
-      mediaRecorderRef.current.pause();
+      try {
+        if (mediaRecorderRef.current.state === 'recording') {
+          mediaRecorderRef.current.pause();
+        }
+      } catch (err) {
+        console.warn('Error pausing mediaRecorder:', err);
+      }
       setIsPaused(true);
-      if (recognitionRef.current) recognitionRef.current.stop();
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (_) {}
+      }
     }
   };
 
   const resumeRecording = () => {
     if (mediaRecorderRef.current && isRecording && isPaused) {
-      mediaRecorderRef.current.resume();
+      try {
+        if (mediaRecorderRef.current.state === 'paused') {
+          mediaRecorderRef.current.resume();
+        }
+      } catch (err) {
+        console.warn('Error resuming mediaRecorder:', err);
+      }
       setIsPaused(false);
-      if (recognitionRef.current) recognitionRef.current.start();
+      if (recognitionRef.current) {
+        try { recognitionRef.current.start(); } catch (_) {}
+      }
     }
   };
 
@@ -342,20 +404,40 @@ However, not everyone follows the same routine. Some people prefer to wake up la
       return;
     }
 
-    if (!liveTranscript.trim()) {
-      setErrorMessage('No speech detected. Please ensure your microphone is working and speak clearly.');
+    if (!audioBlob && !liveTranscript.trim()) {
+      setErrorMessage('No recording or speech detected. Please record your response first.');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const res = await submitSpeakingTextMutation.mutateAsync({
-        assessment_id: parseInt(speakingData?.id || '1'),
-        prompt: speakingData?.topic || 'Introduce yourself.',
-        duration: recordingDuration,
-        transcript: liveTranscript
-      });
+      let res;
+      if (audioBlob) {
+        const mimeType = selectedMimeTypeRef.current || audioBlob.type || 'audio/webm';
+        let extension = 'webm';
+        if (mimeType.includes('mp4') || mimeType.includes('aac')) {
+          extension = 'mp4';
+        } else if (mimeType.includes('ogg')) {
+          extension = 'ogg';
+        }
+
+        const formData = new FormData();
+        formData.append('audio_file', audioBlob, `recording.${extension}`);
+        formData.append('assessment_id', speakingData?.id || '1');
+        formData.append('prompt', speakingData?.topic || 'Introduce yourself.');
+        formData.append('duration', recordingDuration.toString());
+
+        res = await submitSpeakingMutation.mutateAsync(formData);
+      } else {
+        res = await submitSpeakingTextMutation.mutateAsync({
+          assessment_id: parseInt(speakingData?.id || '1'),
+          prompt: speakingData?.topic || 'Introduce yourself.',
+          duration: recordingDuration,
+          transcript: liveTranscript
+        });
+      }
+
       setSpeakingResult(res);
       setActiveModule('speaking');
       setStage(STAGES.RESULTS);
@@ -366,7 +448,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
       } else if (e?.response?.data) {
         msg = typeof e.response.data === 'string' ? e.response.data.substring(0, 100) : JSON.stringify(e.response.data).substring(0, 100);
       } else if (e?.message) {
-        msg = `Upload Error (V2): ${e.message}`;
+        msg = `Evaluation Error: ${e.message}`;
       }
       setErrorMessage(msg);
     } finally {
