@@ -71,13 +71,23 @@ export default function Home() {
             </h1>
           </div>
           
-          <button 
-            onClick={() => router.push('/lesson')}
-            className="w-full sm:w-auto bg-brand-dark text-white rounded-full px-6 py-3.5 flex items-center justify-center gap-3 hover:bg-brand-dark/90 transition-transform active:scale-95 shadow-xl shadow-brand-dark/10 font-bold text-sm sm:text-base"
-          >
-            <Play className="w-5 h-5 fill-white" />
-            Continue Learning
-          </button>
+          {data?.profile_stage === 1 ? (
+            <button 
+              onClick={() => router.push('/assessment')}
+              className="w-full sm:w-auto bg-brand-yellow text-brand-dark rounded-full px-6 py-3.5 flex items-center justify-center gap-3 hover:scale-105 transition-transform active:scale-95 shadow-xl font-bold text-sm sm:text-base"
+            >
+              <Target className="w-5 h-5 text-brand-dark" />
+              Start First Assessment
+            </button>
+          ) : (
+            <button 
+              onClick={() => router.push('/lesson')}
+              className="w-full sm:w-auto bg-brand-dark text-white rounded-full px-6 py-3.5 flex items-center justify-center gap-3 hover:bg-brand-dark/90 transition-transform active:scale-95 shadow-xl shadow-brand-dark/10 font-bold text-sm sm:text-base"
+            >
+              <Play className="w-5 h-5 fill-white" />
+              Continue Learning
+            </button>
+          )}
         </motion.div>
         
         {/* Progressive Unlocking Banner */}

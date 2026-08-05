@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { LiquidLoader } from '@/components/ui/liquid-loader';
+import { useDashboard } from '@/hooks/use-dashboard';
+import { FeatureLocked } from '@/components/feature-locked';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -33,6 +35,20 @@ export default function ResultDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
+  const { data: dashboardData } = useDashboard();
+
+  const isLocked = dashboardData?.profile_stage === 1;
+
+  if (isLocked) {
+    return (
+      <MainLayout>
+        <FeatureLocked 
+          title="Assessment Results Locked" 
+          message="Complete your first assessment to view detailed AI feedback and reports." 
+        />
+      </MainLayout>
+    );
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: ['resultDetails', id],

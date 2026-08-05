@@ -4,6 +4,8 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { useParams, useRouter } from 'next/navigation';
 import { BookOpen, PenTool, ArrowRight, PlayCircle, Star, Trophy, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useDashboard } from '@/hooks/use-dashboard';
+import { FeatureLocked } from '@/components/feature-locked';
 
 const skillConfig: Record<string, { title: string, icon: any, color: string, bg: string, level: string, progress: number }> = {
   reading: { title: 'Reading', icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-100', level: 'Advanced', progress: 84 },
@@ -11,11 +13,25 @@ const skillConfig: Record<string, { title: string, icon: any, color: string, bg:
 };
 
 export default function SkillPage() {
+  const { data } = useDashboard();
   const params = useParams();
   const router = useRouter();
   const skillId = params.skill as string;
   const config = skillConfig[skillId] || skillConfig.reading;
   const Icon = config.icon;
+
+  const isLocked = data?.profile_stage === 1;
+
+  if (isLocked) {
+    return (
+      <MainLayout>
+        <FeatureLocked 
+          title="Skill Training Locked" 
+          message="Complete your diagnostic assessment first to unlock targeted skill practice." 
+        />
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>

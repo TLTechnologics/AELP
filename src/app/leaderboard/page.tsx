@@ -3,6 +3,8 @@
 import { MainLayout } from '@/components/layout/main-layout';
 import { Trophy, Medal, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useDashboard } from '@/hooks/use-dashboard';
+import { FeatureLocked } from '@/components/feature-locked';
 
 const leaderboard = [
   { rank: 1, name: 'Sarah Jenkins', xp: '12,450', avatar: 'SJ', isCurrentUser: false },
@@ -15,6 +17,19 @@ const leaderboard = [
 ];
 
 export default function LeaderboardPage() {
+  const { data } = useDashboard();
+  const isLocked = data?.profile_stage === 1;
+
+  if (isLocked) {
+    return (
+      <MainLayout>
+        <FeatureLocked 
+          title="Leaderboard Locked" 
+          message="Complete your first assessment to join the league and compete with other learners." 
+        />
+      </MainLayout>
+    );
+  }
   return (
     <MainLayout>
       <div className="max-w-4xl mx-auto space-y-8 pb-12">

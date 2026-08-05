@@ -4,11 +4,28 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Play, Pause, Bookmark, CheckCircle2, MessageSquare, Mic, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
+import { useDashboard } from '@/hooks/use-dashboard';
+import { FeatureLocked } from '@/components/feature-locked';
+import { MainLayout } from '@/components/layout/main-layout';
 
 export default function LessonPage() {
+  const { data } = useDashboard();
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeTab, setActiveTab] = useState('transcript');
   const [completed, setCompleted] = useState(false);
+
+  const isLocked = data?.profile_stage === 1;
+
+  if (isLocked) {
+    return (
+      <MainLayout>
+        <FeatureLocked 
+          title="Interactive Lessons Locked" 
+          message="Complete your first diagnostic assessment to unlock your personalized learning path and lessons." 
+        />
+      </MainLayout>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted bg-grid-pattern pb-24">
