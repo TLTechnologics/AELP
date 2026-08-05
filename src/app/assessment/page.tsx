@@ -482,34 +482,34 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="space-y-12 text-center"
+            className="space-y-8 sm:space-y-12 text-center"
           >
-            <div className="space-y-4 max-w-2xl mx-auto">
-              <h1 className="font-heading text-5xl md:text-6xl uppercase tracking-tight">Assessments</h1>
-              <p className="text-xl text-muted-foreground font-medium">
+            <div className="space-y-2 sm:space-y-4 max-w-2xl mx-auto">
+              <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl uppercase tracking-tight">Assessments</h1>
+              <p className="text-sm sm:text-xl text-muted-foreground font-medium leading-relaxed">
                 Choose an assessment to evaluate your English proficiency. Unlimited time available.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-left max-w-[1400px] mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 text-left max-w-[1400px] mx-auto">
               {/* READING ASSESSMENT CARD */}
               <motion.div
                 whileHover={{ y: -6 }}
-                className="bg-white rounded-[32px] p-8 border border-border shadow-md hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
+                className="bg-white rounded-2xl sm:rounded-[32px] p-5 sm:p-8 border border-border shadow-xs hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-50" />
-                <div className="space-y-6 relative z-10">
-                  <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center shadow-inner">
-                    <BookOpen className="w-8 h-8" />
+                <div className="absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-blue-100 rounded-full blur-3xl opacity-50" />
+                <div className="space-y-4 sm:space-y-6 relative z-10">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center shadow-inner">
+                    <BookOpen className="w-6 h-6 sm:w-8 sm:h-8" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Automated Evaluation</span>
-                    <h2 className="font-heading text-3xl mt-3">📖 Reading Assessment</h2>
-                    <p className="text-muted-foreground text-sm font-medium mt-2 leading-relaxed">
-                      Passage comprehension, multiple-choice questions, True/False statements, and vocabulary matching.
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">Automated Evaluation</span>
+                    <h2 className="font-heading text-xl sm:text-3xl mt-2 sm:mt-3">📖 Reading Assessment</h2>
+                    <p className="text-muted-foreground text-xs sm:text-sm font-medium mt-1.5 leading-relaxed">
+                      Passage comprehension, MCQs, True/False statements, and vocabulary matching.
                     </p>
                   </div>
-                  <div className="text-xs font-bold text-muted-foreground space-y-1">
+                  <div className="text-[11px] sm:text-xs font-bold text-muted-foreground space-y-1">
                     <p>• 18 Questions total</p>
                     <p>• Unlimited duration</p>
                   </div>
@@ -519,32 +519,32 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     setErrorMessage(null);
                     setStage(STAGES.READING);
                   }}
-                  className="mt-8 w-full bg-brand-dark text-white rounded-full py-4 font-bold text-base flex items-center justify-center gap-3 hover:bg-brand-dark/90 transition-transform active:scale-95 shadow-lg"
+                  className="mt-6 sm:mt-8 w-full bg-brand-dark text-white rounded-full py-3.5 font-bold text-sm sm:text-base flex items-center justify-center gap-2 hover:bg-brand-dark/90 transition-transform active:scale-95 shadow-md"
                 >
-                  Start Reading Assessment <ArrowRight className="w-5 h-5" />
+                  Start Reading <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </motion.div>
 
               {/* WRITING ASSESSMENT CARD */}
               <motion.div
                 whileHover={{ y: -6 }}
-                className="bg-white rounded-[32px] p-8 border border-border shadow-md hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
+                className="bg-white rounded-2xl sm:rounded-[32px] p-5 sm:p-8 border border-border shadow-xs hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-orange-100 rounded-full blur-3xl opacity-50" />
-                <div className="space-y-6 relative z-10">
-                  <div className="w-16 h-16 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center shadow-inner">
-                    <FileText className="w-8 h-8" />
+                <div className="absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-orange-100 rounded-full blur-3xl opacity-50" />
+                <div className="space-y-4 sm:space-y-6 relative z-10">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center shadow-inner">
+                    <FileText className="w-6 h-6 sm:w-8 sm:h-8" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-3 py-1 rounded-full">Real Groq AI Evaluation</span>
-                    <h2 className="font-heading text-3xl mt-3">✍️ Writing Assessment</h2>
-                    <p className="text-muted-foreground text-sm font-medium mt-2 leading-relaxed">
-                      Write an essay evaluated by Cambridge English examiner AI on Grammar, Vocabulary, Structure, Coherence & Relevance.
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full">Groq AI Evaluation</span>
+                    <h2 className="font-heading text-xl sm:text-3xl mt-2 sm:mt-3">✍️ Writing Assessment</h2>
+                    <p className="text-muted-foreground text-xs sm:text-sm font-medium mt-1.5 leading-relaxed">
+                      Essay evaluated by Cambridge English examiner AI on Grammar, Vocabulary, Structure & Coherence.
                     </p>
                   </div>
-                  <div className="text-xs font-bold text-muted-foreground space-y-1">
+                  <div className="text-[11px] sm:text-xs font-bold text-muted-foreground space-y-1">
                     <p>• Word target: 120 - 150 words</p>
-                    <p>• Evaluated by llama-3.3-70b-versatile</p>
+                    <p>• Evaluated by Llama 3.3 70B</p>
                   </div>
                 </div>
                 <button
@@ -552,31 +552,31 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     setErrorMessage(null);
                     setStage(STAGES.WRITING);
                   }}
-                  className="mt-8 w-full bg-brand-yellow text-brand-dark rounded-full py-4 font-bold text-base flex items-center justify-center gap-3 hover:scale-105 transition-transform active:scale-95 shadow-lg"
+                  className="mt-6 sm:mt-8 w-full bg-brand-yellow text-brand-dark rounded-full py-3.5 font-bold text-sm sm:text-base flex items-center justify-center gap-2 hover:scale-105 transition-transform active:scale-95 shadow-md"
                 >
-                  Start Writing <ArrowRight className="w-5 h-5" />
+                  Start Writing <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </motion.div>
 
               {/* SPEAKING ASSESSMENT CARD */}
               <motion.div
                 whileHover={{ y: -6 }}
-                className="bg-white rounded-[32px] p-8 border border-border shadow-md hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
+                className="bg-white rounded-2xl sm:rounded-[32px] p-5 sm:p-8 border border-border shadow-xs hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-purple-100 rounded-full blur-3xl opacity-50" />
-                <div className="space-y-6 relative z-10">
-                  <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center shadow-inner">
-                    <Mic className="w-8 h-8" />
+                <div className="absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-purple-100 rounded-full blur-3xl opacity-50" />
+                <div className="space-y-4 sm:space-y-6 relative z-10">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center shadow-inner">
+                    <Mic className="w-6 h-6 sm:w-8 sm:h-8" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Real Gemini AI Evaluation</span>
-                    <h2 className="font-heading text-3xl mt-3">🎤 Speaking Assessment</h2>
-                    <p className="text-muted-foreground text-sm font-medium mt-2 leading-relaxed">
-                      Record yourself speaking. Evaluated by Gemini AI on Pronunciation, Fluency, Grammar & Vocabulary.
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-1 rounded-full">Whisper AI Audio Eval</span>
+                    <h2 className="font-heading text-xl sm:text-3xl mt-2 sm:mt-3">🎤 Speaking Assessment</h2>
+                    <p className="text-muted-foreground text-xs sm:text-sm font-medium mt-1.5 leading-relaxed">
+                      Record speech. Evaluated on Pronunciation, Fluency, Grammar & Vocabulary.
                     </p>
                   </div>
-                  <div className="text-xs font-bold text-muted-foreground space-y-1">
-                    <p>• Min duration: 30 seconds</p>
+                  <div className="text-[11px] sm:text-xs font-bold text-muted-foreground space-y-1">
+                    <p>• Min duration: 10 seconds</p>
                     <p>• Max duration: 2 minutes</p>
                   </div>
                 </div>
@@ -585,30 +585,30 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     setErrorMessage(null);
                     setStage(STAGES.SPEAKING);
                   }}
-                  className="mt-8 w-full bg-purple-600 text-white rounded-full py-4 font-bold text-base flex items-center justify-center gap-3 hover:bg-purple-700 transition-transform active:scale-95 shadow-lg"
+                  className="mt-6 sm:mt-8 w-full bg-purple-600 text-white rounded-full py-3.5 font-bold text-sm sm:text-base flex items-center justify-center gap-2 hover:bg-purple-700 transition-transform active:scale-95 shadow-md"
                 >
-                  Start Speaking <ArrowRight className="w-5 h-5" />
+                  Start Speaking <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </motion.div>
 
               {/* LISTENING ASSESSMENT CARD */}
               <motion.div
                 whileHover={{ y: -6 }}
-                className="bg-white rounded-[32px] p-8 border border-border shadow-md hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
+                className="bg-white rounded-2xl sm:rounded-[32px] p-5 sm:p-8 border border-border shadow-xs hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-pink-100 rounded-full blur-3xl opacity-50" />
-                <div className="space-y-6 relative z-10">
-                  <div className="w-16 h-16 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center shadow-inner">
-                    <Headphones className="w-8 h-8" />
+                <div className="absolute top-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-pink-100 rounded-full blur-3xl opacity-50" />
+                <div className="space-y-4 sm:space-y-6 relative z-10">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center shadow-inner">
+                    <Headphones className="w-6 h-6 sm:w-8 sm:h-8" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-3 py-1 rounded-full">Listening Module</span>
-                    <h2 className="font-heading text-3xl mt-3">🎧 Listening Assessment</h2>
-                    <p className="text-muted-foreground text-sm font-medium mt-2 leading-relaxed">
-                      Listen to audio tracks and answer questions to test your listening comprehension.
+                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-2.5 py-1 rounded-full">Listening Module</span>
+                    <h2 className="font-heading text-xl sm:text-3xl mt-2 sm:mt-3">🎧 Listening Assessment</h2>
+                    <p className="text-muted-foreground text-xs sm:text-sm font-medium mt-1.5 leading-relaxed">
+                      Listen to audio tracks and answer comprehension questions.
                     </p>
                   </div>
-                  <div className="text-xs font-bold text-muted-foreground space-y-1">
+                  <div className="text-[11px] sm:text-xs font-bold text-muted-foreground space-y-1">
                     <p>• {listeningData?.questions?.length || 0} Questions total</p>
                     <p>• Custom Audio Track</p>
                   </div>
@@ -618,9 +618,9 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     setErrorMessage(null);
                     setStage(STAGES.LISTENING);
                   }}
-                  className="mt-8 w-full bg-pink-600 text-white rounded-full py-4 font-bold text-base flex items-center justify-center gap-3 hover:bg-pink-700 transition-transform active:scale-95 shadow-lg"
+                  className="mt-6 sm:mt-8 w-full bg-pink-600 text-white rounded-full py-3.5 font-bold text-sm sm:text-base flex items-center justify-center gap-2 hover:bg-pink-700 transition-transform active:scale-95 shadow-md"
                 >
-                  Start Listening <ArrowRight className="w-5 h-5" />
+                  Start Listening <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </motion.div>
             </div>
@@ -634,38 +634,38 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
-            className="space-y-8"
+            className="space-y-6 sm:space-y-8"
           >
-            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-border">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-xs border border-border">
+              <div className="flex items-center gap-3">
                 <button 
                   onClick={() => setStage(STAGES.SELECTION)} 
-                  className="p-2 rounded-full hover:bg-muted transition-colors text-brand-dark"
+                  className="p-2 rounded-xl hover:bg-muted transition-colors text-brand-dark"
                 >
-                  <ArrowLeft className="w-6 h-6" />
+                  <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Reading Module</span>
-                  <h2 className="text-2xl font-heading mt-1">Reading Assessment</h2>
+                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">Reading Module</span>
+                  <h2 className="text-xl sm:text-2xl font-heading mt-0.5">Reading Assessment</h2>
                 </div>
               </div>
               <button
                 onClick={handleReadingSubmit}
                 disabled={isSubmitting}
-                className="bg-brand-yellow text-brand-dark px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
+                className="w-full sm:w-auto bg-brand-yellow text-brand-dark px-6 py-3 rounded-full font-bold text-sm sm:text-base flex items-center justify-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
               >
-                {isSubmitting ? 'Evaluating...' : 'Submit Reading Test'} <ArrowRight className="w-5 h-5" />
+                {isSubmitting ? 'Evaluating...' : 'Submit Reading Test'} <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
               {/* Passage Column */}
-              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-4 lg:h-[650px] lg:overflow-y-auto lg:sticky lg:top-24">
+              <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border border-border shadow-xs space-y-3 sm:space-y-4 max-h-[350px] lg:max-h-none lg:h-[650px] overflow-y-auto lg:sticky lg:top-24">
                 <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-wider text-xs">
                   <BookOpen className="w-4 h-4" /> Reading Passage
                 </div>
-                <h3 className="font-heading text-2xl">{readingData?.title || 'A Healthy Morning Routine'}</h3>
-                <div className="text-muted-foreground space-y-4 font-medium leading-relaxed whitespace-pre-line text-sm">
+                <h3 className="font-heading text-xl sm:text-2xl">{readingData?.title || 'A Healthy Morning Routine'}</h3>
+                <div className="text-muted-foreground space-y-3 sm:space-y-4 font-medium leading-relaxed whitespace-pre-line text-xs sm:text-sm">
                   {passage}
                 </div>
               </div>

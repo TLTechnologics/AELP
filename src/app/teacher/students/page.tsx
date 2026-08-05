@@ -108,10 +108,10 @@ export default function StudentManagement() {
         className="space-y-8 pb-20"
       >
         {/* Header Row */}
-        <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
           <div>
-            <h2 className="text-xl text-muted-foreground font-medium mb-1">Manage Cohorts & Learning Goals</h2>
-            <h1 className="text-5xl md:text-6xl font-heading uppercase">
+            <h2 className="text-sm sm:text-xl text-muted-foreground font-medium mb-1">Manage Cohorts & Learning Goals</h2>
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-heading uppercase tracking-tight">
               Student <span className="highlight-yellow inline-block px-2">Directory</span>
             </h1>
           </div>
@@ -120,11 +120,11 @@ export default function StudentManagement() {
         {/* Search and Filters Bar */}
         <motion.div 
           variants={itemVariants}
-          className="bg-white p-6 rounded-[24px] border border-border/40 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-center"
+          className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[24px] border border-border/40 shadow-xs grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 items-center"
         >
           {/* Search bar */}
-          <div className="relative md:col-span-2">
-            <Search className="absolute left-4 top-3.5 w-5 h-5 text-muted-foreground" />
+          <div className="relative sm:col-span-2">
+            <Search className="absolute left-3.5 top-3 sm:top-3.5 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             <input 
               type="text" 
               placeholder="Search by student name, ID or email..."
@@ -133,7 +133,7 @@ export default function StudentManagement() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-muted border border-border/50 rounded-2xl py-3 pl-12 pr-4 outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/15 transition-all font-medium text-brand-dark"
+              className="w-full bg-muted border border-border/50 rounded-xl sm:rounded-2xl py-2.5 sm:py-3 pl-10 sm:pl-12 pr-4 outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/15 transition-all text-xs sm:text-sm font-medium text-brand-dark"
             />
           </div>
 
@@ -145,13 +145,13 @@ export default function StudentManagement() {
                 setSelectedClass(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-muted border border-border/50 rounded-2xl py-3 px-4 outline-none focus:border-brand-yellow font-bold text-sm text-brand-dark cursor-pointer appearance-none"
+              className="w-full bg-muted border border-border/50 rounded-xl sm:rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 outline-none focus:border-brand-yellow font-bold text-xs sm:text-sm text-brand-dark cursor-pointer appearance-none"
             >
               <option value="All">All Semesters</option>
               <option value="Semester 1">Semester 1</option>
               <option value="Semester 2">Semester 2</option>
             </select>
-            <Filter className="absolute right-4 top-4 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <Filter className="absolute right-3.5 top-3 sm:top-4 w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground pointer-events-none" />
           </div>
 
           {/* Status Filter */}
@@ -162,19 +162,19 @@ export default function StudentManagement() {
                 setSelectedStatus(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-muted border border-border/50 rounded-2xl py-3 px-4 outline-none focus:border-brand-yellow font-bold text-sm text-brand-dark cursor-pointer appearance-none"
+              className="w-full bg-muted border border-border/50 rounded-xl sm:rounded-2xl py-2.5 sm:py-3 px-3.5 sm:px-4 outline-none focus:border-brand-yellow font-bold text-xs sm:text-sm text-brand-dark cursor-pointer appearance-none"
             >
               <option value="All">All Statuses</option>
               <option value="Good">Good (Green)</option>
               <option value="Needs Improvement">Needs Improvement (Orange)</option>
               <option value="Critical">Critical (Red)</option>
             </select>
-            <Filter className="absolute right-4 top-4 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <Filter className="absolute right-3.5 top-3 sm:top-4 w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground pointer-events-none" />
           </div>
         </motion.div>
 
         {/* Directory Table */}
-        <motion.div variants={itemVariants} className="bg-white rounded-[32px] shadow-sm border border-border/40 overflow-hidden">
+        <motion.div variants={itemVariants} className="bg-white rounded-2xl sm:rounded-[32px] shadow-xs border border-border/40 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>

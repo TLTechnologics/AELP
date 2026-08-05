@@ -53,69 +53,71 @@ export default function ProgressPage() {
 
   return (
     <MainLayout>
-      <div className="max-w-5xl mx-auto space-y-8 pb-12">
-        <div className="flex items-center justify-between mb-8">
+      <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8 pb-12">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-8">
           <div>
-            <h1 className="font-heading text-5xl mb-2">Your Progress</h1>
-            <p className="text-muted-foreground font-medium text-lg">Track your learning journey and stay consistent.</p>
+            <h1 className="font-heading text-3xl sm:text-5xl mb-1 sm:mb-2 uppercase tracking-tight">Your Progress</h1>
+            <p className="text-muted-foreground font-medium text-xs sm:text-lg">Track your learning journey and stay consistent.</p>
           </div>
-          <div className="hidden md:flex bg-brand-yellow/20 text-brand-dark px-6 py-3 rounded-2xl font-bold items-center gap-3 border border-brand-yellow">
-            <Flame className="w-6 h-6 text-orange-500 fill-orange-500" />
-            <span className="text-xl">{data?.completed_assessments > 0 ? "Active Learner" : "Start Learning!"}</span>
+          <div className="bg-brand-yellow/20 text-brand-dark px-4 py-2 sm:px-6 sm:py-3 rounded-2xl font-bold flex items-center gap-2 sm:gap-3 border border-brand-yellow text-xs sm:text-base">
+            <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 fill-orange-500" />
+            <span>{data?.completed_assessments > 0 ? "Active Learner" : "Start Learning!"}</span>
           </div>
         </div>
 
         {/* Top Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
             { label: 'Overall Progress', value: `${data?.overall_progress || 0}%`, icon: Zap, color: 'text-brand-yellow', bg: 'bg-brand-yellow' },
             { label: 'Assessments', value: data?.completed_assessments || '0', icon: Target, color: 'text-blue-500', bg: 'bg-blue-500' },
             { label: 'Time Spent', value: '0h', icon: Clock, color: 'text-purple-500', bg: 'bg-purple-500' },
             { label: 'Accuracy', value: `${data?.average_score || 0}%`, icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-500' },
           ].map((stat, i) => (
-            <div key={i} className="bg-white rounded-[24px] p-6 shadow-sm border border-border/40 flex flex-col items-center justify-center text-center">
-              <div className={`w-12 h-12 rounded-full ${stat.bg}/10 flex items-center justify-center mb-3`}>
-                <stat.icon className={`w-6 h-6 ${stat.color}`} />
+            <div key={i} className="bg-white rounded-2xl sm:rounded-[24px] p-4 sm:p-6 shadow-xs border border-border/40 flex flex-col items-center justify-center text-center">
+              <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-full ${stat.bg}/10 flex items-center justify-center mb-2 sm:mb-3`}>
+                <stat.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color}`} />
               </div>
-              <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-1">{stat.label}</p>
-              <p className="font-heading text-3xl">{stat.value}</p>
+              <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider mb-0.5 sm:mb-1">{stat.label}</p>
+              <p className="font-heading text-2xl sm:text-3xl">{stat.value}</p>
             </div>
           ))}
         </div>
 
         {/* Chart Section */}
-        <div className="bg-white rounded-[32px] p-8 shadow-sm border border-border/40">
-          <div className="flex items-center justify-between mb-12">
-            <h3 className="font-heading text-2xl">XP Earned This Week</h3>
-            <select className="bg-muted px-4 py-2 rounded-xl font-bold text-sm outline-none cursor-pointer">
+        <div className="bg-white rounded-2xl sm:rounded-[32px] p-4 sm:p-8 shadow-xs border border-border/40">
+          <div className="flex items-center justify-between mb-6 sm:mb-12">
+            <h3 className="font-heading text-lg sm:text-2xl">XP Earned This Week</h3>
+            <select className="bg-muted px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl font-bold text-xs sm:text-sm outline-none cursor-pointer">
               <option>This Week</option>
               <option>Last Week</option>
               <option>This Month</option>
             </select>
           </div>
 
-          <div className="flex items-end justify-between gap-4 h-64 mt-8">
-            {weeklyData.map((data: any, i: number) => (
-              <div key={i} className="flex flex-col items-center gap-4 flex-1 group">
-                {/* Tooltip */}
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-brand-dark text-white text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap mb-2 pointer-events-none">
-                  {data.xp} XP
+          <div className="overflow-x-auto pb-2">
+            <div className="flex items-end justify-between gap-2 sm:gap-4 h-48 sm:h-64 min-w-[280px]">
+              {weeklyData.map((data: any, i: number) => (
+                <div key={i} className="flex flex-col items-center gap-2 sm:gap-4 flex-1 group">
+                  {/* Tooltip */}
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-brand-dark text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-lg whitespace-nowrap pointer-events-none">
+                    {data.xp} XP
+                  </div>
+                  
+                  {/* Bar */}
+                  <div className="w-full bg-muted rounded-t-xl relative overflow-hidden flex items-end justify-center">
+                    <motion.div 
+                      initial={{ height: 0 }}
+                      animate={{ height: data.xp === 0 ? '4px' : '100%' }}
+                      transition={{ duration: 1, delay: i * 0.1, type: 'spring' }}
+                      className={`w-full ${data.height} ${data.xp > 300 ? 'bg-brand-yellow' : 'bg-brand-dark'} rounded-t-xl`} 
+                    />
+                  </div>
+                  
+                  {/* Label */}
+                  <span className="text-xs sm:text-sm font-bold text-muted-foreground">{data.day}</span>
                 </div>
-                
-                {/* Bar */}
-                <div className="w-full bg-muted rounded-t-xl relative overflow-hidden flex items-end justify-center">
-                  <motion.div 
-                    initial={{ height: 0 }}
-                    animate={{ height: data.xp === 0 ? '4px' : '100%' }}
-                    transition={{ duration: 1, delay: i * 0.1, type: 'spring' }}
-                    className={`w-full ${data.height} ${data.xp > 300 ? 'bg-brand-yellow' : 'bg-brand-dark'} rounded-t-xl`} 
-                  />
-                </div>
-                
-                {/* Label */}
-                <span className="text-sm font-bold text-muted-foreground">{data.day}</span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 

@@ -117,47 +117,49 @@ export default function TeacherDashboard() {
         className="space-y-8 pb-20"
       >
         {/* Header Row */}
-        <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
           <div>
-            <h2 className="text-xl text-muted-foreground font-medium mb-1">Welcome back, Instructor! 👋</h2>
-            <h1 className="text-5xl md:text-6xl font-heading uppercase">
+            <h2 className="text-sm sm:text-xl text-muted-foreground font-medium mb-1">Welcome back, Instructor! 👋</h2>
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-heading uppercase tracking-tight">
               Teacher <span className="highlight-yellow inline-block px-2">Dashboard</span>
             </h1>
           </div>
           
-          <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap w-full md:w-auto">
             {/* Assessment Builder Link */}
             <Link 
               href="/teacher/assessments" 
-              className="flex items-center gap-2 bg-brand-dark text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-md hover:bg-brand-dark/90 transition-all hover:scale-105 active:scale-95"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-brand-dark text-white px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm shadow-sm hover:bg-brand-dark/90 transition-all hover:scale-105 active:scale-95"
             >
               <PenTool className="w-4 h-4" /> Assessment Builder
             </Link>
 
             {/* Class Filters */}
-            <div className="flex items-center gap-3 bg-white px-4 py-2.5 rounded-2xl border border-border/50 shadow-sm">
-            <Filter className="w-4 h-4 text-muted-foreground" />
-            <span className="text-xs font-bold uppercase text-muted-foreground">Class Cohort:</span>
-            <select 
-              value={selectedClass} 
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="bg-transparent text-sm font-bold outline-none cursor-pointer text-brand-dark"
-            >
-              <option value="All">All Cohorts (100 Students)</option>
-              {mockClasses.map(c => (
-                <option key={c.id} value={c.name}>{c.name}</option>
-              ))}
-            </select>
+            <div className="w-full sm:w-auto flex items-center justify-between gap-3 bg-white px-4 py-2.5 rounded-2xl border border-border/50 shadow-xs">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4 text-muted-foreground" />
+                <span className="text-[10px] sm:text-xs font-bold uppercase text-muted-foreground">Cohort:</span>
+              </div>
+              <select 
+                value={selectedClass} 
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="bg-transparent text-xs sm:text-sm font-bold outline-none cursor-pointer text-brand-dark"
+              >
+                <option value="All">All Cohorts (100 Students)</option>
+                {mockClasses.map(c => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
         </motion.div>
 
         {/* Smart Alerts Section */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {mockAlerts.map(alert => (
             <div 
               key={alert.id}
-              className={`p-4 rounded-2xl border flex items-start gap-3 relative overflow-hidden transition-all hover:scale-[1.02] shadow-sm ${
+              className={`p-3.5 sm:p-4 rounded-2xl border flex items-start gap-3 relative overflow-hidden transition-all hover:scale-[1.02] shadow-xs ${
                 alert.type === 'critical' 
                   ? 'border-brand-danger/30 bg-red-50/50 text-brand-danger' 
                   : alert.type === 'warning'
@@ -165,17 +167,17 @@ export default function TeacherDashboard() {
                     : 'border-brand-info/30 bg-blue-50/50 text-brand-info'
               }`}
             >
-              <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0" />
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider opacity-75">{alert.class}</p>
-                <p className="text-sm font-medium text-brand-dark mt-1">{alert.message}</p>
+                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider opacity-75">{alert.class}</p>
+                <p className="text-xs sm:text-sm font-medium text-brand-dark mt-0.5">{alert.message}</p>
               </div>
             </div>
           ))}
         </motion.div>
 
         {/* Summary Cards */}
-        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {[
             { label: 'Total Students', value: totalStudents, icon: Users, color: 'text-brand-info', bg: 'bg-blue-100' },
             { label: 'Total Classes', value: totalClasses, icon: GraduationCap, color: 'text-brand-success', bg: 'bg-green-100' },
@@ -184,13 +186,13 @@ export default function TeacherDashboard() {
             { label: 'Need Attention', value: needingAttention, icon: AlertTriangle, color: 'text-brand-danger', bg: 'bg-red-100' },
             { label: 'Avg Class Score', value: `${avgClassScore}%`, icon: TrendingUp, color: 'text-brand-info', bg: 'bg-indigo-100' },
           ].map((stat, i) => (
-            <div key={i} className="bg-white rounded-[24px] p-5 shadow-sm border border-border/40 hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div key={i} className="bg-white rounded-2xl sm:rounded-[24px] p-4 sm:p-5 shadow-xs border border-border/40 hover:shadow-md transition-shadow relative overflow-hidden group">
               <div className="absolute -right-4 -top-4 w-16 h-16 bg-gradient-to-br from-transparent to-brand-muted rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500" />
-              <div className={`${stat.bg} ${stat.color} w-10 h-10 rounded-xl flex items-center justify-center mb-3`}>
-                <stat.icon className="w-5 h-5" />
+              <div className={`${stat.bg} ${stat.color} w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mb-2 sm:mb-3`}>
+                <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <p className="text-muted-foreground text-xs font-bold uppercase tracking-wider mb-1">{stat.label}</p>
-              <h3 className="font-heading text-3xl text-brand-dark">{stat.value}</h3>
+              <p className="text-muted-foreground text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-0.5">{stat.label}</p>
+              <h3 className="font-heading text-2xl sm:text-3xl text-brand-dark">{stat.value}</h3>
             </div>
           ))}
         </motion.div>
