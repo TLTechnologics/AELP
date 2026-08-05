@@ -202,7 +202,7 @@ export default function Home() {
                         </div>
                         
                         <button 
-                          onClick={() => router.push('/lesson')}
+                          onClick={() => router.push(`/lesson?id=${lesson.id || 1}`)}
                           className="w-full sm:w-12 h-10 sm:h-12 rounded-xl sm:rounded-full bg-brand-yellow flex items-center justify-center hover:scale-105 transition-transform shadow-sm font-bold text-xs sm:text-base text-brand-dark"
                         >
                           <span className="sm:hidden mr-1">Start Lesson</span>
