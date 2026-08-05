@@ -76,6 +76,7 @@ class LessonUpdateSchema(BaseModel):
     difficulty: Optional[str] = None
     estimated_time: Optional[int] = None
 
+@router.get("")
 @router.get("/")
 def get_lessons(
     skill: Optional[str] = None,
@@ -131,6 +132,7 @@ def get_lessons(
         
     return result
 
+@router.post("")
 @router.post("/")
 async def create_lesson(
     title: str = Form(...),
