@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useDashboard } from '@/hooks/use-dashboard';
-import { Lock, LayoutDashboard, BookOpen, Sparkles, TrendingUp, Award, User, UserPlus } from 'lucide-react';
+import { Lock, LayoutDashboard, BookOpen, Sparkles, TrendingUp, Award, User, UserPlus, Mic, PenTool } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -21,6 +21,8 @@ const teacherNavItems = [
   { name: 'Students', href: '/teacher/students', icon: User },
   { name: 'Add Student', href: '/teacher/add-student', icon: UserPlus },
   { name: 'Class Analytics', href: '/teacher/class-analytics', icon: TrendingUp },
+  { name: 'Speaking Eval', href: '/teacher/speaking', icon: Mic },
+  { name: 'Writing Eval', href: '/teacher/writing', icon: PenTool },
   { name: 'Reports', href: '/teacher/reports', icon: Award },
 ];
 
@@ -39,6 +41,9 @@ const teacherMobileNavItems = [
   { name: 'Students', href: '/teacher/students', icon: User },
   { name: 'Add', href: '/teacher/add-student', icon: UserPlus },
   { name: 'Analytics', href: '/teacher/class-analytics', icon: TrendingUp },
+  { name: 'Speaking', href: '/teacher/speaking', icon: Mic },
+  { name: 'Writing', href: '/teacher/writing', icon: PenTool },
+  { name: 'Reports', href: '/teacher/reports', icon: Award },
   { name: 'Profile', href: '/profile', icon: User },
 ];
 
@@ -65,7 +70,7 @@ export function Navbar() {
         </div>
 
         {/* Center Links (Desktop) */}
-        <div className="hidden lg:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-5 overflow-x-auto">
           {items.map((item) => {
             const isActive = item.href === '/teacher'
               ? pathname === '/teacher'
@@ -76,7 +81,7 @@ export function Navbar() {
               <Link 
                 key={item.name} 
                 href={item.href}
-                className={`relative text-xs font-bold tracking-wide transition-colors uppercase flex items-center gap-1.5 ${
+                className={`relative text-xs font-bold tracking-wide transition-colors uppercase flex items-center gap-1.5 shrink-0 ${
                   isActive ? 'text-brand-dark' : 'text-muted-foreground hover:text-brand-dark'
                 }`}
               >
@@ -96,7 +101,7 @@ export function Navbar() {
         </div>
 
         {/* Right side Profile/Action */}
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           <Link 
             href="/profile" 
             className="hidden sm:block text-xs font-bold tracking-wide text-brand-dark hover:text-muted-foreground transition-colors uppercase"
@@ -112,8 +117,8 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Bottom Navigation Bar (Single Unified Navigation for Mobile) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-t border-border/80 z-40 flex items-center justify-around px-1 shadow-lg">
+      {/* Mobile Bottom Navigation Bar (Scrollable for All Tabs) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-t border-border/80 z-40 flex items-center justify-start sm:justify-around px-2 gap-1 overflow-x-auto shadow-lg no-scrollbar">
         {mobileItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/' && item.href !== '/teacher' && pathname.startsWith(item.href));
           const isLocked = !isTeacher && stage === 1 && ['Skills', 'Progress', 'Results'].includes(item.name);
@@ -123,7 +128,7 @@ export function Navbar() {
             <Link
               key={item.name}
               href={item.href}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all relative ${
+              className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all shrink-0 relative ${
                 isActive ? 'text-brand-dark scale-105 font-bold' : 'text-muted-foreground hover:text-brand-dark'
               }`}
             >
@@ -133,7 +138,7 @@ export function Navbar() {
                   <Lock className="w-2.5 h-2.5 text-muted-foreground absolute -top-1 -right-1" />
                 )}
               </div>
-              <span className="text-[10px] mt-0.5 font-bold tracking-tight">{item.name}</span>
+              <span className="text-[10px] mt-0.5 font-bold tracking-tight whitespace-nowrap">{item.name}</span>
             </Link>
           );
         })}
