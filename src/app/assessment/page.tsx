@@ -636,17 +636,18 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             exit={{ opacity: 0, x: -50 }}
             className="space-y-6 sm:space-y-8"
           >
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-xs border border-border">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-xs border border-border">
+              <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-start">
                 <button 
                   onClick={() => setStage(STAGES.SELECTION)} 
-                  className="p-2 rounded-xl hover:bg-muted transition-colors text-brand-dark"
+                  className="flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs sm:text-sm font-bold rounded-xl border border-slate-300 transition-all shrink-0 active:scale-95 shadow-xs"
                 >
-                  <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <ArrowLeft className="w-4 h-4 text-slate-800" />
+                  <span>Exit Assessment</span>
                 </button>
-                <div>
-                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full">Reading Module</span>
-                  <h2 className="text-xl sm:text-2xl font-heading mt-0.5">Reading Assessment</h2>
+                <div className="text-right sm:text-left">
+                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">Reading Module</span>
+                  <h2 className="text-lg sm:text-2xl font-heading mt-0.5 text-slate-900">Reading Assessment</h2>
                 </div>
               </div>
               <button
@@ -660,35 +661,35 @@ However, not everyone follows the same routine. Some people prefer to wake up la
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
               {/* Passage Column */}
-              <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border border-border shadow-xs space-y-3 sm:space-y-4 max-h-[350px] lg:max-h-none lg:h-[650px] overflow-y-auto lg:sticky lg:top-24">
-                <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-wider text-xs">
+              <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border border-slate-200 shadow-xs space-y-3 sm:space-y-4 max-h-[350px] lg:max-h-none lg:h-[650px] overflow-y-auto lg:sticky lg:top-24">
+                <div className="flex items-center gap-2 text-blue-700 font-bold uppercase tracking-wider text-xs">
                   <BookOpen className="w-4 h-4" /> Reading Passage
                 </div>
-                <h3 className="font-heading text-xl sm:text-2xl">{readingData?.title || 'A Healthy Morning Routine'}</h3>
-                <div className="text-muted-foreground space-y-3 sm:space-y-4 font-medium leading-relaxed whitespace-pre-line text-xs sm:text-sm">
+                <h3 className="font-heading text-xl sm:text-2xl text-slate-950">{readingData?.title || 'A Healthy Morning Routine'}</h3>
+                <div className="text-slate-900 font-semibold space-y-3 sm:space-y-4 leading-relaxed whitespace-pre-line text-sm sm:text-base">
                   {passage}
                 </div>
               </div>
 
               {/* Questions Column */}
-              <div className="space-y-6 lg:h-[650px] lg:overflow-y-auto pr-2">
+              <div className="space-y-6 lg:h-[650px] lg:overflow-y-auto pr-2 custom-scrollbar">
                 {questions.map((q: any) => (
-                  <div key={q.id} className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-4">
-                    <h4 className="font-bold text-base text-brand-dark">{q.text}</h4>
+                  <div key={q.id} className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 className="font-bold text-base sm:text-lg text-slate-950">{q.text}</h4>
 
                     {/* Multiple Choice / True False / Matching */}
                     {q.options && q.options.length > 0 ? (
-                      <div className="space-y-2">
+                      <div className="space-y-2.5">
                         {q.options.map((opt: any) => {
                           const selected = readingAnswers[q.id]?.selected_option_id === opt.id;
                           return (
                             <button
                               key={opt.id}
                               onClick={() => handleSelectOption(q.id, opt.id)}
-                              className={`w-full text-left p-3.5 rounded-xl border text-sm font-medium transition-all ${
+                              className={`w-full text-left p-3.5 rounded-xl border text-sm font-semibold transition-all ${
                                 selected
-                                  ? 'border-brand-yellow bg-brand-yellow/10 font-bold text-brand-dark'
-                                  : 'border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground'
+                                  ? 'border-brand-yellow bg-brand-yellow/20 font-bold text-slate-950 shadow-xs ring-1 ring-brand-yellow'
+                                  : 'border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-900'
                               }`}
                             >
                               {opt.text}
@@ -703,7 +704,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                         placeholder="Type your detailed answer here..."
                         value={readingAnswers[q.id]?.text_answer || ''}
                         onChange={(e) => handleTextAnswer(q.id, e.target.value)}
-                        className="w-full bg-muted/50 border border-border/60 rounded-xl p-4 text-sm font-medium outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20 transition-all resize-y min-h-[90px]"
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-sm sm:text-base font-semibold text-slate-900 placeholder:text-slate-500 outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20 transition-all resize-y min-h-[90px]"
                       />
                     )}
                   </div>
@@ -722,32 +723,33 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             exit={{ opacity: 0, x: -50 }}
             className="space-y-8"
           >
-            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-border">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-xs border border-border">
+              <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-start">
                 <button 
                   onClick={() => setStage(STAGES.SELECTION)} 
-                  className="p-2 rounded-full hover:bg-muted transition-colors text-brand-dark"
+                  className="flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs sm:text-sm font-bold rounded-xl border border-slate-300 transition-all shrink-0 active:scale-95 shadow-xs"
                 >
-                  <ArrowLeft className="w-6 h-6" />
+                  <ArrowLeft className="w-4 h-4 text-slate-800" />
+                  <span>Exit Assessment</span>
                 </button>
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-3 py-1 rounded-full">Writing Module</span>
-                  <h2 className="text-2xl font-heading mt-1">Writing Assessment</h2>
+                <div className="text-right sm:text-left">
+                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-2.5 py-0.5 rounded-full">Writing Module</span>
+                  <h2 className="text-lg sm:text-2xl font-heading mt-0.5 text-slate-900">Writing Assessment</h2>
                 </div>
               </div>
               <button
                 onClick={handleWritingSubmit}
                 disabled={isSubmitting}
-                className="bg-brand-dark text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
+                className="w-full sm:w-auto bg-brand-dark text-white px-6 py-3 rounded-full font-bold text-sm sm:text-base flex items-center justify-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
               >
-                {isSubmitting ? 'Evaluating Groq AI...' : 'Submit Essay'} <ArrowRight className="w-5 h-5" />
+                {isSubmitting ? 'Evaluating Groq AI...' : 'Submit Essay'} <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            <div className="bg-white p-8 rounded-[32px] border border-border shadow-xl space-y-6">
+            <div className="bg-white p-6 sm:p-8 rounded-2xl sm:rounded-[32px] border border-border shadow-xl space-y-6">
               <div className="space-y-2">
                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Prompt (Word limit: 120–150 words)</span>
-                <h3 className="text-2xl font-heading text-brand-dark leading-snug whitespace-pre-line">
+                <h3 className="text-xl sm:text-2xl font-heading text-brand-dark leading-snug whitespace-pre-line">
                   {writingData?.topic || "Describe a time when someone helped you or when you helped someone else. How did it make you feel?"}
                 </h3>
               </div>
@@ -758,7 +760,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                   placeholder="Start writing your essay here..."
                   value={writingSubmission}
                   onChange={(e) => setWritingSubmission(e.target.value)}
-                  className="w-full bg-muted/40 border border-border/80 rounded-2xl p-6 text-base font-medium outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20 transition-all resize-y min-h-[220px]"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-2xl p-4 sm:p-6 text-sm sm:text-base font-semibold text-slate-900 placeholder:text-slate-500 outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20 transition-all resize-y min-h-[220px]"
                 />
 
                 <div className="flex justify-between items-center text-xs font-bold px-2">
@@ -785,29 +787,30 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             exit={{ opacity: 0, x: -50 }}
             className="space-y-8"
           >
-            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-border">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-xs border border-border">
+              <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-start">
                 <button 
                   onClick={() => {
                     stopRecording();
                     deleteRecording();
                     setStage(STAGES.SELECTION);
                   }} 
-                  className="p-2 rounded-full hover:bg-muted transition-colors text-brand-dark"
+                  className="flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs sm:text-sm font-bold rounded-xl border border-slate-300 transition-all shrink-0 active:scale-95 shadow-xs"
                 >
-                  <ArrowLeft className="w-6 h-6" />
+                  <ArrowLeft className="w-4 h-4 text-slate-800" />
+                  <span>Exit Assessment</span>
                 </button>
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Speaking Module</span>
-                  <h2 className="text-2xl font-heading mt-1">Speaking Assessment</h2>
+                <div className="text-right sm:text-left">
+                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-2.5 py-0.5 rounded-full">Speaking Module</span>
+                  <h2 className="text-lg sm:text-2xl font-heading mt-0.5 text-slate-900">Speaking Assessment</h2>
                 </div>
               </div>
               <button
                 onClick={handleSpeakingSubmit}
                 disabled={isSubmitting || !audioBlob}
-                className="bg-purple-600 text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-purple-700 transition-transform shadow-md disabled:opacity-50"
+                className="w-full sm:w-auto bg-purple-600 text-white px-6 py-3 rounded-full font-bold text-sm sm:text-base flex items-center justify-center gap-2 hover:bg-purple-700 transition-transform shadow-md disabled:opacity-50"
               >
-                {isSubmitting ? 'Evaluating...' : 'Submit Recording'} <ArrowRight className="w-5 h-5" />
+                {isSubmitting ? 'Evaluating...' : 'Submit Recording'} <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
@@ -895,27 +898,28 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
-            className="space-y-8"
+            className="space-y-6 sm:space-y-8"
           >
-            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-border">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 bg-white p-4 sm:p-6 rounded-2xl shadow-xs border border-border">
+              <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-start">
                 <button 
                   onClick={() => setStage(STAGES.SELECTION)} 
-                  className="p-2 rounded-full hover:bg-muted transition-colors text-brand-dark"
+                  className="flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 text-xs sm:text-sm font-bold rounded-xl border border-slate-300 transition-all shrink-0 active:scale-95 shadow-xs"
                 >
-                  <ArrowLeft className="w-6 h-6" />
+                  <ArrowLeft className="w-4 h-4 text-slate-800" />
+                  <span>Exit Assessment</span>
                 </button>
-                <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-3 py-1 rounded-full">Listening Module</span>
-                  <h2 className="text-2xl font-heading mt-1">Listening Assessment</h2>
+                <div className="text-right sm:text-left">
+                  <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-2.5 py-0.5 rounded-full">Listening Module</span>
+                  <h2 className="text-lg sm:text-2xl font-heading mt-0.5 text-slate-900">Listening Assessment</h2>
                 </div>
               </div>
               <button
                 onClick={handleListeningSubmit}
                 disabled={isSubmitting}
-                className="bg-brand-yellow text-brand-dark px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
+                className="w-full sm:w-auto bg-brand-yellow text-brand-dark px-6 py-3 rounded-full font-bold text-sm sm:text-base flex items-center justify-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
               >
-                {isSubmitting ? 'Evaluating...' : 'Submit Listening Test'} <ArrowRight className="w-5 h-5" />
+                {isSubmitting ? 'Evaluating...' : 'Submit Listening Test'} <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
