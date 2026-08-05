@@ -1,23 +1,50 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import { authService } from '@/services/api';
 
 export function useAuth(requireAuth = true) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      
-      if (requireAuth && !session) {
-        router.push('/auth/login');
-      } else if (!requireAuth && session) {
-        router.push('/');
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Supabase auth error:", error.message);
+        }
+        
+        setUser(session?.user || null);
+        
+        if (requireAuth && !session) {
+          router.push('/auth/login');
+        } else if (session) {
+          try {
+            const { data: profile } = await authService.getProfile();
+            if (profile?.role === 'teacher' && pathname === '/') {
+              router.push('/teacher');
+              return;
+            }
+            if (!requireAuth) {
+              router.push(profile?.role === 'teacher' ? '/teacher' : '/');
+              return;
+            }
+          } catch (e) {
+            console.error('Error fetching profile', e);
+          }
+        }
+      } catch (err) {
+        console.error('Unexpected auth error:', err);
+        if (requireAuth) {
+          router.push('/auth/login');
+        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     getSession();

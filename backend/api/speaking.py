@@ -4,7 +4,7 @@ from database.database import get_db
 from models.models import Assessment, AssessmentType, SpeakingRecording, SpeakingEvaluation, StudentAssessment, Student, User
 from sqlalchemy.sql import func
 from services.recommendation_engine import process_evaluation
-from services.gemini_service import evaluate_speaking
+from services.ai_evaluation import evaluate_speaking_groq
 import json
 import uuid
 import time
@@ -16,6 +16,7 @@ router = APIRouter()
 
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
 
+@router.post("/evaluate")
 @router.post("/submit")
 async def submit_speaking(
     audio_file: UploadFile = File(...),
@@ -49,12 +50,14 @@ async def submit_speaking(
         print(f"Supabase Upload Error: {e}")
         raise HTTPException(status_code=500, detail="Unable to upload recording. Please try again.")
 
-    # Evaluate with Gemini
+    # Evaluate with Groq
     try:
-        evaluation = evaluate_speaking(audio_bytes, audio_file.content_type, prompt)
+        mime_type = audio_file.content_type or "audio/webm"
+        filename = audio_file.filename or "recording.webm"
+        evaluation = evaluate_speaking_groq(audio_bytes, filename, prompt)
     except Exception as e:
-        print(f"Gemini Evaluation Error: {e}")
-        raise HTTPException(status_code=500, detail="Unable to evaluate speaking assessment. Please try again later.")
+        print(f"Groq Evaluation Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Evaluation failed: {str(e)}")
 
     # Save to Database
     db = next(get_db())
@@ -111,6 +114,92 @@ async def submit_speaking(
     if assessment:
         try:
             process_evaluation(db, student_id, assessment_id, assessment.type, eval_data=db_eval)
+        except Exception as e:
+            print(f"Engine Error: {e}")
+
+    return evaluation
+
+from pydantic import BaseModel
+
+class SpeakingTextRequest(BaseModel):
+    assessment_id: int
+    prompt: str
+    duration: int
+    transcript: str
+
+@router.post("/evaluate-text")
+async def submit_speaking_text(
+    request: SpeakingTextRequest,
+    db: Session = Depends(get_db),
+    student: Student = Depends(get_current_student)
+):
+    student_id = student.id
+    if request.duration < 10:
+        raise HTTPException(status_code=400, detail="Transcript duration too short.")
+
+    # Evaluate with Groq (Text Only)
+    try:
+        from services.ai_evaluation import evaluate_speaking_text
+        evaluation = evaluate_speaking_text(request.transcript, request.prompt)
+    except Exception as e:
+        print(f"Groq Text Evaluation Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Evaluation failed: {str(e)}")
+
+    try:
+        student_assessment = StudentAssessment(
+            student_id=student_id,
+            assessment_id=request.assessment_id
+        )
+        db.add(student_assessment)
+        db.commit()
+        db.refresh(student_assessment)
+
+        # We skip audio_url since it's transcribed on frontend
+        recording = SpeakingRecording(
+            student_id=student_id,
+            assessment_id=request.assessment_id,
+            audio_url="",
+            duration=request.duration
+        )
+        db.add(recording)
+        db.commit()
+        db.refresh(recording)
+
+        db_eval = SpeakingEvaluation(
+            recording_id=recording.id,
+            transcript=evaluation.get("transcript", ""),
+            grammar=evaluation.get("grammar", 0),
+            vocabulary=evaluation.get("vocabulary", 0),
+            pronunciation=evaluation.get("pronunciation", 0),
+            fluency=evaluation.get("fluency", 0),
+            coherence=evaluation.get("coherence", 0),
+            confidence=evaluation.get("confidence", 0),
+            communication=evaluation.get("communication", 0),
+            overall=evaluation.get("overall", 0),
+            cefr_level=evaluation.get("cefr_level", ""),
+            feedback=evaluation.get("feedback", ""),
+            strengths=json.dumps(evaluation.get("strengths", [])),
+            weaknesses=json.dumps(evaluation.get("weaknesses", [])),
+            recommended_lessons=json.dumps(evaluation.get("recommended_lessons", []))
+        )
+        db.add(db_eval)
+        
+        student_assessment.total_marks = db_eval.overall
+        student_assessment.accuracy = (db_eval.overall / 70.0) * 100 if db_eval.overall else 0
+        student_assessment.cefr_level = evaluation.get("cefr_level", "B1")
+        student_assessment.status = "Completed"
+        student_assessment.evaluation_id = db_eval.id
+        student_assessment.completed_at = func.now()
+        db.commit()
+    except Exception as e:
+        print(f"Database Error: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+    assessment = db.query(Assessment).filter(Assessment.id == request.assessment_id).first()
+    if assessment:
+        try:
+            process_evaluation(db, student_id, request.assessment_id, assessment.type, eval_data=db_eval)
         except Exception as e:
             print(f"Engine Error: {e}")
 

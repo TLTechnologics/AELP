@@ -17,13 +17,13 @@ import { mockClasses, mockStudents } from '@/lib/teacherMockData';
 
 export default function ReportsHub() {
   const [activeReport, setActiveReport] = useState<'weekly' | 'monthly' | 'student' | 'class'>('weekly');
-  const [selectedClass, setSelectedClass] = useState(mockClasses[0].name);
-  const [selectedStudent, setSelectedStudent] = useState(mockStudents[0].id);
+  const [selectedClass, setSelectedClass] = useState(mockClasses.length > 0 ? mockClasses[0].name : '');
+  const [selectedStudent, setSelectedStudent] = useState(mockStudents.length > 0 ? mockStudents[0].id : '');
   const [isGenerating, setIsGenerating] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const activeStudent = mockStudents.find(s => s.id === selectedStudent) || mockStudents[0];
-  const activeCohort = mockClasses.find(c => c.name === selectedClass) || mockClasses[0];
+  const activeStudent = mockStudents.find(s => s.id === selectedStudent) || mockStudents[0] || null;
+  const activeCohort = mockClasses.find(c => c.name === selectedClass) || mockClasses[0] || null;
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -222,27 +222,27 @@ export default function ReportsHub() {
                             <Users className="w-6 h-6 text-brand-dark" />
                           </div>
                           <div>
-                            <p className="font-sans font-bold text-sm text-brand-dark">Cohort Statement: {activeCohort.name}</p>
-                            <p className="text-xs text-muted-foreground font-medium"> Roster capacity: {activeCohort.totalStudents} enrolled students.</p>
+                            <p className="font-sans font-bold text-sm text-brand-dark">Cohort Statement: {activeCohort?.name || 'N/A'}</p>
+                            <p className="text-xs text-muted-foreground font-medium"> Roster capacity: {activeCohort?.totalStudents || 0} enrolled students.</p>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-4 gap-4 text-center text-xs font-bold text-brand-dark">
                           <div className="p-3 bg-white border rounded-xl">
                             <span className="text-[9px] text-muted-foreground block uppercase">Listening Avg</span>
-                            {activeCohort.avgListening}%
+                            {activeCohort?.avgListening || 0}%
                           </div>
                           <div className="p-3 bg-white border rounded-xl">
                             <span className="text-[9px] text-muted-foreground block uppercase">Reading Avg</span>
-                            {activeCohort.avgReading}%
+                            {activeCohort?.avgReading || 0}%
                           </div>
                           <div className="p-3 bg-white border rounded-xl">
                             <span className="text-[9px] text-muted-foreground block uppercase">Writing Avg</span>
-                            {activeCohort.avgWriting}%
+                            {activeCohort?.avgWriting || 0}%
                           </div>
                           <div className="p-3 bg-white border rounded-xl">
                             <span className="text-[9px] text-muted-foreground block uppercase">Speaking Avg</span>
-                            {activeCohort.avgSpeaking}%
+                            {activeCohort?.avgSpeaking || 0}%
                           </div>
                         </div>
                       </div>
@@ -253,26 +253,26 @@ export default function ReportsHub() {
                       <div className="space-y-6">
                         <div className="flex gap-4 items-center bg-white p-5 border border-border/60 rounded-2xl">
                           <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center font-heading text-xl text-brand-dark shrink-0">
-                            {activeStudent.avatar}
+                            {activeStudent?.avatar || '👤'}
                           </div>
                           <div>
-                            <p className="font-sans font-bold text-sm text-brand-dark">{activeStudent.name}</p>
-                            <p className="text-xs text-muted-foreground font-medium">{activeStudent.id} • {activeStudent.email}</p>
+                            <p className="font-sans font-bold text-sm text-brand-dark">{activeStudent?.name || 'Unknown'}</p>
+                            <p className="text-xs text-muted-foreground font-medium">{activeStudent?.id || 'N/A'} • {activeStudent?.email || 'N/A'}</p>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-4 text-center">
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
                             <span className="text-[10px] text-muted-foreground uppercase font-bold block">Overall Level</span>
-                            <span className="font-heading text-2xl text-brand-dark mt-1">{activeStudent.cefrLevel}</span>
+                            <span className="font-heading text-2xl text-brand-dark mt-1">{activeStudent?.cefrLevel || 'N/A'}</span>
                           </div>
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
                             <span className="text-[10px] text-muted-foreground uppercase font-bold block">Streak Log</span>
-                            <span className="font-heading text-2xl text-brand-dark mt-1">{activeStudent.streak} Days</span>
+                            <span className="font-heading text-2xl text-brand-dark mt-1">{activeStudent?.streak || 0} Days</span>
                           </div>
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
                             <span className="text-[10px] text-muted-foreground uppercase font-bold block">Aggregate score</span>
-                            <span className="font-heading text-2xl text-brand-dark mt-1">{activeStudent.overallScore}%</span>
+                            <span className="font-heading text-2xl text-brand-dark mt-1">{activeStudent?.overallScore || 0}%</span>
                           </div>
                         </div>
                       </div>

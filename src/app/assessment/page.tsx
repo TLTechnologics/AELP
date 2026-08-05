@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, BookOpen, FileText, CheckCircle, AlertCircle, Award, Sparkles, ArrowLeft, Mic, Square, Play, Pause, Trash2, RotateCcw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useReadingAssessment, useSubmitReading, useSubmitWriting, useSpeakingAssessment, useSubmitSpeaking, useWritingAssessment, useListeningAssessment, useSubmitListening } from '@/hooks/use-assessment';
+import { useReadingAssessment, useSubmitReading, useSubmitWriting, useSpeakingAssessment, useSubmitSpeaking, useSubmitSpeakingText, useWritingAssessment, useListeningAssessment, useSubmitListening } from '@/hooks/use-assessment';
 import { Headphones } from 'lucide-react';
 
 const STAGES = {
@@ -36,6 +36,9 @@ export default function AssessmentPage() {
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  
+  const [liveTranscript, setLiveTranscript] = useState('');
+  const recognitionRef = useRef<any>(null);
 
   const [readingResult, setReadingResult] = useState<{ total_marks: number; accuracy: number } | null>(null);
   const [listeningResult, setListeningResult] = useState<{ total_marks: number; accuracy: number } | null>(null);
@@ -53,6 +56,7 @@ export default function AssessmentPage() {
   const submitListeningMutation = useSubmitListening();
   const submitWritingMutation = useSubmitWriting();
   const submitSpeakingMutation = useSubmitSpeaking();
+  const submitSpeakingTextMutation = useSubmitSpeakingText();
 
   const passage = readingData?.reading_passage || `Many people believe that a good morning routine helps them have a productive day. Waking up early gives people enough time to prepare for the day without feeling rushed. Some people begin their morning by drinking a glass of water because it helps the body stay hydrated after a night's sleep.
 
@@ -244,10 +248,38 @@ However, not everyone follows the same routine. Some people prefer to wake up la
       };
 
       mediaRecorder.start(100);
+      
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        
+        let finalTranscript = '';
+        recognition.onresult = (event: any) => {
+          let interimTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcriptSegment = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcriptSegment + ' ';
+            } else {
+              interimTranscript += transcriptSegment;
+            }
+          }
+          setLiveTranscript(finalTranscript + interimTranscript);
+        };
+        
+        recognitionRef.current = recognition;
+        recognition.start();
+      } else {
+        console.warn('Speech Recognition API not supported in this browser.');
+      }
+
       setIsRecording(true);
       setIsPaused(false);
       setRecordingDuration(0);
       setAudioBlob(null);
+      setLiveTranscript('');
     } catch (error) {
       setErrorMessage('Microphone access denied or not available.');
     }
@@ -259,6 +291,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
       setIsRecording(false);
       setIsPaused(false);
       if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      if (recognitionRef.current) recognitionRef.current.stop();
     }
   };
 
@@ -266,6 +299,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     if (mediaRecorderRef.current && isRecording && !isPaused) {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
+      if (recognitionRef.current) recognitionRef.current.stop();
     }
   };
 
@@ -273,6 +307,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     if (mediaRecorderRef.current && isRecording && isPaused) {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
+      if (recognitionRef.current) recognitionRef.current.start();
     }
   };
 
@@ -280,6 +315,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     setAudioBlob(null);
     setAudioUrl(null);
     setRecordingDuration(0);
+    setLiveTranscript('');
   };
 
   const formatDuration = (seconds: number) => {
@@ -301,36 +337,37 @@ However, not everyone follows the same routine. Some people prefer to wake up la
   const handleSpeakingSubmit = async () => {
     setErrorMessage(null);
     
-    if (!audioBlob) {
-      setErrorMessage('Please record your answer before submitting.');
-      return;
-    }
-    
-    if (recordingDuration < 30) {
-      setErrorMessage('Please speak for at least 30 seconds.');
+    if (recordingDuration < 10) {
+      setErrorMessage('Please speak for at least 10 seconds.');
       return;
     }
 
-    if (audioBlob.size > 25 * 1024 * 1024) {
-      setErrorMessage('Recording is too large (max 25MB).');
+    if (!liveTranscript.trim()) {
+      setErrorMessage('No speech detected. Please ensure your microphone is working and speak clearly.');
       return;
     }
 
     setIsSubmitting(true);
-    const formData = new FormData();
-    formData.append('audio_file', audioBlob, 'recording.webm');
-    formData.append('student_id', '1');
-    formData.append('assessment_id', speakingData?.id || '1');
-    formData.append('duration', recordingDuration.toString());
-    formData.append('prompt', speakingData?.topic || 'Introduce yourself.');
 
     try {
-      const res = await submitSpeakingMutation.mutateAsync(formData);
+      const res = await submitSpeakingTextMutation.mutateAsync({
+        assessment_id: parseInt(speakingData?.id || '1'),
+        prompt: speakingData?.topic || 'Introduce yourself.',
+        duration: recordingDuration,
+        transcript: liveTranscript
+      });
       setSpeakingResult(res);
       setActiveModule('speaking');
       setStage(STAGES.RESULTS);
     } catch (e: any) {
-      const msg = e?.response?.data?.detail || 'Unable to evaluate speaking assessment. Please try again later.';
+      let msg = 'Unable to evaluate speaking assessment. Please try again later.';
+      if (e?.response?.data?.detail) {
+        msg = typeof e.response.data.detail === 'string' ? e.response.data.detail : JSON.stringify(e.response.data.detail);
+      } else if (e?.response?.data) {
+        msg = typeof e.response.data === 'string' ? e.response.data.substring(0, 100) : JSON.stringify(e.response.data).substring(0, 100);
+      } else if (e?.message) {
+        msg = `Upload Error (V2): ${e.message}`;
+      }
       setErrorMessage(msg);
     } finally {
       setIsSubmitting(false);
@@ -541,7 +578,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Passage Column */}
-              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-4 h-[650px] overflow-y-auto sticky top-24">
+              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-4 lg:h-[650px] lg:overflow-y-auto lg:sticky lg:top-24">
                 <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-wider text-xs">
                   <BookOpen className="w-4 h-4" /> Reading Passage
                 </div>
@@ -552,7 +589,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               </div>
 
               {/* Questions Column */}
-              <div className="space-y-6 h-[650px] overflow-y-auto pr-2">
+              <div className="space-y-6 lg:h-[650px] lg:overflow-y-auto pr-2">
                 {questions.map((q: any) => (
                   <div key={q.id} className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-4">
                     <h4 className="font-bold text-base text-brand-dark">{q.text}</h4>
@@ -802,7 +839,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Audio Column */}
-              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-8 h-fit sticky top-24">
+              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-8 h-fit lg:sticky lg:top-24">
                 <div className="flex items-center gap-2 text-pink-600 font-bold uppercase tracking-wider text-xs">
                   <Headphones className="w-4 h-4" /> Audio Track
                 </div>
@@ -828,7 +865,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               </div>
 
               {/* Questions Column */}
-              <div className="space-y-6 h-[650px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-6 lg:h-[650px] lg:overflow-y-auto pr-2 custom-scrollbar">
                 {(listeningData?.questions || []).map((q: any, idx: number) => (
                   <div key={q.id} className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-4">
                     <h4 className="font-bold text-base text-brand-dark">

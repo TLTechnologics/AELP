@@ -8,10 +8,84 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel
 from database.database import get_db
-from models.models import Assessment, AssessmentType, Question, QuestionType, QuestionOption, AudioFile
-
+from models.models import Assessment, AssessmentType, Question, QuestionType, QuestionOption, AudioFile, User, Student, RoleEnum
 router = APIRouter()
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
+
+@router.get("/students")
+def get_students(db: Session = Depends(get_db)):
+    users = db.query(User).filter(User.role == RoleEnum.STUDENT).all()
+    
+    result = []
+    for user in users:
+        student_profile = db.query(Student).filter(Student.user_id == user.id).first()
+        result.append({
+            "id": user.id,
+            "name": user.full_name,
+            "email": user.email,
+            "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=" + user.full_name,
+            "class": student_profile.semester if student_profile and hasattr(student_profile, 'semester') else "Semester 1",
+            "listeningScore": student_profile.listening_score if student_profile else 0,
+            "readingScore": student_profile.reading_score if student_profile else 0,
+            "writingScore": student_profile.writing_score if student_profile else 0,
+            "speakingScore": 0, # missing in model
+            "overallScore": student_profile.overall_progress if student_profile else 0,
+            "cefrLevel": student_profile.current_level if student_profile else "Beginner",
+            "attendance": 100,
+            "status": "Good",
+            "streak": 0,
+            "weeklyProgress": [40, 50, 60, 70, 80],
+            "monthlyProgress": [30, 45, 60, 75, 85]
+        })
+    return result
+
+class StudentCreateRequest(BaseModel):
+    email: str
+    password: str
+    full_name: str
+    semester: str = "Semester 1"
+
+@router.post("/students")
+def create_student(data: StudentCreateRequest, db: Session = Depends(get_db)):
+    # 1. Create in Supabase Auth
+    try:
+        user_response = supabase.auth.admin.create_user({
+            "email": data.email,
+            "password": data.password,
+            "email_confirm": True,
+            "user_metadata": {
+                "full_name": data.full_name
+            }
+        })
+        
+        user_id = user_response.user.id
+        
+        # 2. Add to postgres users table
+        new_user = User(
+            id=user_id,
+            email=data.email,
+            full_name=data.full_name,
+            role=RoleEnum.STUDENT
+        )
+        db.add(new_user)
+        
+        # 3. Add to students table
+        new_student = Student(
+            user_id=user_id,
+            semester=data.semester,
+            current_level="Beginner",
+            overall_progress=0,
+            listening_score=0,
+            reading_score=0,
+            writing_score=0
+        )
+        db.add(new_student)
+        db.commit()
+        
+        return {"success": True, "message": "Student created successfully"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
 
 class SpeakingUploadRequest(BaseModel):
     title: str

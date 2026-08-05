@@ -17,6 +17,7 @@ import {
   Mic
 } from 'lucide-react';
 import React from 'react';
+import { LiquidLoader } from '@/components/ui/liquid-loader';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -43,13 +44,7 @@ export default function ResultDetailsPage() {
   });
 
   if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="w-10 h-10 border-4 border-brand-yellow/30 border-t-brand-yellow rounded-full animate-spin"></div>
-        </div>
-      </MainLayout>
-    );
+    return <LiquidLoader isLooping={true} />;
   }
 
   if (!data) {
@@ -224,7 +219,7 @@ function WritingReport({ report }: { report: any }) {
                   <span>{s.value}/10</span>
                 </div>
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-brand-info rounded-full" style={{ width: \`\${(s.value / 10) * 100}%\` }} />
+                  <div className="h-full bg-brand-info rounded-full" style={{ width: `${(s.value / 10) * 100}%` }} />
                 </div>
               </div>
             ))}
@@ -289,7 +284,7 @@ function SpeakingReport({ report }: { report: any }) {
                   <span>{s.value}/10</span>
                 </div>
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-purple-500 rounded-full" style={{ width: \`\${(s.value / 10) * 100}%\` }} />
+                  <div className="h-full bg-purple-500 rounded-full" style={{ width: `${(s.value / 10) * 100}%` }} />
                 </div>
               </div>
             ))}

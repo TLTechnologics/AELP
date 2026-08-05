@@ -5,6 +5,9 @@ import { MainLayout } from '@/components/layout/main-layout';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { teacherService } from '@/services/api';
+import { LiquidLoader } from '@/components/ui/liquid-loader';
 import { 
   Users, 
   GraduationCap, 
@@ -21,7 +24,6 @@ import {
   PenTool
 } from 'lucide-react';
 import { 
-  mockStudents, 
   mockClasses, 
   mockAssessments, 
   mockAlerts, 
@@ -46,10 +48,18 @@ export default function TeacherDashboard() {
   const router = useRouter();
   const [selectedClass, setSelectedClass] = useState<string>('All');
   
+  const { data: dbStudents = [], isLoading, isError } = useQuery({
+    queryKey: ['teacherStudents'],
+    queryFn: async () => {
+      const res = await teacherService.getStudents();
+      return res.data;
+    }
+  });
+
   // Filtered stats
   const students = selectedClass === 'All' 
-    ? mockStudents 
-    : mockStudents.filter(s => s.class === selectedClass);
+    ? dbStudents 
+    : dbStudents.filter((s: any) => s.class === selectedClass);
     
   const pendingAssessments = mockAssessments.filter(a => a.status === 'Pending');
   const gradedAssessments = mockAssessments.filter(a => a.status === 'Graded');
@@ -59,17 +69,34 @@ export default function TeacherDashboard() {
   const totalClasses = mockClasses.length;
   const pendingCount = pendingAssessments.length;
   const completedWeekly = gradedAssessments.length;
-  const needingAttention = students.filter(s => s.status !== 'Good').length;
+  const needingAttention = students.filter((s: any) => s.status !== 'Good').length;
+
+  if (isLoading) {
+    return <LiquidLoader isLooping={true} />;
+  }
+  
+  if (isError) {
+    return (
+      <MainLayout>
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <AlertTriangle className="w-12 h-12 text-red-500" />
+          <p className="text-xl font-heading text-gray-800">Cannot load students data</p>
+          <p className="text-sm text-gray-500">Please make sure NEXT_PUBLIC_API_URL is correct and the backend is running.</p>
+          <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-brand-dark text-white rounded-lg">Retry</button>
+        </div>
+      </MainLayout>
+    );
+  }
   
   const avgClassScore = Math.round(
-    students.reduce((acc, s) => acc + s.overallScore, 0) / (totalStudents || 1)
+    students.reduce((acc: number, s: any) => acc + s.overallScore, 0) / (totalStudents || 1)
   );
 
   // Skill averages
-  const avgL = Math.round(students.reduce((acc, s) => acc + s.listeningScore, 0) / (totalStudents || 1));
-  const avgR = Math.round(students.reduce((acc, s) => acc + s.readingScore, 0) / (totalStudents || 1));
-  const avgW = Math.round(students.reduce((acc, s) => acc + s.writingScore, 0) / (totalStudents || 1));
-  const avgS = Math.round(students.reduce((acc, s) => acc + s.speakingScore, 0) / (totalStudents || 1));
+  const avgL = Math.round(students.reduce((acc: number, s: any) => acc + s.listeningScore, 0) / (totalStudents || 1));
+  const avgR = Math.round(students.reduce((acc: number, s: any) => acc + s.readingScore, 0) / (totalStudents || 1));
+  const avgW = Math.round(students.reduce((acc: number, s: any) => acc + s.writingScore, 0) / (totalStudents || 1));
+  const avgS = Math.round(students.reduce((acc: number, s: any) => acc + s.speakingScore, 0) / (totalStudents || 1));
 
   // Radar points
   const rCenter = 50;

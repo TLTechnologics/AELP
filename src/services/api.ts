@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { supabase } from '@/lib/supabaseClient';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://aelp.onrender.com/api';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -10,7 +10,7 @@ export const apiClient = axios.create({
   },
 });
 
-// Interceptor to inject Supabase Auth Token
+// Interceptor to inject Supabase Auth Token and handle FormData
 apiClient.interceptors.request.use(async (config) => {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
@@ -18,6 +18,7 @@ apiClient.interceptors.request.use(async (config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
   return config;
 }, (error) => {
   return Promise.reject(error);
@@ -56,11 +57,12 @@ export const assessmentService = {
   getListeningAssessment: () => apiClient.get('/assessments/listening'),
   submitReadingAssessment: (payload: any) => apiClient.post('/assessments/submit/reading', payload),
   submitListeningAssessment: (payload: any) => apiClient.post('/assessments/listening/submit', payload),
-  submitSpeakingAssessment: (payload: FormData) => apiClient.post('/speaking/submit', payload, {
+  submitSpeakingAssessment: (payload: FormData) => apiClient.post('/speaking/evaluate', payload, {
     headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+      'Content-Type': undefined,
+    }
   }),
+  submitSpeakingAssessmentText: (payload: { assessment_id: number, prompt: string, duration: number, transcript: string }) => apiClient.post('/speaking/evaluate-text', payload),
   getAssessment: (id: string) => apiClient.get(`/assessments/${id}`),
   submitAssessment: (id: string, payload: any) => apiClient.post(`/assessments/${id}/submit`, payload),
 };
@@ -70,6 +72,8 @@ export const writingService = {
 };
 
 export const teacherService = {
+  getStudents: () => apiClient.get('/teacher/students'),
+  addStudent: (data: { full_name: string; email: string; password: string; semester: string }) => apiClient.post('/teacher/students', data),
   uploadSpeakingAssessment: (payload: { title: string; difficulty: string; topic: string }) => apiClient.post('/teacher/assessments/speaking', payload),
   uploadWritingAssessment: (payload: { title: string; difficulty: string; topic: string }) => apiClient.post('/teacher/assessments/writing', payload),
   uploadReadingAssessment: (payload: { 

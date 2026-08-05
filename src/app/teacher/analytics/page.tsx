@@ -32,14 +32,14 @@ const itemVariants = {
 export default function AnalyticsDashboard() {
   const [activeSkillTab, setActiveSkillTab] = useState<'listening' | 'reading' | 'writing' | 'speaking'>('listening');
 
-  // Overall calculations across all 100 students
-  const totalStudents = mockStudents.length;
-  const avgOverall = Math.round(mockStudents.reduce((acc, s) => acc + s.overallScore, 0) / totalStudents);
-  const avgListening = Math.round(mockStudents.reduce((acc, s) => acc + s.listeningScore, 0) / totalStudents);
-  const avgReading = Math.round(mockStudents.reduce((acc, s) => acc + s.readingScore, 0) / totalStudents);
-  const avgWriting = Math.round(mockStudents.reduce((acc, s) => acc + s.writingScore, 0) / totalStudents);
-  const avgSpeaking = Math.round(mockStudents.reduce((acc, s) => acc + s.speakingScore, 0) / totalStudents);
-  const avgAttendance = Math.round(mockStudents.reduce((acc, s) => acc + s.attendance, 0) / totalStudents);
+  // Overall calculations across all students
+  const totalStudents = mockStudents.length || 1;
+  const avgOverall = Math.round(mockStudents.reduce((acc, s) => acc + s.overallScore, 0) / totalStudents) || 0;
+  const avgListening = Math.round(mockStudents.reduce((acc, s) => acc + s.listeningScore, 0) / totalStudents) || 0;
+  const avgReading = Math.round(mockStudents.reduce((acc, s) => acc + s.readingScore, 0) / totalStudents) || 0;
+  const avgWriting = Math.round(mockStudents.reduce((acc, s) => acc + s.writingScore, 0) / totalStudents) || 0;
+  const avgSpeaking = Math.round(mockStudents.reduce((acc, s) => acc + s.speakingScore, 0) / totalStudents) || 0;
+  const avgAttendance = Math.round(mockStudents.reduce((acc, s) => acc + s.attendance, 0) / totalStudents) || 0;
 
   // Ready for promotion (CEFR Level is B2 or higher and score >= 85)
   const promotionReady = mockStudents.filter(s => s.overallScore >= 80).slice(0, 5);
@@ -55,7 +55,7 @@ export default function AnalyticsDashboard() {
       subtext: 'Listening scores are down 1.2% this week.',
       metricLabel: 'Weakest Skill Roster',
       criticalCount: mockStudents.filter(s => s.listeningScore < 50).length,
-      topPerformance: mockStudents.sort((a,b)=>b.listeningScore-a.listeningScore)[0].name
+      topPerformance: mockStudents.length > 0 ? [...mockStudents].sort((a,b)=>b.listeningScore-a.listeningScore)[0].name : 'N/A'
     },
     reading: {
       title: 'Reading Domain Analysis',
@@ -63,7 +63,7 @@ export default function AnalyticsDashboard() {
       subtext: 'Reading scores have spiked due to vocabulary drills.',
       metricLabel: 'Top Reading Roster',
       criticalCount: mockStudents.filter(s => s.readingScore < 50).length,
-      topPerformance: mockStudents.sort((a,b)=>b.readingScore-a.readingScore)[0].name
+      topPerformance: mockStudents.length > 0 ? [...mockStudents].sort((a,b)=>b.readingScore-a.readingScore)[0].name : 'N/A'
     },
     writing: {
       title: 'Writing Domain Analysis',
@@ -71,7 +71,7 @@ export default function AnalyticsDashboard() {
       subtext: 'Sentence coherence index represents steady growth.',
       metricLabel: 'Weakest Writing Roster',
       criticalCount: mockStudents.filter(s => s.writingScore < 50).length,
-      topPerformance: mockStudents.sort((a,b)=>b.writingScore-a.writingScore)[0].name
+      topPerformance: mockStudents.length > 0 ? [...mockStudents].sort((a,b)=>b.writingScore-a.writingScore)[0].name : 'N/A'
     },
     speaking: {
       title: 'Speaking Domain Analysis',
@@ -79,7 +79,7 @@ export default function AnalyticsDashboard() {
       subtext: 'Focus needed on vowel phonemes and paragraph stressors.',
       metricLabel: 'Weakest Speaking Roster',
       criticalCount: mockStudents.filter(s => s.speakingScore < 50).length,
-      topPerformance: mockStudents.sort((a,b)=>b.speakingScore-a.speakingScore)[0].name
+      topPerformance: mockStudents.length > 0 ? [...mockStudents].sort((a,b)=>b.speakingScore-a.speakingScore)[0].name : 'N/A'
     }
   };
 

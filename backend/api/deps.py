@@ -40,7 +40,14 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(securi
         raise HTTPException(status_code=401, detail="Authentication failed")
 
 def get_current_student(user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> Student:
+    # student = db.query(Student).filter(Student.user_id == user.id).first()
+    # if not student:
+    #     raise HTTPException(status_code=404, detail="Student profile not found")
+    
     student = db.query(Student).filter(Student.user_id == user.id).first()
     if not student:
-        raise HTTPException(status_code=404, detail="Student profile not found")
+        student = Student(user_id=user.id, semester='Semester 1', current_level='Beginner')
+        db.add(student)
+        db.commit()
+        db.refresh(student)
     return student
