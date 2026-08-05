@@ -23,6 +23,8 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+        <script dangerouslySetInnerHTML={{ __html: "eruda.init();" }} />
       </head>
       <body className={`${anton.variable} font-sans antialiased bg-muted text-foreground bg-grid-pattern min-h-screen flex flex-col`}>
         <QueryProvider>
