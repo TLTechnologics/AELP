@@ -28,8 +28,8 @@ async def submit_speaking(
 ):
     student_id = student.id
     # Enforce duration limits
-    if duration < 30:
-        raise HTTPException(status_code=400, detail="Please speak for at least 30 seconds.")
+    if duration < 10:
+        raise HTTPException(status_code=400, detail="Please speak for at least 10 seconds.")
     if duration > 120:
         raise HTTPException(status_code=400, detail="Maximum recording time reached.")
 
@@ -60,9 +60,6 @@ async def submit_speaking(
         raise HTTPException(status_code=500, detail=f"Evaluation failed: {str(e)}")
 
     # Save to Database
-    db = next(get_db())
-    ensure_student(db, student_id)
-    
     student_assessment = StudentAssessment(
         student_id=student_id,
         assessment_id=assessment_id
