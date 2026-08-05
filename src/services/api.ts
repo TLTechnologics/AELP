@@ -48,6 +48,18 @@ export const resultsService = {
 export const lessonService = {
   getLearningPath: () => apiClient.get('/lessons/path'),
   getLesson: (id: string) => apiClient.get(`/lessons/${id}`),
+  getLessons: (params?: { skill?: string; difficulty?: string; search?: string }) => 
+    apiClient.get('/lessons', { params }),
+  createLesson: (data: FormData) => 
+    apiClient.post('/lessons', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  updateLesson: (id: number | string, data: FormData) => 
+    apiClient.put(`/lessons/${id}`, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  deleteLesson: (id: number | string) => 
+    apiClient.delete(`/lessons/${id}`),
 };
 
 export const assessmentService = {
@@ -59,7 +71,7 @@ export const assessmentService = {
   submitListeningAssessment: (payload: any) => apiClient.post('/assessments/listening/submit', payload),
   submitSpeakingAssessment: (payload: FormData) => apiClient.post('/speaking/evaluate', payload, {
     headers: {
-      'Content-Type': undefined,
+      'Content-Type': 'multipart/form-data',
     }
   }),
   submitSpeakingAssessmentText: (payload: { assessment_id: number, prompt: string, duration: number, transcript: string }) => apiClient.post('/speaking/evaluate-text', payload),

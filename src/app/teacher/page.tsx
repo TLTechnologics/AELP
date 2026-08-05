@@ -21,7 +21,8 @@ import {
   ArrowRight,
   ChevronRight,
   Filter,
-  PenTool
+  PenTool,
+  BookOpen
 } from 'lucide-react';
 import { 
   mockClasses, 
@@ -126,10 +127,18 @@ export default function TeacherDashboard() {
           </div>
           
           <div className="flex items-center gap-3 flex-wrap w-full md:w-auto">
+            {/* Manage Lessons Link */}
+            <Link 
+              href="/teacher/lessons" 
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-brand-yellow text-brand-dark px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm shadow-xs hover:scale-105 transition-all active:scale-95"
+            >
+              <BookOpen className="w-4 h-4 text-brand-dark" /> Manage Lessons
+            </Link>
+
             {/* Assessment Builder Link */}
             <Link 
               href="/teacher/assessments" 
-              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-brand-dark text-white px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm shadow-sm hover:bg-brand-dark/90 transition-all hover:scale-105 active:scale-95"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-brand-dark text-white px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm shadow-xs hover:bg-brand-dark/90 transition-all hover:scale-105 active:scale-95"
             >
               <PenTool className="w-4 h-4" /> Assessment Builder
             </Link>

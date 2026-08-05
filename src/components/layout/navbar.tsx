@@ -17,13 +17,11 @@ const navItems = [
 
 const teacherNavItems = [
   { name: 'Dashboard', href: '/teacher', icon: LayoutDashboard },
+  { name: 'Lessons', href: '/teacher/lessons', icon: BookOpen },
   { name: 'Students', href: '/teacher/students', icon: User },
   { name: 'Add Student', href: '/teacher/add-student', icon: UserPlus },
   { name: 'Class Analytics', href: '/teacher/class-analytics', icon: TrendingUp },
-  { name: 'Speaking Eval', href: '/teacher/speaking', icon: BookOpen },
-  { name: 'Writing Eval', href: '/teacher/writing', icon: BookOpen },
   { name: 'Reports', href: '/teacher/reports', icon: Award },
-  { name: 'Analytics', href: '/teacher/analytics', icon: TrendingUp },
 ];
 
 const studentMobileNavItems = [
@@ -37,10 +35,10 @@ const studentMobileNavItems = [
 
 const teacherMobileNavItems = [
   { name: 'Home', href: '/teacher', icon: LayoutDashboard },
+  { name: 'Lessons', href: '/teacher/lessons', icon: BookOpen },
   { name: 'Students', href: '/teacher/students', icon: User },
   { name: 'Add', href: '/teacher/add-student', icon: UserPlus },
   { name: 'Analytics', href: '/teacher/class-analytics', icon: TrendingUp },
-  { name: 'Reports', href: '/teacher/reports', icon: Award },
   { name: 'Profile', href: '/profile', icon: User },
 ];
 

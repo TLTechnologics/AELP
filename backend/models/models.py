@@ -51,14 +51,17 @@ class LearningPath(Base):
 class Lesson(Base):
     __tablename__ = "lessons"
     id = Column(Integer, primary_key=True, index=True)
-    learning_path_id = Column(Integer, ForeignKey("learning_paths.id"))
+    learning_path_id = Column(Integer, ForeignKey("learning_paths.id"), nullable=True)
     title = Column(String, index=True)
-    description = Column(Text)
-    content = Column(Text)
+    description = Column(Text, nullable=True)
+    content = Column(Text, nullable=True)
+    audio_url = Column(String, nullable=True)
     video_url = Column(String, nullable=True)
     pdf_url = Column(String, nullable=True)
-    estimated_time = Column(Integer) # in minutes
-    difficulty = Column(String)
+    skill_domain = Column(String, default="reading") # writing, reading, listening, speaking
+    difficulty = Column(String, default="beginner") # beginner, intermediate, advanced
+    estimated_time = Column(Integer, default=15) # in minutes
+    created_at = Column(DateTime, default=datetime.utcnow)
     
     learning_path = relationship("LearningPath", back_populates="lessons")
     progress = relationship("LessonProgress", back_populates="lesson")
