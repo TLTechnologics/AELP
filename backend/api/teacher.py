@@ -248,6 +248,12 @@ def delete_student(student_id: str, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="Student not found")
         
+    # Delete from Supabase Auth
+    try:
+        supabase.auth.admin.delete_user(student_id)
+    except Exception as e:
+        print(f"Failed to delete from Supabase Auth: {e}")
+        
     student_profile = db.query(Student).filter(Student.user_id == user.id).first()
     if student_profile:
         db.delete(student_profile)
