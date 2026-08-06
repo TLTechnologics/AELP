@@ -52,7 +52,7 @@ export default function LoginPage() {
           .from('users')
           .select('role')
           .eq('id', authData.user.id)
-          .single();
+          .maybeSingle();
           
         if (userData && userData.role === 'teacher') {
           router.push('/teacher');
