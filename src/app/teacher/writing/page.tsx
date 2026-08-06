@@ -144,7 +144,7 @@ export default function WritingAssessment() {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <p className={`font-bold ${isActive ? 'text-white' : 'text-brand-dark'}`}>{sub.studentName}</p>
-                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{sub.class} • {sub.id}</p>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{sub.class} • {sub.id}</p>
                       </div>
                       <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                         sub.status === 'Graded' 
@@ -156,7 +156,7 @@ export default function WritingAssessment() {
                     </div>
 
                     <div className="flex justify-between items-center mt-3 pt-3 border-t border-border/10">
-                      <span className="text-[10px] text-muted-foreground font-bold flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground font-bold flex items-center gap-1">
                         <FileText className="w-3.5 h-3.5" /> Written Essay
                       </span>
                       {sub.status === 'Graded' && (
@@ -177,7 +177,7 @@ export default function WritingAssessment() {
               <div className="space-y-6">
                 {/* Prompt Header */}
                 <div className="bg-white rounded-[24px] p-6 border border-border/40 shadow-sm space-y-3">
-                  <span className="text-[10px] font-bold text-brand-dark uppercase tracking-widest bg-brand-yellow/30 px-3 py-1 rounded-full w-fit">Essay Prompt</span>
+                  <span className="text-xs font-bold text-brand-dark uppercase tracking-widest bg-brand-yellow/30 px-3 py-1 rounded-full w-fit">Essay Prompt</span>
                   <p className="font-sans font-bold text-base text-brand-dark leading-snug">"{selectedSubmission.prompt}"</p>
                 </div>
 
@@ -186,13 +186,13 @@ export default function WritingAssessment() {
                   <div className="absolute top-0 right-0 w-16 h-16 bg-brand-yellow rounded-bl-full border-l border-b border-brand-dark opacity-10 pointer-events-none" />
                   
                   <div className="space-y-4">
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider pb-3 border-b border-brand-dark/10">Student Submission Response</p>
+                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider pb-3 border-b border-brand-dark/10">Student Submission Response</p>
                     <p className="text-sm font-medium text-brand-dark leading-relaxed whitespace-pre-wrap font-sans">
                       {selectedSubmission.textResponse}
                     </p>
                   </div>
 
-                  <div className="mt-8 pt-4 border-t border-brand-dark/10 text-right text-[10px] font-bold text-muted-foreground uppercase">
+                  <div className="mt-8 pt-4 border-t border-brand-dark/10 text-right text-xs font-bold text-muted-foreground uppercase">
                     Word Count: {selectedSubmission.textResponse?.split(' ').length || 0} Words
                   </div>
                 </div>
@@ -236,7 +236,7 @@ export default function WritingAssessment() {
 
                 {/* Feedback */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-brand-dark uppercase tracking-wider">Instructor Written Comments</label>
+                  <label className="text-xs font-bold text-brand-dark uppercase tracking-wider">Instructor Written Comments</label>
                   <textarea 
                     placeholder="Provide written suggestions for improvements..."
                     value={feedback}

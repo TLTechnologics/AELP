@@ -147,7 +147,7 @@ export default function TeacherDashboard() {
             <div className="w-full sm:w-auto flex items-center justify-between gap-3 bg-white px-4 py-2.5 rounded-2xl border border-border/50 shadow-xs">
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-muted-foreground" />
-                <span className="text-[10px] sm:text-xs font-bold uppercase text-muted-foreground">Cohort:</span>
+                <span className="text-xs sm:text-sm font-bold uppercase text-muted-foreground">Cohort:</span>
               </div>
               <select 
                 value={selectedClass} 
@@ -178,7 +178,7 @@ export default function TeacherDashboard() {
             >
               <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 shrink-0" />
               <div>
-                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider opacity-75">{alert.class}</p>
+                <p className="text-xs sm:text-sm font-bold uppercase tracking-wider opacity-75">{alert.class}</p>
                 <p className="text-xs sm:text-sm font-medium text-brand-dark mt-0.5">{alert.message}</p>
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function TeacherDashboard() {
               <div className={`${stat.bg} ${stat.color} w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mb-2 sm:mb-3`}>
                 <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <p className="text-muted-foreground text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-0.5">{stat.label}</p>
+              <p className="text-muted-foreground text-xs sm:text-sm font-bold uppercase tracking-wider mb-0.5">{stat.label}</p>
               <h3 className="font-heading text-2xl sm:text-3xl text-brand-dark">{stat.value}</h3>
             </div>
           ))}
@@ -230,10 +230,10 @@ export default function TeacherDashboard() {
               </svg>
 
               {/* Labels */}
-              <span className="absolute -top-6 text-[10px] font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Reading ({avgR}%)</span>
-              <span className="absolute -right-12 text-[10px] font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Writing ({avgW}%)</span>
-              <span className="absolute -bottom-6 text-[10px] font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Speaking ({avgS}%)</span>
-              <span className="absolute -left-12 text-[10px] font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Listening ({avgL}%)</span>
+              <span className="absolute -top-6 text-xs font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Reading ({avgR}%)</span>
+              <span className="absolute -right-12 text-xs font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Writing ({avgW}%)</span>
+              <span className="absolute -bottom-6 text-xs font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Speaking ({avgS}%)</span>
+              <span className="absolute -left-12 text-xs font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Listening ({avgL}%)</span>
             </div>
 
             <div className="pt-4 border-t border-border/40 grid grid-cols-2 gap-4 text-center">
@@ -270,7 +270,7 @@ export default function TeacherDashboard() {
                 <circle cx="80" cy="30" r="4" fill="var(--color-brand-yellow)" stroke="var(--color-brand-dark)" strokeWidth="1.5" />
               </svg>
               
-              <div className="absolute inset-x-0 bottom-0 flex justify-between text-[10px] font-bold text-muted-foreground pt-2 border-t border-border/40">
+              <div className="absolute inset-x-0 bottom-0 flex justify-between text-xs font-bold text-muted-foreground pt-2 border-t border-border/40">
                 <span>Mon</span>
                 <span>Tue</span>
                 <span>Wed</span>
@@ -325,7 +325,7 @@ export default function TeacherDashboard() {
               {mockRecommendations.map(rec => (
                 <div key={rec.id} className="bg-white rounded-[24px] p-6 border border-border/40 shadow-sm flex flex-col justify-between hover:border-brand-dark hover:shadow-md transition-all group">
                   <div className="space-y-3">
-                    <span className="text-[10px] font-bold uppercase bg-brand-yellow text-brand-dark px-2.5 py-1 rounded-full">
+                    <span className="text-xs font-bold uppercase bg-brand-yellow text-brand-dark px-2.5 py-1 rounded-full">
                       Focus: {rec.focus}
                     </span>
                     <p className="font-sans font-bold text-base text-brand-dark leading-snug">{rec.issue}</p>
@@ -357,7 +357,7 @@ export default function TeacherDashboard() {
                   <div className="space-y-1">
                     <div className="flex justify-between items-center">
                       <p className="font-sans font-bold text-sm text-brand-dark">{n.title}</p>
-                      <span className="text-[10px] text-muted-foreground font-medium">{n.date.split(' ')[1]}</span>
+                      <span className="text-xs text-muted-foreground font-medium">{n.date.split(' ')[1]}</span>
                     </div>
                     <p className="text-xs text-muted-foreground font-medium leading-relaxed">{n.desc}</p>
                   </div>

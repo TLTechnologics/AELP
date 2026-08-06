@@ -168,7 +168,7 @@ export default function ClassAnalytics() {
                         <span className="font-heading text-xl text-muted-foreground">#0{i + 1}</span>
                         <div>
                           <p className="font-bold text-brand-dark">{std.name}</p>
-                          <p className="text-[10px] text-muted-foreground uppercase font-bold">XP: {std.xp.toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground uppercase font-bold">XP: {std.xp.toLocaleString()}</p>
                         </div>
                       </div>
                       <span className="font-heading text-xl text-brand-dark">{std.overallScore}%</span>
@@ -194,7 +194,7 @@ export default function ClassAnalytics() {
                       >
                         <div>
                           <p className="font-bold text-brand-dark">{std.name}</p>
-                          <p className="text-[10px] text-brand-danger font-bold uppercase">Critical Margin</p>
+                          <p className="text-xs text-brand-danger font-bold uppercase">Critical Margin</p>
                         </div>
                         <span className="font-heading text-xl text-brand-danger">{std.overallScore}%</span>
                       </div>
@@ -214,15 +214,15 @@ export default function ClassAnalytics() {
                 
                 <div className="space-y-4 text-xs font-bold text-brand-dark">
                   <div className="p-4 bg-muted rounded-2xl space-y-1 border border-border/30">
-                    <p className="text-muted-foreground uppercase text-[10px]">Highest Attendance</p>
+                    <p className="text-muted-foreground uppercase text-xs">Highest Attendance</p>
                     <p className="text-sm">{classStudents.sort((a,b)=>b.attendance-a.attendance)[0]?.name || 'N/A'}</p>
                   </div>
                   <div className="p-4 bg-muted rounded-2xl space-y-1 border border-border/30">
-                    <p className="text-muted-foreground uppercase text-[10px]">Most Consistent Practice</p>
+                    <p className="text-muted-foreground uppercase text-xs">Most Consistent Practice</p>
                     <p className="text-sm">{classStudents.sort((a,b)=>b.streak-a.streak)[0]?.name || 'N/A'}</p>
                   </div>
                   <div className="p-4 bg-muted rounded-2xl space-y-1 border border-border/30">
-                    <p className="text-muted-foreground uppercase text-[10px]">Cohort Growth Focus</p>
+                    <p className="text-muted-foreground uppercase text-xs">Cohort Growth Focus</p>
                     <p className="text-sm">Speaking Rubric Context (Stress & Vowels)</p>
                   </div>
                 </div>

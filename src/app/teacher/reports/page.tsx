@@ -91,7 +91,7 @@ export default function ReportsHub() {
 
             {/* Report Type Tabs */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Report Scope</label>
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Report Scope</label>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { id: 'weekly', name: 'Weekly summary' },
@@ -117,7 +117,7 @@ export default function ReportsHub() {
             {/* Class selection dropdown */}
             {activeReport === 'class' && (
               <div className="space-y-2 animate-fadeIn">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Class Cohort</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Target Class Cohort</label>
                 <select 
                   value={selectedClassId} 
                   onChange={(e) => setSelectedClassId(e.target.value)}
@@ -133,7 +133,7 @@ export default function ReportsHub() {
             {/* Student selection dropdown */}
             {activeReport === 'student' && (
               <div className="space-y-2 animate-fadeIn">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Student</label>
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Target Student</label>
                 <select 
                   value={selectedStudentId} 
                   onChange={(e) => setSelectedStudentId(e.target.value)}
@@ -149,7 +149,7 @@ export default function ReportsHub() {
             {/* General parameters */}
             <div className="p-4 bg-yellow-50/50 border border-brand-yellow/20 rounded-2xl space-y-2">
               <h4 className="text-xs font-bold text-brand-dark">Output Format</h4>
-              <p className="text-[10px] text-muted-foreground leading-normal">Reports generate standard CEFR benchmark calculations including diagnostic level assessment graphs.</p>
+              <p className="text-xs text-muted-foreground leading-normal">Reports generate standard CEFR benchmark calculations including diagnostic level assessment graphs.</p>
             </div>
 
             {/* Action buttons */}
@@ -215,15 +215,15 @@ export default function ReportsHub() {
 
                         <div className="grid grid-cols-3 gap-4 text-center">
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
-                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">Average Attendance</span>
+                            <span className="text-xs text-muted-foreground uppercase font-bold block">Average Attendance</span>
                             <span className="font-heading text-2xl text-brand-dark mt-1">{reportsData?.executiveSummary?.averageAttendance || 0}%</span>
                           </div>
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
-                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">XP Accumulation</span>
+                            <span className="text-xs text-muted-foreground uppercase font-bold block">XP Accumulation</span>
                             <span className="font-heading text-2xl text-brand-dark mt-1">{reportsData?.executiveSummary?.xpAccumulation || 0}</span>
                           </div>
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
-                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">Accuracy Ratio</span>
+                            <span className="text-xs text-muted-foreground uppercase font-bold block">Accuracy Ratio</span>
                             <span className="font-heading text-2xl text-brand-dark mt-1">{reportsData?.executiveSummary?.accuracyRatio || 0}%</span>
                           </div>
                         </div>
@@ -279,15 +279,15 @@ export default function ReportsHub() {
 
                         <div className="grid grid-cols-3 gap-4 text-center">
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
-                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">Overall Level</span>
+                            <span className="text-xs text-muted-foreground uppercase font-bold block">Overall Level</span>
                             <span className="font-heading text-2xl text-brand-dark mt-1">{activeStudent?.cefrLevel || 'N/A'}</span>
                           </div>
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
-                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">Streak Log</span>
+                            <span className="text-xs text-muted-foreground uppercase font-bold block">Streak Log</span>
                             <span className="font-heading text-2xl text-brand-dark mt-1">{activeStudent?.streak || 0} Days</span>
                           </div>
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
-                            <span className="text-[10px] text-muted-foreground uppercase font-bold block">Aggregate score</span>
+                            <span className="text-xs text-muted-foreground uppercase font-bold block">Aggregate score</span>
                             <span className="font-heading text-2xl text-brand-dark mt-1">{activeStudent?.overallScore || 0}%</span>
                           </div>
                         </div>
@@ -298,7 +298,7 @@ export default function ReportsHub() {
               </div>
 
               {/* PDF Footer Mock */}
-              <div className="border-t border-brand-dark/10 pt-4 flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase mt-8">
+              <div className="border-t border-brand-dark/10 pt-4 flex justify-between items-center text-xs font-bold text-muted-foreground uppercase mt-8">
                 <span>Adaptive English Learning Platform (AELP)</span>
                 <span>Page 1 of 1</span>
               </div>

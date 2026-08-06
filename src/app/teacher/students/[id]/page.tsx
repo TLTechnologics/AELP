@@ -155,11 +155,11 @@ export default function StudentDetailProfile() {
           
           <div className="grid grid-cols-2 gap-4 shrink-0 w-full md:w-auto">
             <div className="bg-muted px-4 py-3 rounded-2xl border border-border/50 text-center">
-              <p className="text-[10px] text-muted-foreground font-bold uppercase">Attendance</p>
+              <p className="text-xs text-muted-foreground font-bold uppercase">Attendance</p>
               <p className="font-heading text-2xl text-brand-dark mt-1">{student.attendance}%</p>
             </div>
             <div className="bg-muted px-4 py-3 rounded-2xl border border-border/50 text-center">
-              <p className="text-[10px] text-muted-foreground font-bold uppercase">Accuracy</p>
+              <p className="text-xs text-muted-foreground font-bold uppercase">Accuracy</p>
               <p className="font-heading text-2xl text-brand-dark mt-1">{student.accuracy}%</p>
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function StudentDetailProfile() {
             </div>
 
             <div className="pt-6 border-t border-border/40 text-center">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Estimated Placement Grade</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase">Estimated Placement Grade</span>
               <p className="font-heading text-5xl text-brand-dark mt-1">
                 {student.cefrLevel} <span className="text-lg font-bold text-muted-foreground font-sans">({student.overallScore}%)</span>
               </p>
@@ -211,7 +211,7 @@ export default function StudentDetailProfile() {
                 <path d={`M 0,90 C 25,60 50,75 75,30 L 100,60`} fill="none" stroke="var(--color-brand-dark)" strokeWidth="2.5" strokeLinecap="round" />
               </svg>
               
-              <div className="absolute inset-x-0 bottom-0 flex justify-between text-[10px] font-bold text-muted-foreground pt-2 border-t border-border/40">
+              <div className="absolute inset-x-0 bottom-0 flex justify-between text-xs font-bold text-muted-foreground pt-2 border-t border-border/40">
                 <span>W1</span>
                 <span>W2</span>
                 <span>W3</span>
@@ -222,15 +222,15 @@ export default function StudentDetailProfile() {
             
             <div className="pt-2 grid grid-cols-3 gap-2 text-center text-xs font-bold text-brand-dark">
               <div className="p-2 bg-muted rounded-xl">
-                <span className="text-[10px] text-muted-foreground block">Weekly Avg</span>
+                <span className="text-xs text-muted-foreground block">Weekly Avg</span>
                 {student.streak} Days
               </div>
               <div className="p-2 bg-muted rounded-xl">
-                <span className="text-[10px] text-muted-foreground block">Active Streak</span>
+                <span className="text-xs text-muted-foreground block">Active Streak</span>
                 <span className="flex items-center justify-center gap-0.5"><Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500" /> {student.streak}d</span>
               </div>
               <div className="p-2 bg-muted rounded-xl">
-                <span className="text-[10px] text-muted-foreground block">Time Logs</span>
+                <span className="text-xs text-muted-foreground block">Time Logs</span>
                 {student.timeSpent}h
               </div>
             </div>
@@ -274,7 +274,7 @@ export default function StudentDetailProfile() {
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-muted border-b border-border/40 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  <tr className="bg-muted border-b border-border/40 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     <th className="p-3">Title</th>
                     <th className="p-3">Type</th>
                     <th className="p-3">Submission Date</th>
@@ -331,12 +331,12 @@ export default function StudentDetailProfile() {
             <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
               {feedbackHistory.map((fb: any) => (
                 <div key={fb.id} className="p-4 bg-muted/60 border border-border/30 rounded-2xl space-y-2">
-                  <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase">
+                  <div className="flex justify-between items-center text-xs font-bold text-muted-foreground uppercase">
                     <span>Type: {fb.type} {fb.score !== undefined && `• Score: ${fb.score}%`}</span>
                     <span>{fb.date}</span>
                   </div>
                   <p className="text-xs font-medium text-brand-dark leading-relaxed">"{fb.feedback}"</p>
-                  <p className="text-[10px] font-bold text-brand-dark/60 text-right">— {fb.teacher}</p>
+                  <p className="text-xs font-bold text-brand-dark/60 text-right">— {fb.teacher}</p>
                 </div>
               ))}
             </div>

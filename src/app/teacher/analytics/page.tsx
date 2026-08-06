@@ -171,7 +171,7 @@ export default function AnalyticsDashboard() {
                   />
                 </svg>
                 <div className="text-center">
-                  <span className="text-[10px] text-muted-foreground font-bold uppercase">Average</span>
+                  <span className="text-xs text-muted-foreground font-bold uppercase">Average</span>
                   <p className="font-heading text-4xl text-brand-dark">{activeSkill.average}%</p>
                 </div>
               </div>
@@ -212,9 +212,9 @@ export default function AnalyticsDashboard() {
                 <div key={std.id} className="flex justify-between items-center pt-4 first:pt-0">
                   <div>
                     <p className="font-bold text-brand-dark text-sm">{std.name}</p>
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase">{std.class} • Score: {std.overallScore}%</p>
+                    <p className="text-xs text-muted-foreground font-bold uppercase">{std.class} • Score: {std.overallScore}%</p>
                   </div>
-                  <span className="bg-green-100 text-green-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                  <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                     CEFR {std.cefrLevel} &rarr; Level-Up
                   </span>
                 </div>
@@ -234,9 +234,9 @@ export default function AnalyticsDashboard() {
                 <div key={std.id} className="flex justify-between items-center pt-4 first:pt-0">
                   <div>
                     <p className="font-bold text-brand-dark text-sm">{std.name}</p>
-                    <p className="text-[10px] text-brand-danger font-bold uppercase">{std.class} • Score: {std.overallScore}%</p>
+                    <p className="text-xs text-brand-danger font-bold uppercase">{std.class} • Score: {std.overallScore}%</p>
                   </div>
-                  <span className="bg-red-100 text-red-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                  <span className="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                     Needs Practice
                   </span>
                 </div>

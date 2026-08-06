@@ -151,7 +151,7 @@ export default function SpeakingAssessment() {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <p className={`font-bold ${isActive ? 'text-white' : 'text-brand-dark'}`}>{sub.studentName}</p>
-                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{sub.class} • {sub.id}</p>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{sub.class} • {sub.id}</p>
                       </div>
                       <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                         sub.status === 'Graded' 
@@ -163,7 +163,7 @@ export default function SpeakingAssessment() {
                     </div>
 
                     <div className="flex justify-between items-center mt-3 pt-3 border-t border-border/10">
-                      <span className="text-[10px] text-muted-foreground font-bold flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground font-bold flex items-center gap-1">
                         <Mic className="w-3.5 h-3.5" /> Speech Audio
                       </span>
                       {sub.status === 'Graded' && (
@@ -186,7 +186,7 @@ export default function SpeakingAssessment() {
                 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 relative z-10 border-b border-white/10 pb-4">
                   <div>
-                    <span className="text-[10px] font-bold text-brand-yellow uppercase tracking-widest bg-white/15 px-3 py-1 rounded-full">Speaking Prompt</span>
+                    <span className="text-xs font-bold text-brand-yellow uppercase tracking-widest bg-white/15 px-3 py-1 rounded-full">Speaking Prompt</span>
                     <p className="font-sans font-bold text-lg text-white mt-2 leading-snug">"{selectedSubmission.prompt}"</p>
                   </div>
                   
@@ -236,7 +236,7 @@ export default function SpeakingAssessment() {
                 <div className="flex justify-between items-center border-b border-border/40 pb-4">
                   <h3 className="font-heading text-2xl">Assessment Rubric</h3>
                   <div className="text-right">
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase">Aggregate Grade</p>
+                    <p className="text-xs text-muted-foreground font-bold uppercase">Aggregate Grade</p>
                     <p className="font-heading text-3xl text-brand-dark">{totalScore} <span className="text-sm font-bold text-muted-foreground">/ 50</span></p>
                   </div>
                 </div>
@@ -263,7 +263,7 @@ export default function SpeakingAssessment() {
                           disabled={selectedSubmission.status === 'Graded'}
                           className="w-full accent-brand-dark cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         />
-                        <p className="text-[10px] text-muted-foreground leading-normal">{rubric.desc}</p>
+                        <p className="text-xs text-muted-foreground leading-normal">{rubric.desc}</p>
                       </div>
                     ))}
                   </div>
@@ -288,12 +288,12 @@ export default function SpeakingAssessment() {
                           disabled={selectedSubmission.status === 'Graded'}
                           className="w-full accent-brand-dark cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         />
-                        <p className="text-[10px] text-muted-foreground leading-normal">{rubric.desc}</p>
+                        <p className="text-xs text-muted-foreground leading-normal">{rubric.desc}</p>
                       </div>
                     ))}
                     
                     {/* Extra placeholder info */}
-                    <div className="p-4 bg-yellow-50/50 border border-brand-yellow/20 rounded-2xl text-[10px] text-brand-dark leading-relaxed font-medium">
+                    <div className="p-4 bg-yellow-50/50 border border-brand-yellow/20 rounded-2xl text-xs text-brand-dark leading-relaxed font-medium">
                       ⚠️ Adjusting values instantly re-calculates the student overall CEFR level assessment index.
                     </div>
                   </div>

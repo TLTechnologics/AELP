@@ -414,11 +414,11 @@ export default function TeacherLessonsPage() {
                   <div className="space-y-4">
                     {/* Top Badges */}
                     <div className="flex items-center justify-between gap-2">
-                      <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${bg} ${color} ${border} flex items-center gap-1.5`}>
+                      <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${bg} ${color} ${border} flex items-center gap-1.5`}>
                         <DomainIcon className="w-3.5 h-3.5" />
                         {lesson.skill_domain}
                       </span>
-                      <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${difficultyBadgeClass}`}>
+                      <span className={`text-xs sm:text-sm font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${difficultyBadgeClass}`}>
                         {lesson.difficulty}
                       </span>
                     </div>

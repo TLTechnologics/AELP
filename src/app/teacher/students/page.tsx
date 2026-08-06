@@ -216,7 +216,7 @@ export default function StudentManagement() {
                           </div>
                           <div>
                             <p className="font-bold group-hover:text-brand-yellow transition-colors">{student.name}</p>
-                            <p className="text-[10px] text-muted-foreground font-medium">{student.id} • {student.email}</p>
+                            <p className="text-xs text-muted-foreground font-medium">{student.id} • {student.email}</p>
                           </div>
                         </div>
                       </td>
