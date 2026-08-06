@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -34,8 +34,6 @@ export default function ReportsHub() {
   const activeStudent = activeStudentData || null;
   const activeCohort = classes.find((c: any) => c.id === selectedClassId) || classes[0] || null;
 
-  // Initialize selections once data loads
-  import { useEffect } from 'react';
   useEffect(() => {
     if (classes.length > 0 && !selectedClassId) setSelectedClassId(classes[0].id);
     if (students.length > 0 && !selectedStudentId) setSelectedStudentId(students[0].id);
@@ -137,9 +135,9 @@ export default function ReportsHub() {
               <div className="space-y-2 animate-fadeIn">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Student</label>
                 <select 
-                  value={selectedStudent} 
-                  onChange={(e) => setSelectedStudent(e.target.value)}
-                  className="w-full bg-muted border border-border/50 rounded-2xl py-3 px-4 outline-none font-bold text-xs text-brand-dark cursor-pointer"
+                  value={selectedStudentId} 
+                  onChange={(e) => setSelectedStudentId(e.target.value)}
+                  className="w-full bg-muted border border-border/50 rounded-2xl py-3 px-4 outline-none focus:border-brand-yellow font-bold text-sm text-brand-dark cursor-pointer appearance-none"
                 >
                   {students.map((s: any) => (
                     <option key={s.id} value={s.id}>{s.name} ({s.id})</option>

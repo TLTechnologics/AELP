@@ -79,7 +79,7 @@ export default function StudentDetailProfile() {
       teacher: 'Prof. Sarah Jenkins'
     };
 
-    setFeedbackHistory(prev => [newFb, ...prev]);
+    setFeedbackHistory((prev: any[]) => [newFb, ...prev]);
     setNewFeedback('');
   };
 
@@ -96,7 +96,7 @@ export default function StudentDetailProfile() {
 
   // Render weekly progress points (for SVG graph)
   const maxWeekly = Math.max(...student.weeklyProgress, 100);
-  const weeklyPoints = student.weeklyProgress.map((xp, idx) => {
+  const weeklyPoints = student.weeklyProgress.map((xp: number, idx: number) => {
     const x = idx * 16.6; // 100 / 6
     const y = 90 - (xp / maxWeekly) * 80;
     return `${x},${y}`;
@@ -243,7 +243,7 @@ export default function StudentDetailProfile() {
               
               <div className="space-y-3">
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Assigned Syllabus</p>
-                {student.assignedLessons.map((l, idx) => (
+                {student.assignedLessons.map((l: string, idx: number) => (
                   <div key={idx} className="flex gap-2.5 items-center bg-muted/60 p-2.5 rounded-xl border border-border/30">
                     <BookOpen className="w-4 h-4 text-brand-dark" />
                     <span className="text-xs font-bold text-brand-dark">{l}</span>
@@ -253,7 +253,7 @@ export default function StudentDetailProfile() {
 
               <div className="space-y-3 pt-2">
                 <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">SMART Recommendations</p>
-                {student.recommendations.map((r, idx) => (
+                {student.recommendations.map((r: string, idx: number) => (
                   <div key={idx} className="flex gap-2 items-start text-xs text-brand-dark font-medium leading-relaxed bg-brand-yellow/10 border border-brand-yellow/20 p-3 rounded-xl">
                     <Zap className="w-4 h-4 text-brand-yellow fill-brand-yellow mt-0.5 shrink-0" />
                     <span>{r}</span>
@@ -282,7 +282,7 @@ export default function StudentDetailProfile() {
                   </tr>
                 </thead>
                 <tbody className="text-xs font-bold text-brand-dark divide-y divide-border/20">
-                  {student.assessmentHistory.map(as => {
+                  {student.assessmentHistory.map((as: any) => {
                     const SIcon = getSkillIcon(as.type);
                     return (
                       <tr key={as.id} className="hover:bg-muted/30">
@@ -329,7 +329,7 @@ export default function StudentDetailProfile() {
 
             {/* List of past feedback */}
             <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-              {feedbackHistory.map(fb => (
+              {feedbackHistory.map((fb: any) => (
                 <div key={fb.id} className="p-4 bg-muted/60 border border-border/30 rounded-2xl space-y-2">
                   <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase">
                     <span>Type: {fb.type} {fb.score !== undefined && `• Score: ${fb.score}%`}</span>
