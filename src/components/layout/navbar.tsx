@@ -22,7 +22,6 @@ const teacherNavItems = [
   { name: 'Class Analytics', href: '/teacher/class-analytics', icon: TrendingUp },
   { name: 'Speaking Eval', href: '/teacher/speaking', icon: Mic },
   { name: 'Writing Eval', href: '/teacher/writing', icon: PenTool },
-  { name: 'Reports', href: '/teacher/reports', icon: Award },
 ];
 
 const studentMobileNavItems = [
@@ -42,7 +41,6 @@ const teacherMobileNavItems = [
   { name: 'Analytics', href: '/teacher/class-analytics', icon: TrendingUp },
   { name: 'Speaking', href: '/teacher/speaking', icon: Mic },
   { name: 'Writing', href: '/teacher/writing', icon: PenTool },
-  { name: 'Reports', href: '/teacher/reports', icon: Award },
   { name: 'Profile', href: '/profile', icon: User },
 ];
 
