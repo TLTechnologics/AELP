@@ -49,7 +49,7 @@
   --color-brand-yellow: #FFE17C;
   --color-brand-dark: #0F172A;
   --color-brand-darker: #020617;
-  --color-brand-sage: #64748B;
+  --color-brand-sage: #475569;
   --color-brand-white: #FFFFFF;
   --color-brand-muted: #F8F9FA;
   --color-brand-success: #27AE60;
@@ -75,7 +75,7 @@
   --secondary-foreground: #FFFFFF;
   
   --muted: #F8F9FA;
-  --muted-foreground: #64748B;
+  --muted-foreground: #475569;
   
   --accent: #F8F9FA;
   --accent-foreground: #0F172A;
@@ -95,7 +95,7 @@
   --sidebar-primary-foreground: #0F172A;
   --sidebar-accent: #e2e8f0;
   --sidebar-accent-foreground: #0F172A;
-  --sidebar-border: #64748B;
+  --sidebar-border: #475569;
   --sidebar-ring: #FFE17C;
 }
 
