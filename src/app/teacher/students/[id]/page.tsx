@@ -24,17 +24,29 @@ import {
   CheckCircle,
   HelpCircle
 } from 'lucide-react';
-import { mockStudents } from '@/lib/teacherMockData';
+import { useStudentDetails } from '@/hooks/use-teacher';
+import { Loader2 } from 'lucide-react';
 
 export default function StudentDetailProfile() {
   const params = useParams();
   const router = useRouter();
   const studentId = params.id as string;
-  const student = mockStudents.find(s => s.id === studentId);
+  const { data: student, isLoading } = useStudentDetails(studentId);
 
   // New feedback text state
   const [newFeedback, setNewFeedback] = useState('');
   const [feedbackHistory, setFeedbackHistory] = useState(student ? student.feedbackHistory : []);
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="max-w-md mx-auto text-center py-40 space-y-4">
+          <Loader2 className="w-12 h-12 text-brand-dark animate-spin mx-auto" />
+          <h1 className="font-heading text-2xl uppercase">Loading Profile...</h1>
+        </div>
+      </MainLayout>
+    );
+  }
 
   if (!student) {
     return (
@@ -106,8 +118,8 @@ export default function StudentDetailProfile() {
         <div className="bg-white rounded-[32px] p-8 shadow-sm border border-border/40 relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
           <div className="absolute top-0 right-0 w-64 h-64 bg-brand-yellow/10 rounded-full blur-3xl pointer-events-none" />
           
-          <div className="w-32 h-32 rounded-full bg-brand-yellow flex items-center justify-center font-heading text-6xl text-brand-dark shadow-xl border-4 border-white shrink-0">
-            {student.avatar}
+          <div className="w-32 h-32 rounded-full bg-brand-yellow flex items-center justify-center font-heading text-6xl text-brand-dark shadow-xl border-4 border-white shrink-0 overflow-hidden">
+            {typeof student.avatar === 'string' && student.avatar.startsWith('http') ? <img src={student.avatar} alt="avatar" className="w-full h-full object-cover" /> : student.avatar}
           </div>
 
           <div className="flex-1 text-center md:text-left z-10 space-y-3">

@@ -554,7 +554,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             exit={{ opacity: 0, x: -50 }}
             className="space-y-8"
           >
-            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-border">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-border gap-4 sm:gap-0">
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setStage(STAGES.SELECTION)} 
@@ -570,7 +570,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               <button
                 onClick={handleReadingSubmit}
                 disabled={isSubmitting}
-                className="bg-brand-yellow text-brand-dark px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
+                className="w-full sm:w-auto justify-center bg-brand-yellow text-brand-dark px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
               >
                 {isSubmitting ? 'Evaluating...' : 'Submit Reading Test'} <ArrowRight className="w-5 h-5" />
               </button>
@@ -640,7 +640,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             exit={{ opacity: 0, x: -50 }}
             className="space-y-8"
           >
-            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-border">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-border gap-4 sm:gap-0">
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setStage(STAGES.SELECTION)} 
@@ -656,7 +656,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               <button
                 onClick={handleWritingSubmit}
                 disabled={isSubmitting}
-                className="bg-brand-dark text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
+                className="w-full sm:w-auto justify-center bg-brand-dark text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
               >
                 {isSubmitting ? 'Evaluating Groq AI...' : 'Submit Essay'} <ArrowRight className="w-5 h-5" />
               </button>
@@ -703,7 +703,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             exit={{ opacity: 0, x: -50 }}
             className="space-y-8"
           >
-            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-border">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-border gap-4 sm:gap-0">
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => {
@@ -723,7 +723,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               <button
                 onClick={handleSpeakingSubmit}
                 disabled={isSubmitting || !audioBlob}
-                className="bg-purple-600 text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-purple-700 transition-transform shadow-md disabled:opacity-50"
+                className="w-full sm:w-auto justify-center bg-purple-600 text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-purple-700 transition-transform shadow-md disabled:opacity-50"
               >
                 {isSubmitting ? 'Evaluating...' : 'Submit Recording'} <ArrowRight className="w-5 h-5" />
               </button>
@@ -815,7 +815,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             exit={{ opacity: 0, x: -50 }}
             className="space-y-8"
           >
-            <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-border">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-border gap-4 sm:gap-0">
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setStage(STAGES.SELECTION)} 
@@ -831,7 +831,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               <button
                 onClick={handleListeningSubmit}
                 disabled={isSubmitting}
-                className="bg-brand-yellow text-brand-dark px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
+                className="w-full sm:w-auto justify-center bg-brand-yellow text-brand-dark px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
               >
                 {isSubmitting ? 'Evaluating...' : 'Submit Listening Test'} <ArrowRight className="w-5 h-5" />
               </button>

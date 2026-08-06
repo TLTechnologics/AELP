@@ -115,14 +115,30 @@ def get_dashboard_data(db: Session = Depends(get_db), student: Student = Depends
                 "priority": r.priority
             })
     
+    # Dynamically calculate progress based on latest assessments
+    latest_reading = db.query(StudentAssessment).join(Assessment).filter(StudentAssessment.student_id == student.id, Assessment.type == AssessmentType.READING).order_by(desc(StudentAssessment.started_at)).first()
+    latest_writing = db.query(StudentAssessment).join(Assessment).filter(StudentAssessment.student_id == student.id, Assessment.type == AssessmentType.WRITING).order_by(desc(StudentAssessment.started_at)).first()
+    latest_speaking = db.query(StudentAssessment).join(Assessment).filter(StudentAssessment.student_id == student.id, Assessment.type == AssessmentType.SPEAKING).order_by(desc(StudentAssessment.started_at)).first()
+
+    reading_progress = latest_reading.accuracy if latest_reading else 0.0
+    writing_progress = latest_writing.accuracy if latest_writing else 0.0
+    speaking_progress = latest_speaking.accuracy if latest_speaking else 0.0
+    
+    # Calculate overall progress as average of completed modules
+    completed_scores = []
+    if latest_reading: completed_scores.append(reading_progress)
+    if latest_writing: completed_scores.append(writing_progress)
+    if latest_speaking: completed_scores.append(speaking_progress)
+    overall_progress = sum(completed_scores) / len(completed_scores) if completed_scores else 0.0
+
     return {
         "student_name": user.full_name or "Student",
         "current_level": student.current_level,
         "latest_cefr_level": student.current_level, # Assuming same for now
-        "reading_progress": student.reading_score,
-        "writing_progress": student.writing_score,
-        "speaking_progress": student.listening_score, # Mapping listening to speaking temporarily for MVP
-        "overall_progress": student.overall_progress,
+        "reading_progress": reading_progress,
+        "writing_progress": writing_progress,
+        "speaking_progress": speaking_progress, 
+        "overall_progress": round(overall_progress, 1),
         "completed_assessments": completed_assessments,
         "average_score": round(avg_score, 1),
         "recent_activity": recent_activity,

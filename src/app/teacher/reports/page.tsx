@@ -13,22 +13,40 @@ import {
   Award,
   Users
 } from 'lucide-react';
-import { mockClasses, mockStudents } from '@/lib/teacherMockData';
+import { useStudents, useReportsSummary, useStudentDetails } from '@/hooks/use-teacher';
 
 export default function ReportsHub() {
+  const { data: studentsData, isLoading: loadingStudents } = useStudents();
+  const { data: reportsData, isLoading: loadingReports } = useReportsSummary();
+
   const [activeReport, setActiveReport] = useState<'weekly' | 'monthly' | 'student' | 'class'>('weekly');
-  const [selectedClass, setSelectedClass] = useState(mockClasses.length > 0 ? mockClasses[0].name : '');
-  const [selectedStudent, setSelectedStudent] = useState(mockStudents.length > 0 ? mockStudents[0].id : '');
+  const [selectedClassId, setSelectedClassId] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState('');
+  
+  const { data: activeStudentData, isLoading: loadingStudentDetails } = useStudentDetails(selectedStudentId);
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const activeStudent = mockStudents.find(s => s.id === selectedStudent) || mockStudents[0] || null;
-  const activeCohort = mockClasses.find(c => c.name === selectedClass) || mockClasses[0] || null;
+  const students = studentsData || [];
+  const classes = reportsData?.cohorts || [];
+  
+  const activeStudent = activeStudentData || null;
+  const activeCohort = classes.find((c: any) => c.id === selectedClassId) || classes[0] || null;
+
+  // Initialize selections once data loads
+  import { useEffect } from 'react';
+  useEffect(() => {
+    if (classes.length > 0 && !selectedClassId) setSelectedClassId(classes[0].id);
+    if (students.length > 0 && !selectedStudentId) setSelectedStudentId(students[0].id);
+  }, [classes, students]);
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
+
+  const isLoadingAll = loadingStudents || loadingReports || (activeReport === 'student' && loadingStudentDetails);
 
   const handleDownload = () => {
     setIsGenerating(true);
@@ -103,12 +121,12 @@ export default function ReportsHub() {
               <div className="space-y-2 animate-fadeIn">
                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Class Cohort</label>
                 <select 
-                  value={selectedClass} 
-                  onChange={(e) => setSelectedClass(e.target.value)}
+                  value={selectedClassId} 
+                  onChange={(e) => setSelectedClassId(e.target.value)}
                   className="w-full bg-muted border border-border/50 rounded-2xl py-3 px-4 outline-none font-bold text-xs text-brand-dark cursor-pointer"
                 >
-                  {mockClasses.map(c => (
-                    <option key={c.id} value={c.name}>{c.name}</option>
+                  {classes.map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
@@ -123,7 +141,7 @@ export default function ReportsHub() {
                   onChange={(e) => setSelectedStudent(e.target.value)}
                   className="w-full bg-muted border border-border/50 rounded-2xl py-3 px-4 outline-none font-bold text-xs text-brand-dark cursor-pointer"
                 >
-                  {mockStudents.slice(0, 20).map(s => (
+                  {students.map((s: any) => (
                     <option key={s.id} value={s.id}>{s.name} ({s.id})</option>
                   ))}
                 </select>
@@ -142,7 +160,7 @@ export default function ReportsHub() {
               disabled={isGenerating}
               className="w-full bg-brand-dark hover:bg-brand-dark/90 text-white rounded-2xl py-4 font-bold text-sm flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-95 transition-all shadow-md disabled:opacity-50"
             >
-              {isGenerating ? (
+              {(isGenerating || isLoadingAll) ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" /> Generating Statement...
                 </>
@@ -174,7 +192,7 @@ export default function ReportsHub() {
                 </div>
 
                 {/* PDF Content conditional rendering */}
-                {isGenerating ? (
+                {(isGenerating || isLoadingAll) ? (
                   /* Loading State skeleton */
                   <div className="space-y-4 py-12 animate-pulse">
                     <div className="h-6 bg-border/50 rounded-lg w-2/3" />
@@ -200,15 +218,15 @@ export default function ReportsHub() {
                         <div className="grid grid-cols-3 gap-4 text-center">
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
                             <span className="text-[10px] text-muted-foreground uppercase font-bold block">Average Attendance</span>
-                            <span className="font-heading text-2xl text-brand-dark mt-1">91.5%</span>
+                            <span className="font-heading text-2xl text-brand-dark mt-1">{reportsData?.executiveSummary?.averageAttendance || 0}%</span>
                           </div>
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
                             <span className="text-[10px] text-muted-foreground uppercase font-bold block">XP Accumulation</span>
-                            <span className="font-heading text-2xl text-brand-dark mt-1">14,250</span>
+                            <span className="font-heading text-2xl text-brand-dark mt-1">{reportsData?.executiveSummary?.xpAccumulation || 0}</span>
                           </div>
                           <div className="p-4 bg-white border border-border/60 rounded-2xl">
                             <span className="text-[10px] text-muted-foreground uppercase font-bold block">Accuracy Ratio</span>
-                            <span className="font-heading text-2xl text-brand-dark mt-1">94%</span>
+                            <span className="font-heading text-2xl text-brand-dark mt-1">{reportsData?.executiveSummary?.accuracyRatio || 0}%</span>
                           </div>
                         </div>
                       </div>
@@ -253,7 +271,7 @@ export default function ReportsHub() {
                       <div className="space-y-6">
                         <div className="flex gap-4 items-center bg-white p-5 border border-border/60 rounded-2xl">
                           <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center font-heading text-xl text-brand-dark shrink-0">
-                            {activeStudent?.avatar || '👤'}
+                            {typeof activeStudent?.avatar === 'string' ? <img src={activeStudent.avatar} alt='avatar' className='w-full h-full object-cover rounded-xl' /> : '👤'}
                           </div>
                           <div>
                             <p className="font-sans font-bold text-sm text-brand-dark">{activeStudent?.name || 'Unknown'}</p>
