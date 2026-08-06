@@ -1,4 +1,6 @@
-'use client';
+import os
+
+content = """'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -334,3 +336,7 @@ export default function SpeakingAssessment() {
     </MainLayout>
   );
 }
+"""
+with open(r"src\app\teacher\speaking\page.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+print("Fix audio playback")
