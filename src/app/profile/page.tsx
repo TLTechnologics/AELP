@@ -6,6 +6,7 @@ import { Settings, Shield, Award, Edit3, LogOut, Camera, Loader2, BookOpen, PenT
 import { useAuth } from '@/hooks/use-auth';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 
 const DEFAULT_BADGES = [
   { id: 'first_steps', name: 'First Steps', icon: '🐣' },
@@ -20,7 +21,7 @@ const DEFAULT_BADGES = [
 ];
 
 export default function ProfilePage() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data: dashboardData, isLoading: dashLoading } = useDashboard();
   const router = useRouter();
 
@@ -113,7 +114,7 @@ export default function ProfilePage() {
               </button>
               <button 
                 onClick={async () => {
-                    await signOut();
+                    await supabase.auth.signOut();
                     router.push('/auth/login');
                 }}
                 className="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-colors"

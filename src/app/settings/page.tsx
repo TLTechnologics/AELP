@@ -5,13 +5,14 @@ import { motion } from 'framer-motion';
 import { User, Lock, Mail, Bell, Moon, LogOut, Camera, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function SettingsPage() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
-    await signOut();
+    await supabase.auth.signOut();
     router.push('/auth/login');
   };
 
