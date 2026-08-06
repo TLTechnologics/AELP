@@ -271,7 +271,7 @@ export default function StudentDetailProfile() {
           <div className="bg-white rounded-[32px] p-8 border border-border/40 shadow-sm space-y-6">
             <h3 className="font-heading text-3xl">Assessment History</h3>
             
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto w-full">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-muted border-b border-border/40 text-xs font-bold text-muted-foreground uppercase tracking-wider">

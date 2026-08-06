@@ -96,7 +96,7 @@ export default function AnalyticsDashboard() {
         {/* Header Row */}
         <div>
           <h2 className="text-xl text-muted-foreground font-medium mb-1">Global Platform Diagnostics & Stats</h2>
-          <h1 className="text-5xl md:text-6xl font-heading uppercase">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading break-words uppercase">
             Global <span className="highlight-yellow inline-block px-2">Analytics</span>
           </h1>
         </div>

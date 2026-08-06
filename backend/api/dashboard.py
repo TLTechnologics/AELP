@@ -131,13 +131,30 @@ def get_dashboard_data(db: Session = Depends(get_db), student: Student = Depends
     if latest_speaking: completed_scores.append(speaking_progress)
     overall_progress = sum(completed_scores) / len(completed_scores) if completed_scores else 0.0
 
+    # Calculate actual LRWS scores
+    listening_avg = db.query(func.avg(StudentAssessment.total_marks)).join(Assessment).filter(StudentAssessment.student_id == student.id, Assessment.type == AssessmentType.LISTENING).scalar() or 0.0
+    reading_avg = db.query(func.avg(StudentAssessment.total_marks)).join(Assessment).filter(StudentAssessment.student_id == student.id, Assessment.type == AssessmentType.READING).scalar() or 0.0
+    writing_avg = db.query(func.avg(StudentAssessment.total_marks)).join(Assessment).filter(StudentAssessment.student_id == student.id, Assessment.type == AssessmentType.WRITING).scalar() or 0.0
+    speaking_avg = db.query(func.avg(StudentAssessment.total_marks)).join(Assessment).filter(StudentAssessment.student_id == student.id, Assessment.type == AssessmentType.SPEAKING).scalar() or 0.0
+    
+    # Generate mock roll number based on ID
+    roll_number = f"STU-{student.id:04d}"
+
     return {
         "student_name": user.full_name or "Student",
+        "roll_number": roll_number,
+        "class": student.semester or "Semester 1",
+        "group": "A",
         "current_level": student.current_level,
         "latest_cefr_level": student.current_level, # Assuming same for now
         "reading_progress": reading_progress,
         "writing_progress": writing_progress,
         "speaking_progress": speaking_progress, 
+        "listening_progress": listening_avg,
+        "reading_avg": reading_avg,
+        "writing_avg": writing_avg,
+        "speaking_avg": speaking_avg,
+        "listening_avg": listening_avg,
         "overall_progress": round(overall_progress, 1),
         "completed_assessments": completed_assessments,
         "average_score": round(avg_score, 1),

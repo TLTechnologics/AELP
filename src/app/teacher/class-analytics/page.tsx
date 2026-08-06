@@ -88,7 +88,7 @@ export default function ClassAnalytics() {
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h2 className="text-xl text-muted-foreground font-medium mb-1">Cohort-Wide Analytics</h2>
-            <h1 className="text-5xl md:text-6xl font-heading uppercase">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading break-words uppercase">
               Class <span className="highlight-yellow inline-block px-2">Analytics</span>
             </h1>
           </div>
@@ -261,7 +261,7 @@ export default function ClassAnalytics() {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto w-full">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-muted text-xs font-bold text-muted-foreground uppercase tracking-widest border-b border-border/40">

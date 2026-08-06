@@ -121,7 +121,7 @@ export default function SpeakingAssessment() {
 
         <div>
           <h2 className="text-xl text-muted-foreground font-medium mb-1">Voice & Pronunciation Lab</h2>
-          <h1 className="text-5xl md:text-6xl font-heading uppercase">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading break-words uppercase">
             Speaking <span className="highlight-yellow inline-block px-2">Evaluations</span>
           </h1>
         </div>

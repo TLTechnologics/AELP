@@ -74,7 +74,7 @@ export default function AddStudentPage() {
       >
         <motion.div variants={itemVariants}>
           <h2 className="text-xl text-muted-foreground font-medium mb-2">Student Management</h2>
-          <h1 className="text-5xl md:text-6xl font-heading uppercase">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading break-words uppercase">
             Add New <span className="highlight-yellow inline-block px-2">Student</span>
           </h1>
           <p className="text-muted-foreground mt-4 font-medium">

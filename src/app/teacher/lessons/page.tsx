@@ -337,7 +337,7 @@ export default function TeacherLessonsPage() {
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
           <div>
             <h2 className="text-sm sm:text-xl text-muted-foreground font-medium mb-1">Create & Assign Adaptive Content</h2>
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-heading uppercase tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-heading break-words uppercase tracking-tight">
               Lesson <span className="highlight-yellow inline-block px-2">Management</span>
             </h1>
           </div>

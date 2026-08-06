@@ -1,4 +1,6 @@
-'use client';
+import os
+
+content = """'use client';
 
 import { MainLayout } from '@/components/layout/main-layout';
 import { motion } from 'framer-motion';
@@ -191,3 +193,7 @@ export default function ProfilePage() {
     </MainLayout>
   );
 }
+"""
+with open(r"src\app\profile\page.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+print("Updated profile page!")

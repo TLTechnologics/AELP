@@ -125,7 +125,7 @@ export default function SkillPage() {
                 <Icon className="w-8 h-8 sm:w-10 sm:h-10" />
               </div>
               <div>
-                <h1 className="font-heading text-3xl sm:text-5xl mb-1 text-slate-900">{config.title}</h1>
+                <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl break-words mb-1 text-slate-900">{config.title}</h1>
                 <p className="text-muted-foreground font-bold flex items-center gap-2 text-xs sm:text-sm">
                   <span className={`px-3 py-1 rounded-full ${config.bg} ${config.color} text-[10px] sm:text-xs uppercase tracking-wider font-extrabold border ${config.border}`}>
                     {config.level}
