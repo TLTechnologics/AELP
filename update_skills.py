@@ -1,4 +1,6 @@
-'use client';
+import os
+
+content = """'use client';
 
 import { MainLayout } from '@/components/layout/main-layout';
 import { Headphones, BookOpen, PenTool, Mic, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
@@ -162,3 +164,7 @@ export default function SkillsHubPage() {
     </MainLayout>
   );
 }
+"""
+with open(r"src\app\skills\page.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+print("Skills page updated!")
