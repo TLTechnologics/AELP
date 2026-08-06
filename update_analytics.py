@@ -1,4 +1,6 @@
-'use client';
+import os
+
+content = """'use client';
 
 import { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -316,3 +318,8 @@ export default function ClassAnalytics() {
     </MainLayout>
   );
 }
+"""
+
+with open(r"src\app\teacher\class-analytics\page.tsx", "w", encoding="utf-8") as f:
+    f.write(content)
+print("Updated class analytics page!")
