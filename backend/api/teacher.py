@@ -215,8 +215,6 @@ class StudentCreateRequest(BaseModel):
     full_name: str
     semester: str = "Semester 1"
 
-@router.post("/students")
-
 @router.put("/students/{student_id}")
 def update_student(student_id: str, data: StudentUpdateRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == student_id, User.role == RoleEnum.STUDENT).first()
@@ -264,6 +262,7 @@ def delete_student(student_id: str, db: Session = Depends(get_db)):
     return {"message": "Student deleted successfully"}
 
 
+@router.post("/students")
 def create_student(data: StudentCreateRequest, db: Session = Depends(get_db)):
     # 1. Create in Supabase Auth
     try:
