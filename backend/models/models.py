@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, F
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import enum
+from datetime import datetime
 from database.database import Base
 
 class RoleEnum(enum.Enum):
