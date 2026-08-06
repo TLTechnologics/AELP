@@ -22,6 +22,24 @@ export const useStudentDetails = (id: string) => {
   });
 };
 
+export const useUpdateStudent = () => {
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const { data: response } = await apiClient.put(`/teacher/students/${id}`, data);
+      return response;
+    }
+  });
+};
+
+export const useDeleteStudent = () => {
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data: response } = await apiClient.delete(`/teacher/students/${id}`);
+      return response;
+    }
+  });
+};
+
 export const useReportsSummary = () => {
   return useQuery({
     queryKey: ['teacher', 'reports-summary'],

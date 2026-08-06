@@ -201,6 +201,14 @@ def get_student_details(student_id: str, db: Session = Depends(get_db)):
         "feedbackHistory": feedback_history
     }
 
+
+class StudentUpdateRequest(BaseModel):
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    semester: Optional[str] = None
+    group: Optional[str] = None
+    roll_number: Optional[str] = None
+
 class StudentCreateRequest(BaseModel):
     email: str
     password: str
@@ -208,6 +216,48 @@ class StudentCreateRequest(BaseModel):
     semester: str = "Semester 1"
 
 @router.post("/students")
+
+@router.put("/students/{student_id}")
+def update_student(student_id: str, data: StudentUpdateRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == student_id, User.role == RoleEnum.STUDENT).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Student not found")
+        
+    student_profile = db.query(Student).filter(Student.user_id == user.id).first()
+    
+    if data.full_name:
+        user.full_name = data.full_name
+    if data.email:
+        user.email = data.email
+        
+    if student_profile:
+        if data.semester is not None:
+            student_profile.semester = data.semester
+        if data.group is not None:
+            student_profile.group = data.group
+        if hasattr(student_profile, 'roll_number') and data.roll_number is not None:
+            student_profile.roll_number = data.roll_number
+            
+    db.commit()
+    db.refresh(user)
+    return {"message": "Student updated successfully"}
+
+@router.delete("/students/{student_id}")
+def delete_student(student_id: str, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == student_id, User.role == RoleEnum.STUDENT).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Student not found")
+        
+    student_profile = db.query(Student).filter(Student.user_id == user.id).first()
+    if student_profile:
+        db.delete(student_profile)
+        
+    db.delete(user)
+    db.commit()
+    
+    return {"message": "Student deleted successfully"}
+
+
 def create_student(data: StudentCreateRequest, db: Session = Depends(get_db)):
     # 1. Create in Supabase Auth
     try:
