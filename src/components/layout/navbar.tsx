@@ -12,7 +12,6 @@ const navItems = [
   { name: 'Skills', href: '/skills', icon: Sparkles },
   { name: 'Progress', href: '/progress', icon: TrendingUp },
   { name: 'Results', href: '/results', icon: Award },
-  { name: 'Leaderboard', href: '/leaderboard', icon: Award },
 ];
 
 const teacherNavItems = [
