@@ -39,10 +39,9 @@ def get_students(db: Session = Depends(get_db)):
                     scores_by_type["speaking"].append(rec.evaluation.overall)
                     
             # Also check writing AI evaluations
-            if student_profile:
-                writing_submissions = db.query(WritingSubmission).filter(WritingSubmission.student_id == student_profile.id).all()
-                for sub in writing_submissions:
-                    ai_eval = db.query(AIEvaluation).filter(AIEvaluation.submission_id == sub.id).first()
+            for sa in assessments:
+                if sa.writing_submission:
+                    ai_eval = db.query(AIEvaluation).filter(AIEvaluation.submission_id == sa.writing_submission.id).first()
                     if ai_eval and ai_eval.overall is not None:
                         scores_by_type["writing"].append(ai_eval.overall)
         
