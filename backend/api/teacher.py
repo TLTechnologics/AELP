@@ -40,8 +40,9 @@ def get_students(db: Session = Depends(get_db)):
                     
             # Also check writing AI evaluations
             for sa in assessments:
-                if sa.writing_submission:
-                    ai_eval = db.query(AIEvaluation).filter(AIEvaluation.submission_id == sa.writing_submission.id).first()
+                sub = db.query(WritingSubmission).filter(WritingSubmission.student_assessment_id == sa.id).first()
+                if sub:
+                    ai_eval = db.query(AIEvaluation).filter(AIEvaluation.submission_id == sub.id).first()
                     if ai_eval and ai_eval.overall is not None:
                         scores_by_type["writing"].append(ai_eval.overall)
         
