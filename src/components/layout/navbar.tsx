@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useDashboard } from '@/hooks/use-dashboard';
-import { Lock, LayoutDashboard, BookOpen, Sparkles, TrendingUp, Award, User, UserPlus, Mic, PenTool } from 'lucide-react';
+import { Lock, LayoutDashboard, BookOpen, Sparkles, TrendingUp, Award, User, UserPlus, Mic, PenTool, Download } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -22,6 +22,7 @@ const teacherNavItems = [
   { name: 'Class Analytics', href: '/teacher/class-analytics', icon: TrendingUp },
   { name: 'Speaking Eval', href: '/teacher/speaking', icon: Mic },
   { name: 'Writing Eval', href: '/teacher/writing', icon: PenTool },
+  { name: 'Results', href: '/teacher/results', icon: Download },
 ];
 
 const studentMobileNavItems = [
@@ -41,6 +42,7 @@ const teacherMobileNavItems = [
   { name: 'Analytics', href: '/teacher/class-analytics', icon: TrendingUp },
   { name: 'Speaking', href: '/teacher/speaking', icon: Mic },
   { name: 'Writing', href: '/teacher/writing', icon: PenTool },
+  { name: 'Results', href: '/teacher/results', icon: Download },
   { name: 'Profile', href: '/profile', icon: User },
 ];
 
