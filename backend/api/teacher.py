@@ -19,17 +19,51 @@ def get_students(db: Session = Depends(get_db)):
     result = []
     for user in users:
         student_profile = db.query(Student).filter(Student.user_id == user.id).first()
+        
+        # Calculate dynamic scores
+        scores_by_type = {"listening": [], "reading": [], "writing": [], "speaking": []}
+        
+        if student_profile:
+            assessments = db.query(StudentAssessment).filter(StudentAssessment.student_id == student_profile.id).all()
+            for sa in assessments:
+                assessment = db.query(Assessment).filter(Assessment.id == sa.assessment_id).first()
+                if assessment and sa.total_marks is not None:
+                    typ = assessment.type.value.lower()
+                    if typ in scores_by_type:
+                        scores_by_type[typ].append(sa.total_marks)
+            
+            # Also check speaking AI evaluations
+            recordings = db.query(SpeakingRecording).filter(SpeakingRecording.student_id == student_profile.id).all()
+            for rec in recordings:
+                if rec.evaluation and rec.evaluation.overall is not None:
+                    scores_by_type["speaking"].append(rec.evaluation.overall)
+                    
+            # Also check writing AI evaluations
+            if student_profile:
+                writing_submissions = db.query(WritingSubmission).filter(WritingSubmission.student_id == student_profile.id).all()
+                for sub in writing_submissions:
+                    ai_eval = db.query(AIEvaluation).filter(AIEvaluation.submission_id == sub.id).first()
+                    if ai_eval and ai_eval.overall is not None:
+                        scores_by_type["writing"].append(ai_eval.overall)
+        
+        l_score = round(sum(scores_by_type["listening"])/len(scores_by_type["listening"]), 1) if scores_by_type["listening"] else (student_profile.listening_score if student_profile and student_profile.listening_score else 0)
+        r_score = round(sum(scores_by_type["reading"])/len(scores_by_type["reading"]), 1) if scores_by_type["reading"] else (student_profile.reading_score if student_profile and student_profile.reading_score else 0)
+        w_score = round(sum(scores_by_type["writing"])/len(scores_by_type["writing"]), 1) if scores_by_type["writing"] else (student_profile.writing_score if student_profile and student_profile.writing_score else 0)
+        s_score = round(sum(scores_by_type["speaking"])/len(scores_by_type["speaking"]), 1) if scores_by_type["speaking"] else 0
+        
+        overall_score = round((l_score + r_score + w_score + s_score) / 4, 1)
+
         result.append({
             "id": user.id,
             "name": user.full_name,
             "email": user.email,
             "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=" + user.full_name,
             "class": student_profile.semester if student_profile and hasattr(student_profile, 'semester') else "Semester 1",
-            "listeningScore": student_profile.listening_score if student_profile else 0,
-            "readingScore": student_profile.reading_score if student_profile else 0,
-            "writingScore": student_profile.writing_score if student_profile else 0,
-            "speakingScore": 0, # missing in model
-            "overallScore": student_profile.overall_progress if student_profile else 0,
+            "listeningScore": l_score,
+            "readingScore": r_score,
+            "writingScore": w_score,
+            "speakingScore": s_score,
+            "overallScore": overall_score,
             "cefrLevel": student_profile.current_level if student_profile else "Beginner",
             "attendance": 100,
             "status": "Good",
