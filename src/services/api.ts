@@ -29,6 +29,20 @@ apiClient.interceptors.request.use(async (config) => {
   return Promise.reject(error);
 });
 
+// Response interceptor to handle 401 Unauthorized (Expired Session) gracefully
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
+        console.warn('Session expired or invalid token (401). Redirecting to login...');
+        window.location.href = '/auth/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const authService = {
   getProfile: () => apiClient.get('/auth/profile'),
 };
