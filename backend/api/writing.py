@@ -5,16 +5,21 @@ from models.models import Assessment, AssessmentType, WritingSubmission, AIEvalu
 from sqlalchemy.sql import func
 from services.recommendation_engine import process_evaluation
 from pydantic import BaseModel
-from services.ai_evaluation import evaluate_writing
+from typing import Optional
+from services.ai_evaluation import evaluate_writing, detect_ai_content
 import json
 
-from api.deps import get_current_student
+from api.deps import get_current_student, get_current_user
 
 router = APIRouter()
 
 class SubmitWritingRequest(BaseModel):
     prompt: str
     submission: str
+
+class AIDetectRequest(BaseModel):
+    submission_id: Optional[str] = None
+    text: Optional[str] = None
 
 def process_writing_submission(student: Student, prompt: str, submission: str, db: Session):
     submission_text = submission.strip()
@@ -91,3 +96,35 @@ def submit_writing_evaluation(request: SubmitWritingRequest, db: Session = Depen
 def assess_writing(request: SubmitWritingRequest, db: Session = Depends(get_db), student: Student = Depends(get_current_student)):
     return process_writing_submission(student, request.prompt, request.submission, db)
 
+
+@router.post("/ai-detect")
+@router.post("/ai-detect/")
+def ai_detect_writing(request: AIDetectRequest, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+    Detects AI-generated content in a writing submission.
+    Accepts either submission_id (fetches essay from DB) or raw text.
+    Only accessible by teachers.
+    """
+    essay_text = None
+
+    if request.submission_id:
+        submission = db.query(WritingSubmission).filter(
+            WritingSubmission.id == request.submission_id
+        ).first()
+        if not submission:
+            raise HTTPException(status_code=404, detail="Submission not found")
+        essay_text = submission.content
+    elif request.text:
+        essay_text = request.text.strip()
+    else:
+        raise HTTPException(status_code=400, detail="Provide either submission_id or text")
+
+    if not essay_text or len(essay_text.split()) < 10:
+        raise HTTPException(status_code=400, detail="Essay is too short to analyze")
+
+    try:
+        result = detect_ai_content(essay_text)
+        return result
+    except Exception as e:
+        print(f"AI Detect Error: {e}")
+        raise HTTPException(status_code=500, detail="AI detection failed. Please try again.")

@@ -226,3 +226,88 @@ Return ONLY valid JSON matching this schema:
         
     data["transcript"] = transcript_text
     return data
+
+def detect_ai_content(text: str) -> dict:
+    """
+    Analyzes a student's essay and estimates what percentage appears to be AI-generated.
+    Uses Groq Llama model with a carefully crafted detection prompt.
+    Returns ai_percentage, verdict, confidence, indicators, human_indicators, and summary.
+    """
+    system_prompt = """You are an expert AI content detection specialist trained to identify AI-generated text.
+Analyze the provided essay and determine what percentage of it appears to be AI-generated vs human-written.
+
+Look for these AI indicators:
+- Overly formal or structured writing for a student's level
+- Generic, non-specific examples that lack personal experience
+- Repetitive sentence structures or transitions (e.g., "Furthermore", "Moreover", "In conclusion")
+- Lack of spelling/grammar mistakes (suspiciously perfect)
+- Unnaturally even paragraph lengths
+- Absence of personal anecdotes or unique perspective
+- Buzzwords and hedging phrases typical of LLMs
+
+Look for these HUMAN indicators:
+- Spelling mistakes or minor grammar errors
+- Informal or colloquial language
+- Personal anecdotes or unique perspectives
+- Irregular sentence lengths
+- Topic drift or tangential thoughts
+- Emotion or personal opinion
+- Unusual word choices or creative errors
+
+Return ONLY valid JSON matching this schema:
+{
+    "ai_percentage": 72,
+    "verdict": "Likely AI-generated",
+    "confidence": "High",
+    "indicators": ["Overly structured transitions", "Lack of personal perspective"],
+    "human_indicators": ["One informal phrase detected"],
+    "summary": "This essay shows strong signs of AI generation due to its unnaturally formal tone and lack of any personal anecdotes or errors."
+}
+
+Verdicts must be exactly one of: "Human Written", "Possibly AI Assisted", "Likely AI-generated", "Almost Certainly AI-generated"
+Confidence must be exactly one of: "Low", "Medium", "High"
+ai_percentage must be an integer from 0 to 100.
+"""
+
+    response = client.chat.completions.create(
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Analyze this student essay:\n\n{text}"}
+        ],
+        model="llama-3.3-70b-versatile",
+        temperature=0.1,
+        response_format={"type": "json_object"}
+    )
+
+    content = response.choices[0].message.content
+    if not content:
+        raise ValueError("Empty response from Groq API")
+
+    data = json.loads(content)
+
+    # Sanitize / enforce defaults
+    data["ai_percentage"] = max(0, min(100, int(data.get("ai_percentage", 0))))
+
+    valid_verdicts = ["Human Written", "Possibly AI Assisted", "Likely AI-generated", "Almost Certainly AI-generated"]
+    if data.get("verdict") not in valid_verdicts:
+        pct = data["ai_percentage"]
+        if pct <= 30:
+            data["verdict"] = "Human Written"
+        elif pct <= 60:
+            data["verdict"] = "Possibly AI Assisted"
+        elif pct <= 85:
+            data["verdict"] = "Likely AI-generated"
+        else:
+            data["verdict"] = "Almost Certainly AI-generated"
+
+    if data.get("confidence") not in ["Low", "Medium", "High"]:
+        data["confidence"] = "Medium"
+
+    if not isinstance(data.get("indicators"), list):
+        data["indicators"] = []
+    if not isinstance(data.get("human_indicators"), list):
+        data["human_indicators"] = []
+    if not data.get("summary"):
+        data["summary"] = "Analysis complete."
+
+    return data
