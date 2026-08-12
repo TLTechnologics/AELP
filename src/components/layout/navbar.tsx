@@ -108,7 +108,15 @@ export function Navbar() {
             PROFILE
           </Link>
           <button 
-            onClick={() => router.push('/auth/login')}
+            onClick={async () => {
+              try {
+                const { supabase } = await import('@/lib/supabaseClient');
+                await supabase.auth.signOut();
+              } catch (e) {}
+              localStorage.clear();
+              sessionStorage.clear();
+              window.location.href = '/auth/login';
+            }}
             className="bg-brand-dark text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-full hover:bg-brand-dark/90 transition-transform active:scale-95 shadow-sm"
           >
             Log Out
