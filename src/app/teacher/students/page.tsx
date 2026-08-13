@@ -12,10 +12,25 @@ import {
   ChevronRight,
   UserCheck
 } from 'lucide-react';
-import { mockClasses } from '@/lib/teacherMockData';
 import { useQuery } from '@tanstack/react-query';
 import { teacherService } from '@/services/api';
-import { LiquidLoader } from '@/components/ui/liquid-loader';
+
+type StudentRecord = {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  class: string;
+  listeningScore: number;
+  readingScore: number;
+  writingScore: number;
+  speakingScore: number;
+  overallScore: number;
+  cefrLevel: string;
+  group: string;
+  attendance: number;
+  status: 'Good' | 'Needs Improvement' | 'Critical';
+};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -44,22 +59,27 @@ export default function StudentManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const { data: dbStudents = [], isLoading } = useQuery({
+  const {
+    data: dbStudents = [],
+    isError,
+    isLoading,
+    refetch,
+  } = useQuery<StudentRecord[], Error>({
     queryKey: ['teacherStudents'],
     queryFn: async () => {
-      try {
-        const res = await teacherService.getStudents();
-        return Array.isArray(res.data) ? res.data : [];
-      } catch (err) {
-        return [];
+      const res = await teacherService.getStudents();
+      if (!Array.isArray(res.data)) {
+        throw new Error('The student directory response was invalid.');
       }
+      return res.data as StudentRecord[];
     },
+    retry: 1,
   });
 
   const mockStudents = dbStudents;
 
   // Filter logic
-  const filteredStudents = mockStudents.filter((student: any) => {
+  const filteredStudents = mockStudents.filter((student) => {
     const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           student.id.toLowerCase().includes(searchQuery.toLowerCase());
@@ -72,7 +92,7 @@ export default function StudentManagement() {
 
   // Sorting logic
   const sortedStudents = [...filteredStudents].sort((a, b) => {
-    let multiplier = sortOrder === 'asc' ? 1 : -1;
+    const multiplier = sortOrder === 'asc' ? 1 : -1;
     
     if (sortBy === 'name') {
       return a.name.localeCompare(b.name) * multiplier;
@@ -206,7 +226,32 @@ export default function StudentManagement() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30 text-sm font-medium text-brand-dark">
-                {paginatedStudents.length > 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={9} className="p-16 text-center text-sm font-medium text-muted-foreground">
+                      Loading students…
+                    </td>
+                  </tr>
+                ) : isError ? (
+                  <tr>
+                    <td colSpan={9} className="p-16 text-center">
+                      <div className="max-w-md mx-auto space-y-3">
+                        <UserCheck className="w-12 h-12 text-red-500 mx-auto" />
+                        <p className="font-heading text-2xl uppercase">Could not load students</p>
+                        <p className="text-sm text-muted-foreground font-medium">
+                          The server did not return the directory. Please try again.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => refetch()}
+                          className="rounded-xl bg-brand-dark px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-brand-dark/90"
+                        >
+                          Try again
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : paginatedStudents.length > 0 ? (
                   paginatedStudents.map((student) => (
                     <tr 
                       key={student.id} 

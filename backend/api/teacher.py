@@ -4,45 +4,84 @@ import uuid
 import time
 from config import settings
 from supabase import create_client, Client
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from typing import List, Optional
 from pydantic import BaseModel
 from database.database import get_db
+from api.deps import get_current_user
 from models.models import Assessment, AssessmentType, Question, QuestionType, QuestionOption, AudioFile, User, Student, RoleEnum, StudentAssessment, AIEvaluation, SpeakingEvaluation, ProgressHistory, StudentLessonRecommendations, WritingSubmission, SpeakingRecording
 router = APIRouter()
 supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
 
 @router.get("/students")
-def get_students(db: Session = Depends(get_db)):
-    users = db.query(User).filter(User.role == RoleEnum.STUDENT).all()
+def get_students(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.role not in (RoleEnum.TEACHER, RoleEnum.ADMIN):
+        raise HTTPException(status_code=403, detail="Teacher access is required")
+
+    # Load the entire directory in a constant number of queries. The previous
+    # implementation queried profiles, assessments, assessment definitions,
+    # writing submissions, and evaluations separately for every student.
+    # That N+1 pattern times out on Render once the directory grows.
+    users = (
+        db.query(User)
+        .options(
+            joinedload(User.student_profile).options(
+                selectinload(Student.assessments).joinedload(StudentAssessment.assessment),
+                selectinload(Student.assessments)
+                .selectinload(StudentAssessment.writing_submission)
+                .joinedload(WritingSubmission.evaluation),
+            )
+        )
+        .filter(User.role == RoleEnum.STUDENT)
+        .all()
+    )
+
+    student_ids = [
+        user.student_profile.id
+        for user in users
+        if user.student_profile is not None
+    ]
+    recordings_by_student = {}
+    if student_ids:
+        recordings = (
+            db.query(SpeakingRecording)
+            .options(joinedload(SpeakingRecording.evaluation))
+            .filter(SpeakingRecording.student_id.in_(student_ids))
+            .all()
+        )
+        for recording in recordings:
+            recordings_by_student.setdefault(recording.student_id, []).append(recording)
     
     result = []
     for user in users:
-        student_profile = db.query(Student).filter(Student.user_id == user.id).first()
+        student_profile = user.student_profile
         
         # Calculate dynamic scores
         scores_by_type = {"listening": [], "reading": [], "writing": [], "speaking": []}
         
         if student_profile:
-            assessments = db.query(StudentAssessment).filter(StudentAssessment.student_id == student_profile.id).all()
+            assessments = student_profile.assessments
             for sa in assessments:
-                assessment = db.query(Assessment).filter(Assessment.id == sa.assessment_id).first()
+                assessment = sa.assessment
                 if assessment and sa.total_marks is not None:
                     typ = assessment.type.value.lower()
                     if typ in scores_by_type:
                         scores_by_type[typ].append(sa.total_marks)
             
             # Also check speaking AI evaluations
-            recordings = db.query(SpeakingRecording).filter(SpeakingRecording.student_id == student_profile.id).all()
+            recordings = recordings_by_student.get(student_profile.id, [])
             for rec in recordings:
                 if rec.evaluation and rec.evaluation.overall is not None:
                     scores_by_type["speaking"].append(rec.evaluation.overall)
                     
             # Also check writing AI evaluations
             for sa in assessments:
-                sub = db.query(WritingSubmission).filter(WritingSubmission.student_assessment_id == sa.id).first()
+                sub = sa.writing_submission
                 if sub:
-                    ai_eval = db.query(AIEvaluation).filter(AIEvaluation.submission_id == sub.id).first()
+                    ai_eval = sub.evaluation
                     if ai_eval and ai_eval.overall is not None:
                         scores_by_type["writing"].append(ai_eval.overall)
         
@@ -65,6 +104,7 @@ def get_students(db: Session = Depends(get_db)):
             "speakingScore": s_score,
             "overallScore": overall_score,
             "cefrLevel": student_profile.current_level if student_profile else "Beginner",
+            "group": student_profile.current_level if student_profile else "Beginner",
             "attendance": 100,
             "status": "Good",
             "streak": 0,
