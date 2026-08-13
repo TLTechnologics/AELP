@@ -62,7 +62,7 @@ export default function TeacherDashboard() {
     queryFn: async () => {
       try {
         const res = await teacherService.getStudents();
-        return res.data?.length > 0 ? res.data : fallbackStudents;
+        return Array.isArray(res.data) ? res.data : fallbackStudents;
       } catch (err) {
         console.warn("Backend unavailable, using fallback data");
         return fallbackStudents;
