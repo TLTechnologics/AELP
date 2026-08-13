@@ -45,13 +45,7 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 260, damping: 22 } }
 };
 
-const fallbackStudents = [
-  { id: '1', name: 'Alex Johnson', class: 'Beginners A', overallScore: 85, listeningScore: 80, readingScore: 90, writingScore: 75, speakingScore: 95, status: 'Good' },
-  { id: '2', name: 'Maria Garcia', class: 'Intermediate B', overallScore: 72, listeningScore: 65, readingScore: 80, writingScore: 70, speakingScore: 75, status: 'Needs Improvement' },
-  { id: '3', name: 'Wei Chen', class: 'Advanced C', overallScore: 92, listeningScore: 95, readingScore: 88, writingScore: 94, speakingScore: 91, status: 'Good' },
-  { id: '4', name: 'Sarah Smith', class: 'Beginners A', overallScore: 60, listeningScore: 55, readingScore: 65, writingScore: 50, speakingScore: 70, status: 'Critical' },
-  { id: '5', name: 'David Kim', class: 'Intermediate B', overallScore: 78, listeningScore: 80, readingScore: 75, writingScore: 82, speakingScore: 75, status: 'Good' },
-];
+
 
 export default function TeacherDashboard() {
   const router = useRouter();
@@ -62,10 +56,9 @@ export default function TeacherDashboard() {
     queryFn: async () => {
       try {
         const res = await teacherService.getStudents();
-        return Array.isArray(res.data) ? res.data : fallbackStudents;
+        return Array.isArray(res.data) ? res.data : [];
       } catch (err) {
-        console.warn("Backend unavailable, using fallback data");
-        return fallbackStudents;
+        return [];
       }
     }
   });
