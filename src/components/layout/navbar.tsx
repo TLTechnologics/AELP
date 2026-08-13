@@ -54,7 +54,8 @@ export function Navbar() {
   const isTeacher = pathname.startsWith('/teacher');
   const items = isTeacher ? teacherNavItems : navItems;
   const mobileItems = isTeacher ? teacherMobileNavItems : studentMobileNavItems;
-  const stage = data?.profile_stage || 1;
+  // Teachers don't have a student stage — default to 4 (fully unlocked) so no nav items are locked
+  const stage = isTeacher ? 4 : (data?.profile_stage || 1);
 
   return (
     <>
