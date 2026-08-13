@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from database.database import get_db
-from models.models import User, Student
+from models.models import User, Student, RoleEnum
 from supabase import create_client, Client
 import os
 from dotenv import load_dotenv
@@ -27,14 +27,39 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(securi
         if not user_response or not user_response.user:
             raise HTTPException(status_code=401, detail="Invalid token or user not found")
             
-        supabase_user_id = user_response.user.id
+        supabase_user = user_response.user
+        supabase_user_id = supabase_user.id
         
         # Get user from our DB
         user = db.query(User).filter(User.id == supabase_user_id).first()
         if not user:
-            raise HTTPException(status_code=404, detail="User record not found in database")
+            # Auto-provision user record in public.users DB table if created via Supabase Auth
+            metadata = supabase_user.user_metadata or {}
+            role_str = str(metadata.get("role", "")).lower()
+            email_str = (supabase_user.email or "").lower()
+            
+            if "teacher" in role_str or "teacher" in email_str:
+                assigned_role = RoleEnum.TEACHER
+            elif "admin" in role_str:
+                assigned_role = RoleEnum.ADMIN
+            else:
+                assigned_role = RoleEnum.STUDENT
+
+            full_name = metadata.get("full_name") or metadata.get("name") or (email_str.split("@")[0] if email_str else "User")
+            
+            user = User(
+                id=supabase_user_id,
+                email=supabase_user.email,
+                full_name=full_name,
+                role=assigned_role
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
             
         return user
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Auth error: {e}")
         raise HTTPException(status_code=401, detail="Authentication failed")
