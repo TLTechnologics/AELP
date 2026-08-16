@@ -548,79 +548,103 @@ async def upload_listening_assessment(
             )
             db.add(option)
         db.commit()
-
     return {"message": "Listening assessment uploaded successfully", "id": assessment.id}
 
 @router.get('/class-analytics')
 def get_class_analytics(db: Session = Depends(get_db)):
     users = db.query(User).filter(User.role == RoleEnum.STUDENT).all()
     students_data = []
-    
+
     total_l = 0
     total_r = 0
     total_w = 0
+    total_s = 0
     count = 0
-    
+
     for u in users:
-        sp = db.query(Student).filter(Student.user_id == u.id).first()
-        if not sp: continue
-        
-        # calculate dynamic scores based on assessments
-        sass = db.query(StudentAssessment).filter(StudentAssessment.student_id == sp.id).all()
-        l_scores, r_scores, w_scores, s_scores = [], [], [], []
-        
-        for sa in sass:
-            if sa.assessment and sa.total_marks:
-                t = sa.assessment.type.value.lower()
-                if t == 'listening': l_scores.append(sa.total_marks)
-                if t == 'reading': r_scores.append(sa.total_marks)
-                if t == 'writing': w_scores.append(sa.total_marks)
-                if t == 'speaking': s_scores.append(sa.total_marks)
-                
-        # Fallback to model values if no assessment
-        ls = sum(l_scores)/len(l_scores) if l_scores else (sp.listening_score or 0)
-        rs = sum(r_scores)/len(r_scores) if r_scores else (sp.reading_score or 0)
-        ws = sum(w_scores)/len(w_scores) if w_scores else (sp.writing_score or 0)
-        
-        # check evaluations for speaking
-        ss = 0
-        ai_evals = db.query(SpeakingEvaluation).join(SpeakingRecording).filter(SpeakingRecording.student_id == sp.id).all()
-        if ai_evals:
-            ss = sum([e.overall for e in ai_evals if e.overall])/len(ai_evals)
-        elif s_scores:
-            ss = sum(s_scores)/len(s_scores)
-            
-        overall = (ls + rs + ws + ss) / 4
-        
-        status = 'Good'
-        if overall < 50: status = 'Needs Improvement'
-        if overall < 30: status = 'Critical'
-        
-        students_data.append({
-            'id': u.id,
-            'name': u.full_name,
-            'class': sp.semester or 'Semester 1',
-            'listeningScore': round(ls, 1),
-            'readingScore': round(rs, 1),
-            'writingScore': round(ws, 1),
-            'speakingScore': round(ss, 1),
-            'overallScore': round(overall, 1),
-            'attendance': 100,
-            'status': status,
-            'xp': int(overall * 100),
-            'streak': len(sass)
-        })
-        
-        total_l += ls
-        total_r += rs
-        total_w += ws
-        count += 1
-        
+        try:
+            sp = db.query(Student).filter(Student.user_id == u.id).first()
+            if not sp:
+                continue
+
+            # Calculate dynamic scores based on assessments
+            sass = db.query(StudentAssessment).filter(
+                StudentAssessment.student_id == sp.id
+            ).all()
+            l_scores, r_scores, w_scores, s_scores = [], [], [], []
+
+            for sa in sass:
+                try:
+                    if sa.assessment and sa.total_marks and sa.assessment.type:
+                        t = sa.assessment.type.value.lower()
+                        if t == 'listening': l_scores.append(sa.total_marks)
+                        elif t == 'reading':  r_scores.append(sa.total_marks)
+                        elif t == 'writing':  w_scores.append(sa.total_marks)
+                        elif t == 'speaking': s_scores.append(sa.total_marks)
+                except Exception:
+                    pass
+
+            ls = sum(l_scores)/len(l_scores) if l_scores else (sp.listening_score or 0)
+            rs = sum(r_scores)/len(r_scores) if r_scores else (sp.reading_score or 0)
+            ws = sum(w_scores)/len(w_scores) if w_scores else (sp.writing_score or 0)
+
+            # Speaking from AI evaluations
+            ss = 0
+            try:
+                recordings = db.query(SpeakingRecording).filter(
+                    SpeakingRecording.student_id == sp.id
+                ).all()
+                recording_ids = [r.id for r in recordings]
+                if recording_ids:
+                    ai_evals = db.query(SpeakingEvaluation).filter(
+                        SpeakingEvaluation.recording_id.in_(recording_ids)
+                    ).all()
+                    valid = [e.overall for e in ai_evals if e.overall is not None]
+                    if valid:
+                        ss = sum(valid) / len(valid)
+            except Exception:
+                pass
+
+            if not ss and s_scores:
+                ss = sum(s_scores) / len(s_scores)
+
+            overall = (ls + rs + ws + ss) / 4
+
+            status = 'Good'
+            if overall < 50: status = 'Needs Improvement'
+            if overall < 30: status = 'Critical'
+
+            students_data.append({
+                'id': str(u.id),
+                'name': u.full_name or u.email,
+                'class': sp.semester or 'Semester 1',
+                'listeningScore': round(ls, 1),
+                'readingScore':   round(rs, 1),
+                'writingScore':   round(ws, 1),
+                'speakingScore':  round(ss, 1),
+                'overallScore':   round(overall, 1),
+                'attendance': 100,
+                'status': status,
+                'xp': int(overall * 100),
+                'streak': len(sass)
+            })
+
+            total_l += ls
+            total_r += rs
+            total_w += ws
+            total_s += ss
+            count += 1
+
+        except Exception as e:
+            print(f"[class-analytics] skipping user {u.id}: {e}")
+            continue
+
     avg_l = round(total_l/count, 1) if count else 0
     avg_r = round(total_r/count, 1) if count else 0
     avg_w = round(total_w/count, 1) if count else 0
-    avg_overall = round((avg_l + avg_r + avg_w)/3, 1)
-    
+    avg_s = round(total_s/count, 1) if count else 0
+    avg_overall = round((avg_l + avg_r + avg_w + avg_s) / 4, 1)
+
     return {
         'classes': [{
             'id': 'c1',
@@ -630,12 +654,13 @@ def get_class_analytics(db: Session = Depends(get_db)):
             'attendance': 100,
             'missingAssessments': len([s for s in students_data if s['status'] == 'Critical']),
             'avgListening': avg_l,
-            'avgReading': avg_r,
-            'avgWriting': avg_w,
-            'avgSpeaking': 0
+            'avgReading':   avg_r,
+            'avgWriting':   avg_w,
+            'avgSpeaking':  avg_s
         }],
         'students': students_data
     }
+
 
 @router.get('/writing-submissions')
 def get_writing_submissions(db: Session = Depends(get_db)):
