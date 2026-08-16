@@ -12,7 +12,15 @@ from config import settings
 from supabase import create_client, Client
 
 router = APIRouter()
-supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
+
+# Lazily create supabase client only when needed (avoids crashing startup if env vars missing)
+_supabase_client = None
+
+def get_supabase():
+    global _supabase_client
+    if _supabase_client is None:
+        _supabase_client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
+    return _supabase_client
 
 # Default seed lessons if database table has no entries
 SEED_LESSONS = [
@@ -149,6 +157,7 @@ async def create_lesson(
 
     # Handle Audio File upload if provided
     if audio_file:
+        supabase = get_supabase()
         file_ext = audio_file.filename.split(".")[-1] if audio_file.filename else "mp3"
         unique_name = f"lesson_audio_{int(time.time())}_{uuid.uuid4().hex[:6]}.{file_ext}"
         audio_bytes = await audio_file.read()
@@ -224,6 +233,7 @@ async def update_lesson(
         lesson.estimated_time = estimated_time
 
     if audio_file:
+        supabase = get_supabase()
         file_ext = audio_file.filename.split(".")[-1] if audio_file.filename else "mp3"
         unique_name = f"lesson_audio_{int(time.time())}_{uuid.uuid4().hex[:6]}.{file_ext}"
         audio_bytes = await audio_file.read()
