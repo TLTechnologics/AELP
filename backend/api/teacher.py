@@ -11,7 +11,16 @@ from database.database import get_db
 from api.deps import get_current_user
 from models.models import Assessment, AssessmentType, Question, QuestionType, QuestionOption, AudioFile, User, Student, RoleEnum, StudentAssessment, AIEvaluation, SpeakingEvaluation, ProgressHistory, StudentLessonRecommendations, WritingSubmission, SpeakingRecording
 router = APIRouter()
-supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
+
+# Lazily create supabase client only when needed
+_supabase_client = None
+
+def get_supabase():
+    global _supabase_client
+    if _supabase_client is None:
+        _supabase_client = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_KEY)
+    return _supabase_client
+
 
 @router.get("/students")
 def get_students(
@@ -322,7 +331,7 @@ def delete_student(student_id: str, db: Session = Depends(get_db)):
         
     # Delete from Supabase Auth
     try:
-        supabase.auth.admin.delete_user(student_id)
+        get_supabase().auth.admin.delete_user(student_id)
     except Exception as e:
         print(f"Failed to delete from Supabase Auth: {e}")
         
@@ -340,7 +349,7 @@ def delete_student(student_id: str, db: Session = Depends(get_db)):
 def create_student(data: StudentCreateRequest, db: Session = Depends(get_db)):
     # 1. Create in Supabase Auth
     try:
-        user_response = supabase.auth.admin.create_user({
+        user_response = get_supabase().auth.admin.create_user({
             "email": data.email,
             "password": data.password,
             "email_confirm": True,
@@ -489,7 +498,7 @@ async def upload_listening_assessment(
     audio_bytes = await audio_file.read()
     
     try:
-        supabase.storage.from_("speaking-recordings").upload(
+        get_supabase().storage.from_("speaking-recordings").upload(
             unique_filename,
             audio_bytes,
             {"content-type": audio_file.content_type or "audio/mpeg"}
