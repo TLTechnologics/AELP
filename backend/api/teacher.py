@@ -552,7 +552,34 @@ async def upload_listening_assessment(
 
 @router.get('/class-analytics')
 def get_class_analytics(db: Session = Depends(get_db)):
-    users = db.query(User).filter(User.role == RoleEnum.STUDENT).all()
+    users = (
+        db.query(User)
+        .options(
+            joinedload(User.student_profile).options(
+                selectinload(Student.assessments).joinedload(StudentAssessment.assessment),
+            )
+        )
+        .filter(User.role == RoleEnum.STUDENT)
+        .all()
+    )
+
+    student_ids = [
+        user.student_profile.id
+        for user in users
+        if user.student_profile is not None
+    ]
+    
+    recordings_by_student = {}
+    if student_ids:
+        recordings = (
+            db.query(SpeakingRecording)
+            .options(joinedload(SpeakingRecording.evaluation))
+            .filter(SpeakingRecording.student_id.in_(student_ids))
+            .all()
+        )
+        for r in recordings:
+            recordings_by_student.setdefault(r.student_id, []).append(r)
+
     students_data = []
 
     total_l = 0
@@ -563,14 +590,12 @@ def get_class_analytics(db: Session = Depends(get_db)):
 
     for u in users:
         try:
-            sp = db.query(Student).filter(Student.user_id == u.id).first()
+            sp = u.student_profile
             if not sp:
                 continue
 
             # Calculate dynamic scores based on assessments
-            sass = db.query(StudentAssessment).filter(
-                StudentAssessment.student_id == sp.id
-            ).all()
+            sass = sp.assessments
             l_scores, r_scores, w_scores, s_scores = [], [], [], []
 
             for sa in sass:
@@ -590,20 +615,11 @@ def get_class_analytics(db: Session = Depends(get_db)):
 
             # Speaking from AI evaluations
             ss = 0
-            try:
-                recordings = db.query(SpeakingRecording).filter(
-                    SpeakingRecording.student_id == sp.id
-                ).all()
-                recording_ids = [r.id for r in recordings]
-                if recording_ids:
-                    ai_evals = db.query(SpeakingEvaluation).filter(
-                        SpeakingEvaluation.recording_id.in_(recording_ids)
-                    ).all()
-                    valid = [e.overall for e in ai_evals if e.overall is not None]
-                    if valid:
-                        ss = sum(valid) / len(valid)
-            except Exception:
-                pass
+            student_recordings = recordings_by_student.get(sp.id, [])
+            if student_recordings:
+                valid_evals = [r.evaluation.overall_score for r in student_recordings if r.evaluation and r.evaluation.overall_score is not None]
+                if valid_evals:
+                    ss = sum(valid_evals) / len(valid_evals)
 
             if not ss and s_scores:
                 ss = sum(s_scores) / len(s_scores)
