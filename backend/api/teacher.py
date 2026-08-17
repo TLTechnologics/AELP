@@ -672,10 +672,14 @@ def get_writing_submissions(db: Session = Depends(get_db)):
         sp = db.query(Student).filter(Student.id == sa.student_id).first()
         if not sp: continue
         u = db.query(User).filter(User.id == sp.user_id).first()
+        if not u: continue
         eval = db.query(AIEvaluation).filter(AIEvaluation.submission_id == sub.id).first()
         
-        word_count = len(sub.content.split())
-        
+        try:
+            weaknesses_data = json.loads(eval.weaknesses) if eval and eval.weaknesses else []
+        except:
+            weaknesses_data = []
+
         res.append({
             'id': str(sub.id),
             'studentId': u.id,
@@ -683,15 +687,15 @@ def get_writing_submissions(db: Session = Depends(get_db)):
             'rollNumber': f"R{sp.id:04d}",
             'class': sp.semester or 'Semester 1',
             'submittedAt': sub.submitted_at.isoformat() if sub.submitted_at else '',
-            'content': sub.content,
-            'wordCount': word_count,
+            'content': sub.content or '',
+            'wordCount': len((sub.content or '').split()),
             'status': 'Evaluated' if eval else 'Pending',
             'evaluation': {
                 'grammar': eval.grammar,
                 'vocabulary': eval.vocabulary,
                 'coherence': eval.coherence,
                 'overall': eval.overall,
-                'strengths': json.loads(eval.weaknesses) if eval.weaknesses else [],
+                'strengths': weaknesses_data,
                 'weaknesses': [],
                 'feedback': eval.feedback
             } if eval else None
