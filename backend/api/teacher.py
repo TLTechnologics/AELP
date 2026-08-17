@@ -665,15 +665,28 @@ def get_class_analytics(db: Session = Depends(get_db)):
 @router.get('/writing-submissions')
 def get_writing_submissions(db: Session = Depends(get_db)):
     submissions = db.query(WritingSubmission).all()
+    
+    sa_ids = [sub.student_assessment_id for sub in submissions if sub.student_assessment_id]
+    sas = {sa.id: sa for sa in db.query(StudentAssessment).filter(StudentAssessment.id.in_(sa_ids)).all()} if sa_ids else {}
+    
+    student_ids = [sa.student_id for sa in sas.values() if sa.student_id]
+    students = {s.id: s for s in db.query(Student).filter(Student.id.in_(student_ids)).all()} if student_ids else {}
+    
+    user_ids = [s.user_id for s in students.values() if s.user_id]
+    users = {u.id: u for u in db.query(User).filter(User.id.in_(user_ids)).all()} if user_ids else {}
+    
+    sub_ids = [sub.id for sub in submissions]
+    evals = {e.submission_id: e for e in db.query(AIEvaluation).filter(AIEvaluation.submission_id.in_(sub_ids)).all()} if sub_ids else {}
+
     res = []
     for sub in submissions:
-        sa = db.query(StudentAssessment).filter(StudentAssessment.id == sub.student_assessment_id).first()
+        sa = sas.get(sub.student_assessment_id)
         if not sa: continue
-        sp = db.query(Student).filter(Student.id == sa.student_id).first()
+        sp = students.get(sa.student_id)
         if not sp: continue
-        u = db.query(User).filter(User.id == sp.user_id).first()
+        u = users.get(sp.user_id)
         if not u: continue
-        eval = db.query(AIEvaluation).filter(AIEvaluation.submission_id == sub.id).first()
+        eval = evals.get(sub.id)
         
         try:
             weaknesses_data = json.loads(eval.weaknesses) if eval and eval.weaknesses else []
@@ -770,12 +783,23 @@ def evaluate_writing(submission_id: int, db: Session = Depends(get_db)):
 @router.get('/speaking-submissions')
 def get_speaking_submissions(db: Session = Depends(get_db)):
     recs = db.query(SpeakingRecording).all()
+    
+    student_ids = [rec.student_id for rec in recs if rec.student_id]
+    students = {s.id: s for s in db.query(Student).filter(Student.id.in_(student_ids)).all()} if student_ids else {}
+    
+    user_ids = [s.user_id for s in students.values() if s.user_id]
+    users = {u.id: u for u in db.query(User).filter(User.id.in_(user_ids)).all()} if user_ids else {}
+    
+    rec_ids = [rec.id for rec in recs]
+    evals = {e.recording_id: e for e in db.query(SpeakingEvaluation).filter(SpeakingEvaluation.recording_id.in_(rec_ids)).all()} if rec_ids else {}
+
     res = []
     for rec in recs:
-        sp = db.query(Student).filter(Student.id == rec.student_id).first()
+        sp = students.get(rec.student_id)
         if not sp: continue
-        u = db.query(User).filter(User.id == sp.user_id).first()
-        eval = db.query(SpeakingEvaluation).filter(SpeakingEvaluation.recording_id == rec.id).first()
+        u = users.get(sp.user_id)
+        if not u: continue
+        eval = evals.get(rec.id)
         
         res.append({
             'id': str(rec.id),
