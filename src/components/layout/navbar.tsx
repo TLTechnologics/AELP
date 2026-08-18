@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useDashboard } from '@/hooks/use-dashboard';
-import { Lock, LayoutDashboard, BookOpen, Sparkles, TrendingUp, Award, User, UserPlus, Mic, PenTool, Download } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { Lock, LayoutDashboard, BookOpen, Sparkles, TrendingUp, Award, User, UserPlus, Mic, PenTool, Download, BarChart, ClipboardList, FileText } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -18,6 +19,10 @@ const teacherNavItems = [
   { name: 'Dashboard', href: '/teacher', icon: LayoutDashboard },
   { name: 'Lessons', href: '/teacher/lessons', icon: BookOpen },
   { name: 'Students', href: '/teacher/students', icon: User },
+  { name: 'Add Student', href: '/teacher/add-student', icon: UserPlus },
+  { name: 'Analytics', href: '/teacher/analytics', icon: BarChart },
+  { name: 'Assessments', href: '/teacher/assessments', icon: ClipboardList },
+  { name: 'Reports', href: '/teacher/reports', icon: FileText },
   { name: 'Speaking Eval', href: '/teacher/speaking', icon: Mic },
   { name: 'Writing Eval', href: '/teacher/writing', icon: PenTool },
 ];
@@ -35,6 +40,10 @@ const teacherMobileNavItems = [
   { name: 'Home', href: '/teacher', icon: LayoutDashboard },
   { name: 'Lessons', href: '/teacher/lessons', icon: BookOpen },
   { name: 'Students', href: '/teacher/students', icon: User },
+  { name: 'Add', href: '/teacher/add-student', icon: UserPlus },
+  { name: 'Analytics', href: '/teacher/analytics', icon: BarChart },
+  { name: 'Assessments', href: '/teacher/assessments', icon: ClipboardList },
+  { name: 'Reports', href: '/teacher/reports', icon: FileText },
   { name: 'Speaking', href: '/teacher/speaking', icon: Mic },
   { name: 'Writing', href: '/teacher/writing', icon: PenTool },
   { name: 'Profile', href: '/profile', icon: User },
@@ -44,6 +53,7 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data } = useDashboard();
+  const { theme, setTheme } = useTheme();
 
   const isTeacher = pathname.startsWith('/teacher');
   const items = isTeacher ? teacherNavItems : navItems;
@@ -53,11 +63,11 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 w-full h-16 md:h-20 bg-white/90 backdrop-blur-md border-b border-border z-50 flex items-center justify-between px-4 sm:px-6 md:px-8 shadow-xs">
+      <nav className="fixed top-0 left-0 w-full h-16 md:h-20 bg-white/90 dark:bg-[#171E19]/90 backdrop-blur-md border-b border-border z-50 flex items-center justify-between px-4 sm:px-6 md:px-8 shadow-xs">
         {/* Left Side: Brand Logo */}
         <div className="flex items-center gap-2">
           <Link href={isTeacher ? "/teacher" : "/"} className="flex items-center gap-1.5 group">
-            <div className="font-heading text-2xl sm:text-3xl md:text-4xl tracking-tighter text-brand-dark group-hover:text-brand-dark/80 transition-colors">
+            <div className="font-heading text-2xl sm:text-3xl md:text-4xl tracking-tighter text-brand-dark dark:text-white group-hover:text-brand-dark/80 transition-colors">
               AELP<span className="text-brand-yellow text-xl sm:text-2xl">.</span>
             </div>
           </Link>
@@ -76,7 +86,7 @@ export function Navbar() {
                 key={item.name} 
                 href={item.href}
                 className={`relative text-xs font-bold tracking-wide transition-colors uppercase flex items-center gap-1.5 shrink-0 ${
-                  isActive ? 'text-brand-dark' : 'text-muted-foreground hover:text-brand-dark'
+                  isActive ? 'text-brand-dark dark:text-white' : 'text-muted-foreground hover:text-brand-dark dark:hover:text-white'
                 }`}
               >
                 {isLocked && <Lock className="w-3 h-3 text-muted-foreground" />}
@@ -96,6 +106,13 @@ export function Navbar() {
 
         {/* Right side Profile/Action */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors"
+          >
+            <span className="hidden dark:block">☀️</span>
+            <span className="block dark:hidden">🌙</span>
+          </button>
           <Link 
             href="/profile" 
             className="hidden sm:block text-xs font-bold tracking-wide text-brand-dark hover:text-muted-foreground transition-colors uppercase"
