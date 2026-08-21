@@ -106,13 +106,7 @@ export function Navbar() {
 
         {/* Right side Profile/Action */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-full hover:bg-muted text-muted-foreground transition-colors"
-          >
-            <span className="hidden dark:block">☀️</span>
-            <span className="block dark:hidden">🌙</span>
-          </button>
+
           <Link 
             href="/profile" 
             className="hidden sm:block text-xs font-bold tracking-wide text-brand-dark hover:text-muted-foreground transition-colors uppercase"

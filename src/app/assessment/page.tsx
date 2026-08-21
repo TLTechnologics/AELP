@@ -342,7 +342,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
       return;
     }
 
-    if (!liveTranscript.trim()) {
+    if (!liveTranscript.trim() && !audioBlob) {
       setErrorMessage('No speech detected. Please ensure your microphone is working and speak clearly.');
       return;
     }
@@ -350,12 +350,22 @@ However, not everyone follows the same routine. Some people prefer to wake up la
     setIsSubmitting(true);
 
     try {
-      const res = await submitSpeakingTextMutation.mutateAsync({
-        assessment_id: parseInt(speakingData?.id || '1'),
-        prompt: speakingData?.topic || 'Introduce yourself.',
-        duration: recordingDuration,
-        transcript: liveTranscript
-      });
+      let res;
+      if (liveTranscript.trim()) {
+        res = await submitSpeakingTextMutation.mutateAsync({
+          assessment_id: parseInt(speakingData?.id || '1'),
+          prompt: speakingData?.topic || 'Introduce yourself.',
+          duration: recordingDuration,
+          transcript: liveTranscript
+        });
+      } else if (audioBlob) {
+        const formData = new FormData();
+        formData.append('audio_file', audioBlob, 'recording.webm');
+        formData.append('assessment_id', speakingData?.id || '1');
+        formData.append('prompt', speakingData?.topic || 'Introduce yourself.');
+        formData.append('duration', recordingDuration.toString());
+        res = await submitSpeakingMutation.mutateAsync(formData);
+      }
       setSpeakingResult(res);
       setActiveModule('speaking');
       setStage(STAGES.RESULTS);
