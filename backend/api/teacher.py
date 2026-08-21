@@ -764,6 +764,7 @@ def evaluate_writing(submission_id: int, db: Session = Depends(get_db)):
         response = client.chat.completions.create(
             messages=[{'role': 'user', 'content': prompt}],
             model='qwen/qwen3.6-27b',
+            max_tokens=4096,
             response_format={'type': 'json_object'}
         )
         result = json.loads(response.choices[0].message.content)
@@ -869,6 +870,7 @@ def evaluate_speaking(recording_id: int, db: Session = Depends(get_db)):
         response = client.chat.completions.create(
             messages=[{'role': 'user', 'content': prompt}],
             model='qwen/qwen3.6-27b',
+            max_tokens=4096,
             response_format={'type': 'json_object'}
         )
         result = json.loads(response.choices[0].message.content)

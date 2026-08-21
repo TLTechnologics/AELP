@@ -144,6 +144,7 @@ Return ONLY valid JSON matching this schema:
         ],
         model="qwen/qwen3.6-27b",
         temperature=0.1,
+        max_tokens=4096,
         response_format={"type": "json_object"}
     )
 
@@ -217,6 +218,7 @@ Return ONLY valid JSON matching this schema:
         ],
         model="qwen/qwen3.6-27b",
         temperature=0.1,
+        max_tokens=4096,
         response_format={"type": "json_object"}
     )
 
