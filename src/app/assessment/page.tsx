@@ -472,7 +472,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                   </div>
                   <div className="text-xs font-bold text-muted-foreground space-y-1">
                     <p>• Word target: 120 - 150 words</p>
-                    <p>• Evaluated by llama-3.1-8b-instant</p>
+                    <p>• Evaluated by llama3-8b-8192</p>
                   </div>
                 </div>
                 <button
@@ -1017,7 +1017,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     </div>
                     <div>
                       <h3 className="font-heading text-2xl">Writing Evaluation</h3>
-                      <p className="text-xs text-muted-foreground font-bold">Evaluated by Groq llama-3.1-8b-instant</p>
+                      <p className="text-xs text-muted-foreground font-bold">Evaluated by Groq llama3-8b-8192</p>
                     </div>
                   </div>
                   {writingResult.cefr_level && (
