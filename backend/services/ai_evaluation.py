@@ -6,7 +6,7 @@ client = Groq(api_key=settings.GROQ_API_KEY)
 
 def evaluate_writing(prompt: str, submission: str) -> dict:
     """
-    Evaluates a student's writing submission using Groq API (llama3-8b-8192).
+    Evaluates a student's writing submission using Groq API (mixtral-8x7b-32768).
     Returns strict JSON formatted response according to Cambridge English rubric.
     """
     system_prompt = f"""You are a professional Cambridge English examiner.
@@ -142,7 +142,7 @@ Return ONLY valid JSON matching this schema:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": transcript_text}
         ],
-        model="llama3-8b-8192",
+        model="mixtral-8x7b-32768",
         temperature=0.1,
         response_format={"type": "json_object"}
     )
@@ -215,7 +215,7 @@ Return ONLY valid JSON matching this schema:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": transcript_text}
         ],
-        model="llama3-8b-8192",
+        model="mixtral-8x7b-32768",
         temperature=0.1,
         response_format={"type": "json_object"}
     )
