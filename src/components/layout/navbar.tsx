@@ -122,56 +122,15 @@ export function Navbar() {
           </button>
         </div>
 
-        {/* Mobile Hamburger (Top right) */}
+        {/* Mobile Profile (Top right) */}
         <div className="lg:hidden flex items-center gap-4">
-          <Link href="/profile" className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-brand-dark">
+          <Link href="/profile" className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-brand-dark hover:bg-brand-yellow hover:text-white transition-colors">
             <User className="w-4 h-4" />
           </Link>
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-brand-dark p-2">
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
         </div>
       </nav>
 
-      {/* Mobile Top Dropdown Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden fixed top-[72px] left-0 w-full bg-white border-b border-border shadow-xl z-40 p-4 flex flex-col gap-2">
-          {items.map((item) => {
-            const isActive = item.href === '/teacher' || item.href === '/'
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
-            const isLocked = !isTeacher && stage === 1 && ['Skills', 'Progress', 'Results', 'Learning'].includes(item.name);
-            return (
-              <Link
-                key={item.name}
-                href={isLocked ? '#' : item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`p-3 rounded-xl flex items-center justify-between text-sm font-bold uppercase tracking-wider ${
-                  isActive ? 'bg-brand-yellow/20 text-brand-dark' : 'text-muted-foreground'
-                } ${isLocked ? 'opacity-50' : ''}`}
-              >
-                {item.name}
-                {isLocked && <Lock className="w-4 h-4" />}
-              </Link>
-            );
-          })}
-          <div className="h-px bg-border my-2" />
-          <button 
-            onClick={async () => {
-              try {
-                const { supabase } = await import('@/lib/supabaseClient');
-                await supabase.auth.signOut();
-              } catch (e) {}
-              localStorage.clear();
-              sessionStorage.clear();
-              window.location.href = '/auth/login';
-            }}
-            className="p-3 text-left text-sm font-bold uppercase tracking-wider text-red-500 rounded-xl hover:bg-red-50"
-          >
-            Log Out
-          </button>
-        </div>
-      )}
+
 
       {/* Mobile Bottom Navigation Bar */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 h-[72px] bg-white/95 backdrop-blur-md border-t border-border z-30 flex items-center justify-around px-2 pb-safe">
