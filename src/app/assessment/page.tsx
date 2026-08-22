@@ -2,10 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, BookOpen, FileText, CheckCircle, AlertCircle, Award, Sparkles, ArrowLeft, Mic, Square, Play, Pause, Trash2, RotateCcw } from 'lucide-react';
+import { ArrowRight, BookOpen, FileText, CheckCircle, AlertCircle, Award, Sparkles, ArrowLeft, Mic, Square, Play, Pause, Trash2, RotateCcw, Headphones, PenLine, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useReadingAssessment, useSubmitReading, useSubmitWriting, useSpeakingAssessment, useSubmitSpeaking, useSubmitSpeakingText, useWritingAssessment, useListeningAssessment, useSubmitListening } from '@/hooks/use-assessment';
-import { Headphones } from 'lucide-react';
+import { SectionHeader } from '@/components/ui/section-header';
+import { IconContainer } from '@/components/ui/icon-container';
+import { Button } from '@/components/ui/button';
 
 const STAGES = {
   SELECTION: 0,
@@ -385,10 +387,10 @@ However, not everyone follows the same routine. Some people prefer to wake up la
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-8 px-4">
+    <div className="w-full">
       {/* ERROR BANNER */}
       {errorMessage && (
-        <div className="mb-6 p-4 bg-red-100 border border-red-300 text-red-800 rounded-2xl flex items-center justify-between shadow-sm">
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-2xl flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3 font-bold text-sm">
             <AlertCircle className="w-5 h-5 text-red-600" />
             <span>{errorMessage}</span>
@@ -410,146 +412,140 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="space-y-12 text-center"
+            className="space-y-12"
           >
-            <div className="space-y-4 max-w-2xl mx-auto">
-              <h1 className="font-heading text-5xl md:text-6xl uppercase tracking-tight">Assessments</h1>
-              <p className="text-xl text-muted-foreground font-medium">
-                Choose an assessment to evaluate your English proficiency. Unlimited time available.
-              </p>
-            </div>
+            <SectionHeader 
+              title="Assessments" 
+              description="Evaluate your English skills and discover where you can improve." 
+            />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 text-left max-w-[1400px] mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
               {/* READING ASSESSMENT CARD */}
               <motion.div
-                whileHover={{ y: -6 }}
-                className="bg-white rounded-[32px] p-8 border border-border shadow-md hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
+                className="bg-white rounded-[24px] p-6 sm:p-8 border border-border shadow-sm hover-card-up flex flex-col justify-between"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-50" />
-                <div className="space-y-6 relative z-10">
-                  <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center shadow-inner">
-                    <BookOpen className="w-8 h-8" />
+                <div className="space-y-6">
+                  <div className="flex justify-between items-start">
+                    <IconContainer icon={BookOpen} color="blue" size="lg" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1.5 rounded-md">Automated</span>
                   </div>
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Automated Evaluation</span>
-                    <h2 className="font-heading text-3xl mt-3">📖 Reading Assessment</h2>
+                    <h2 className="font-heading text-2xl text-brand-dark">Reading</h2>
                     <p className="text-muted-foreground text-sm font-medium mt-2 leading-relaxed">
-                      Passage comprehension, multiple-choice questions, True/False statements, and vocabulary matching.
+                      Test your comprehension, vocabulary, and ability to understand written English.
                     </p>
                   </div>
-                  <div className="text-xs font-bold text-muted-foreground space-y-1">
-                    <p>• 18 Questions total</p>
-                    <p>• Unlimited duration</p>
+                  <div className="text-xs font-bold text-muted-foreground space-y-2 pb-4">
+                    <p className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-blue-500" /> 18 Questions</p>
+                    <p className="flex items-center gap-2"><Clock className="w-4 h-4 text-blue-500" /> Unlimited Duration</p>
                   </div>
                 </div>
-                <button
+                <Button
                   onClick={() => {
                     setErrorMessage(null);
                     setStage(STAGES.READING);
                   }}
-                  className="mt-8 w-full bg-brand-dark text-white rounded-full py-4 font-bold text-base flex items-center justify-center gap-3 hover:bg-brand-dark/90 transition-transform active:scale-95 shadow-lg"
+                  variant="outline"
+                  className="w-full mt-auto"
                 >
-                  Start Reading Assessment <ArrowRight className="w-5 h-5" />
-                </button>
+                  Start Reading <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </motion.div>
 
               {/* WRITING ASSESSMENT CARD */}
               <motion.div
-                whileHover={{ y: -6 }}
-                className="bg-white rounded-[32px] p-8 border border-border shadow-md hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
+                className="bg-white rounded-[24px] p-6 sm:p-8 border border-border shadow-sm hover-card-up flex flex-col justify-between"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-orange-100 rounded-full blur-3xl opacity-50" />
-                <div className="space-y-6 relative z-10">
-                  <div className="w-16 h-16 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center shadow-inner">
-                    <FileText className="w-8 h-8" />
+                <div className="space-y-6">
+                  <div className="flex justify-between items-start">
+                    <IconContainer icon={PenLine} color="orange" size="lg" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-3 py-1.5 rounded-md">AI Evaluated</span>
                   </div>
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-3 py-1 rounded-full">Real Groq AI Evaluation</span>
-                    <h2 className="font-heading text-3xl mt-3">✍️ Writing Assessment</h2>
+                    <h2 className="font-heading text-2xl text-brand-dark">Writing</h2>
                     <p className="text-muted-foreground text-sm font-medium mt-2 leading-relaxed">
-                      Write an essay evaluated by Cambridge English examiner AI on Grammar, Vocabulary, Structure, Coherence & Relevance.
+                      Write an essay evaluated by AI on Grammar, Vocabulary, Structure, and Coherence.
                     </p>
                   </div>
-                  <div className="text-xs font-bold text-muted-foreground space-y-1">
-                    <p>• Word target: 120 - 150 words</p>
-                    <p>• Evaluated by qwen/qwen3.6-27b</p>
+                  <div className="text-xs font-bold text-muted-foreground space-y-2 pb-4">
+                    <p className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-orange-500" /> 120-150 Words</p>
+                    <p className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-orange-500" /> Instant Feedback</p>
                   </div>
                 </div>
-                <button
+                <Button
                   onClick={() => {
                     setErrorMessage(null);
                     setStage(STAGES.WRITING);
                   }}
-                  className="mt-8 w-full bg-brand-yellow text-brand-dark rounded-full py-4 font-bold text-base flex items-center justify-center gap-3 hover:scale-105 transition-transform active:scale-95 shadow-lg"
+                  variant="outline"
+                  className="w-full mt-auto"
                 >
-                  Start Writing <ArrowRight className="w-5 h-5" />
-                </button>
+                  Start Writing <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </motion.div>
 
               {/* SPEAKING ASSESSMENT CARD */}
               <motion.div
-                whileHover={{ y: -6 }}
-                className="bg-white rounded-[32px] p-8 border border-border shadow-md hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
+                className="bg-white rounded-[24px] p-6 sm:p-8 border border-border shadow-sm hover-card-up flex flex-col justify-between"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-purple-100 rounded-full blur-3xl opacity-50" />
-                <div className="space-y-6 relative z-10">
-                  <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center shadow-inner">
-                    <Mic className="w-8 h-8" />
+                <div className="space-y-6">
+                  <div className="flex justify-between items-start">
+                    <IconContainer icon={Mic} color="purple" size="lg" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1.5 rounded-md">AI Evaluated</span>
                   </div>
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Real Gemini AI Evaluation</span>
-                    <h2 className="font-heading text-3xl mt-3">🎤 Speaking Assessment</h2>
+                    <h2 className="font-heading text-2xl text-brand-dark">Speaking</h2>
                     <p className="text-muted-foreground text-sm font-medium mt-2 leading-relaxed">
-                      Record yourself speaking. Evaluated by Gemini AI on Pronunciation, Fluency, Grammar & Vocabulary.
+                      Record yourself speaking. Evaluated on Pronunciation, Fluency, and Vocabulary.
                     </p>
                   </div>
-                  <div className="text-xs font-bold text-muted-foreground space-y-1">
-                    <p>• Min duration: 30 seconds</p>
-                    <p>• Max duration: 2 minutes</p>
+                  <div className="text-xs font-bold text-muted-foreground space-y-2 pb-4">
+                    <p className="flex items-center gap-2"><Clock className="w-4 h-4 text-purple-500" /> 30s - 2m Duration</p>
+                    <p className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-purple-500" /> Advanced Analysis</p>
                   </div>
                 </div>
-                <button
+                <Button
                   onClick={() => {
                     setErrorMessage(null);
                     setStage(STAGES.SPEAKING);
                   }}
-                  className="mt-8 w-full bg-purple-600 text-white rounded-full py-4 font-bold text-base flex items-center justify-center gap-3 hover:bg-purple-700 transition-transform active:scale-95 shadow-lg"
+                  variant="outline"
+                  className="w-full mt-auto"
                 >
-                  Start Speaking <ArrowRight className="w-5 h-5" />
-                </button>
+                  Start Speaking <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </motion.div>
 
               {/* LISTENING ASSESSMENT CARD */}
               <motion.div
-                whileHover={{ y: -6 }}
-                className="bg-white rounded-[32px] p-8 border border-border shadow-md hover:shadow-xl transition-all flex flex-col justify-between relative overflow-hidden"
+                className="bg-white rounded-[24px] p-6 sm:p-8 border border-border shadow-sm hover-card-up flex flex-col justify-between"
               >
-                <div className="absolute top-0 right-0 w-40 h-40 bg-pink-100 rounded-full blur-3xl opacity-50" />
-                <div className="space-y-6 relative z-10">
-                  <div className="w-16 h-16 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center shadow-inner">
-                    <Headphones className="w-8 h-8" />
+                <div className="space-y-6">
+                  <div className="flex justify-between items-start">
+                    <IconContainer icon={Headphones} color="pink" size="lg" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-3 py-1.5 rounded-md">Audio Task</span>
                   </div>
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-3 py-1 rounded-full">Listening Module</span>
-                    <h2 className="font-heading text-3xl mt-3">🎧 Listening Assessment</h2>
+                    <h2 className="font-heading text-2xl text-brand-dark">Listening</h2>
                     <p className="text-muted-foreground text-sm font-medium mt-2 leading-relaxed">
-                      Listen to audio tracks and answer questions to test your listening comprehension.
+                      Listen to audio tracks and answer questions to test your comprehension.
                     </p>
                   </div>
-                  <div className="text-xs font-bold text-muted-foreground space-y-1">
-                    <p>• {listeningData?.questions?.length || 0} Questions total</p>
-                    <p>• Custom Audio Track</p>
+                  <div className="text-xs font-bold text-muted-foreground space-y-2 pb-4">
+                    <p className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-pink-500" /> {listeningData?.questions?.length || 0} Questions</p>
+                    <p className="flex items-center gap-2"><Headphones className="w-4 h-4 text-pink-500" /> Custom Audio</p>
                   </div>
                 </div>
-                <button
+                <Button
                   onClick={() => {
                     setErrorMessage(null);
                     setStage(STAGES.LISTENING);
                   }}
-                  className="mt-8 w-full bg-pink-600 text-white rounded-full py-4 font-bold text-base flex items-center justify-center gap-3 hover:bg-pink-700 transition-transform active:scale-95 shadow-lg"
+                  variant="outline"
+                  className="w-full mt-auto"
                 >
-                  Start Listening <ArrowRight className="w-5 h-5" />
-                </button>
+                  Start Listening <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </motion.div>
             </div>
           </motion.div>
@@ -564,36 +560,38 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             exit={{ opacity: 0, x: -50 }}
             className="space-y-8"
           >
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-border gap-4 sm:gap-0">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-[24px] shadow-sm border border-border gap-4 sm:gap-0">
               <div className="flex items-center gap-4">
-                <button 
+                <Button 
                   onClick={() => setStage(STAGES.SELECTION)} 
-                  className="p-2 rounded-full hover:bg-muted transition-colors text-brand-dark"
+                  variant="ghost"
+                  size="icon"
                 >
-                  <ArrowLeft className="w-6 h-6" />
-                </button>
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Reading Module</span>
-                  <h2 className="text-2xl font-heading mt-1">Reading Assessment</h2>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-md">Reading Module</span>
+                  <h2 className="text-2xl font-heading mt-1 uppercase text-brand-dark">Reading Test</h2>
                 </div>
               </div>
-              <button
+              <Button
                 onClick={handleReadingSubmit}
                 disabled={isSubmitting}
-                className="w-full sm:w-auto justify-center bg-brand-yellow text-brand-dark px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
+                variant="primary"
+                className="w-full sm:w-auto"
               >
-                {isSubmitting ? 'Evaluating...' : 'Submit Reading Test'} <ArrowRight className="w-5 h-5" />
-              </button>
+                {isSubmitting ? 'Evaluating...' : 'Submit Test'} <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Passage Column */}
-              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-4 lg:h-[650px] lg:overflow-y-auto lg:sticky lg:top-24">
-                <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-wider text-xs">
+              <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-border shadow-sm space-y-6 lg:h-[650px] lg:overflow-y-auto lg:sticky lg:top-24">
+                <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-wider text-[11px] bg-blue-50 px-3 py-1.5 rounded-md w-fit">
                   <BookOpen className="w-4 h-4" /> Reading Passage
                 </div>
-                <h3 className="font-heading text-2xl">{readingData?.title || 'A Healthy Morning Routine'}</h3>
-                <div className="text-muted-foreground space-y-4 font-medium leading-relaxed whitespace-pre-line text-sm">
+                <h3 className="font-heading text-3xl uppercase text-brand-dark">{readingData?.title || 'A Healthy Morning Routine'}</h3>
+                <div className="text-muted-foreground space-y-4 font-medium leading-relaxed whitespace-pre-line text-[15px]">
                   {passage}
                 </div>
               </div>
@@ -601,22 +599,22 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               {/* Questions Column */}
               <div className="space-y-6 lg:h-[650px] lg:overflow-y-auto pr-2">
                 {questions.map((q: any) => (
-                  <div key={q.id} className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-4">
+                  <div key={q.id} className="bg-white p-6 rounded-[24px] border border-border shadow-sm space-y-5">
                     <h4 className="font-bold text-base text-brand-dark">{q.text}</h4>
 
                     {/* Multiple Choice / True False / Matching */}
                     {q.options && q.options.length > 0 ? (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {q.options.map((opt: any) => {
                           const selected = readingAnswers[q.id]?.selected_option_id === opt.id;
                           return (
                             <button
                               key={opt.id}
                               onClick={() => handleSelectOption(q.id, opt.id)}
-                              className={`w-full text-left p-3.5 rounded-xl border text-sm font-medium transition-all ${
+                              className={`w-full text-left px-5 py-4 rounded-xl border text-[14px] font-medium transition-all ${
                                 selected
                                   ? 'border-brand-yellow bg-brand-yellow/10 font-bold text-brand-dark'
-                                  : 'border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground'
+                                  : 'border-border/80 bg-muted/30 hover:bg-muted text-muted-foreground'
                               }`}
                             >
                               {opt.text}
@@ -631,7 +629,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                         placeholder="Type your detailed answer here..."
                         value={readingAnswers[q.id]?.text_answer || ''}
                         onChange={(e) => handleTextAnswer(q.id, e.target.value)}
-                        className="w-full bg-muted/50 border border-border/60 rounded-xl p-4 text-sm font-medium outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20 transition-all resize-y min-h-[90px]"
+                        className="w-full bg-muted/40 border border-border/80 rounded-xl p-5 text-sm font-medium outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20 transition-all resize-y min-h-[90px]"
                       />
                     )}
                   </div>
@@ -650,52 +648,54 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             exit={{ opacity: 0, x: -50 }}
             className="space-y-8"
           >
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-border gap-4 sm:gap-0">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-[24px] shadow-sm border border-border gap-4 sm:gap-0">
               <div className="flex items-center gap-4">
-                <button 
+                <Button 
                   onClick={() => setStage(STAGES.SELECTION)} 
-                  className="p-2 rounded-full hover:bg-muted transition-colors text-brand-dark"
+                  variant="ghost"
+                  size="icon"
                 >
-                  <ArrowLeft className="w-6 h-6" />
-                </button>
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-3 py-1 rounded-full">Writing Module</span>
-                  <h2 className="text-2xl font-heading mt-1">Writing Assessment</h2>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-3 py-1 rounded-md">Writing Module</span>
+                  <h2 className="text-2xl font-heading mt-1 uppercase text-brand-dark">Writing Test</h2>
                 </div>
               </div>
-              <button
+              <Button
                 onClick={handleWritingSubmit}
                 disabled={isSubmitting}
-                className="w-full sm:w-auto justify-center bg-brand-dark text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
+                variant="primary"
+                className="w-full sm:w-auto"
               >
-                {isSubmitting ? 'Evaluating Groq AI...' : 'Submit Essay'} <ArrowRight className="w-5 h-5" />
-              </button>
+                {isSubmitting ? 'Evaluating...' : 'Submit Essay'} <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </div>
 
-            <div className="bg-white p-8 rounded-[32px] border border-border shadow-xl space-y-6">
-              <div className="space-y-2">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Prompt (Word limit: 120–150 words)</span>
-                <h3 className="text-2xl font-heading text-brand-dark leading-snug whitespace-pre-line">
+            <div className="bg-white p-6 sm:p-10 rounded-[24px] border border-border shadow-sm space-y-8">
+              <div className="space-y-3">
+                <span className="inline-block text-[11px] font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-md uppercase tracking-wider">Prompt (Target: 120–150 words)</span>
+                <h3 className="text-2xl sm:text-3xl font-heading text-brand-dark leading-snug whitespace-pre-line uppercase">
                   {writingData?.topic || "Describe a time when someone helped you or when you helped someone else. How did it make you feel?"}
                 </h3>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <textarea
-                  rows={12}
+                  rows={14}
                   placeholder="Start writing your essay here..."
                   value={writingSubmission}
                   onChange={(e) => setWritingSubmission(e.target.value)}
-                  className="w-full bg-muted/40 border border-border/80 rounded-2xl p-6 text-base font-medium outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20 transition-all resize-y min-h-[220px]"
+                  className="w-full bg-muted/30 border border-border/80 rounded-[20px] p-6 text-base font-medium text-brand-dark outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20 transition-all resize-y min-h-[300px]"
                 />
 
                 <div className="flex justify-between items-center text-xs font-bold px-2">
                   <span className={wordCount >= 120 && wordCount <= 150 ? 'text-green-600 font-bold' : 'text-muted-foreground'}>
-                    Word Count: {wordCount} words (Target: 120 - 150)
+                    Word Count: {wordCount} (Target: 120 - 150)
                   </span>
                   {wordCount > 0 && wordCount < 20 && (
-                    <span className="text-red-500 flex items-center gap-1 font-bold">
-                      <AlertCircle className="w-4 h-4" /> Minimum 20 words required before submitting.
+                    <span className="text-red-500 flex items-center gap-1.5 font-bold">
+                      <AlertCircle className="w-4 h-4" /> Min 20 words required.
                     </span>
                   )}
                 </div>
@@ -713,75 +713,77 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             exit={{ opacity: 0, x: -50 }}
             className="space-y-8"
           >
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-border gap-4 sm:gap-0">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-[24px] shadow-sm border border-border gap-4 sm:gap-0">
               <div className="flex items-center gap-4">
-                <button 
+                <Button 
                   onClick={() => {
                     stopRecording();
                     deleteRecording();
                     setStage(STAGES.SELECTION);
                   }} 
-                  className="p-2 rounded-full hover:bg-muted transition-colors text-brand-dark"
+                  variant="ghost"
+                  size="icon"
                 >
-                  <ArrowLeft className="w-6 h-6" />
-                </button>
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Speaking Module</span>
-                  <h2 className="text-2xl font-heading mt-1">Speaking Assessment</h2>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-600 bg-purple-50 px-3 py-1 rounded-md">Speaking Module</span>
+                  <h2 className="text-2xl font-heading mt-1 uppercase text-brand-dark">Speaking Test</h2>
                 </div>
               </div>
-              <button
+              <Button
                 onClick={handleSpeakingSubmit}
                 disabled={isSubmitting || !audioBlob}
-                className="w-full sm:w-auto justify-center bg-purple-600 text-white px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-purple-700 transition-transform shadow-md disabled:opacity-50"
+                variant="primary"
+                className="w-full sm:w-auto"
               >
-                {isSubmitting ? 'Evaluating...' : 'Submit Recording'} <ArrowRight className="w-5 h-5" />
-              </button>
+                {isSubmitting ? 'Evaluating...' : 'Submit Recording'} <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </div>
 
-            <div className="bg-white p-8 rounded-[32px] border border-border shadow-xl space-y-8 text-center max-w-3xl mx-auto">
+            <div className="bg-white p-8 sm:p-12 rounded-[24px] border border-border shadow-sm space-y-12 text-center max-w-3xl mx-auto">
               <div className="space-y-4">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Prompt (Min: 30s | Max: 2m)</span>
-                <h3 className="text-2xl font-heading text-brand-dark leading-snug whitespace-pre-line">
+                <span className="inline-block text-[11px] font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-md uppercase tracking-wider">Prompt (Min: 30s | Max: 2m)</span>
+                <h3 className="text-2xl sm:text-3xl font-heading text-brand-dark leading-snug whitespace-pre-line uppercase">
                   {speakingData?.topic || "Introduce yourself.\nTalk about:\n• Your name\n• Your hobbies\n• Your family\n• Your favourite subject\n\nSpeak for approximately one minute."}
                 </h3>
               </div>
 
               <div className="py-8">
                 {isRecording ? (
-                  <div className="space-y-6">
-                    <div className="text-5xl font-heading text-red-500 animate-pulse">
+                  <div className="space-y-10">
+                    <div className="text-6xl font-heading text-red-500 animate-pulse">
                       {formatDuration(recordingDuration)}
                     </div>
                     {/* Fake Waveform Animation */}
-                    <div className="flex items-center justify-center gap-1 h-12">
+                    <div className="flex items-center justify-center gap-1.5 h-16">
                       {[1, 2, 3, 4, 5, 6, 7].map(i => (
                         <motion.div
                           key={i}
-                          animate={{ height: isPaused ? 8 : [8, 30, 8, 40, 8] }}
+                          animate={{ height: isPaused ? 12 : [12, 40, 12, 60, 12] }}
                           transition={{ repeat: Infinity, duration: 1, delay: i * 0.1 }}
-                          className="w-2 bg-red-500 rounded-full"
+                          className="w-2.5 bg-red-500 rounded-full"
                         />
                       ))}
                     </div>
-                    <div className="flex justify-center gap-4">
+                    <div className="flex justify-center gap-6">
                       {isPaused ? (
-                        <button onClick={resumeRecording} className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center hover:bg-red-200 shadow-md">
+                        <button onClick={resumeRecording} className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center hover:bg-red-200 shadow-sm transition-colors">
                           <Play className="w-8 h-8 fill-current" />
                         </button>
                       ) : (
-                        <button onClick={pauseRecording} className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center hover:bg-amber-200 shadow-md">
+                        <button onClick={pauseRecording} className="w-16 h-16 bg-brand-yellow text-brand-dark rounded-full flex items-center justify-center hover:scale-105 shadow-sm transition-transform">
                           <Pause className="w-8 h-8 fill-current" />
                         </button>
                       )}
-                      <button onClick={stopRecording} className="w-16 h-16 bg-brand-dark text-white rounded-full flex items-center justify-center hover:bg-brand-dark/90 shadow-md">
+                      <button onClick={stopRecording} className="w-16 h-16 bg-brand-dark text-white rounded-full flex items-center justify-center hover:bg-brand-dark/90 shadow-sm transition-colors">
                         <Square className="w-6 h-6 fill-current" />
                       </button>
                     </div>
                   </div>
                 ) : audioBlob ? (
-                  <div className="space-y-6">
-                    <div className="text-4xl font-heading text-brand-dark">
+                  <div className="space-y-8">
+                    <div className="text-5xl font-heading text-brand-dark">
                       {formatDuration(recordingDuration)}
                     </div>
                     
@@ -793,23 +795,27 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     />
                     
                     <div className="flex justify-center gap-4">
-                      <button onClick={togglePlayback} className="px-6 py-3 bg-blue-100 text-blue-700 font-bold rounded-full flex items-center gap-2 hover:bg-blue-200 transition-colors">
+                      <Button onClick={togglePlayback} variant="outline" className="gap-2 text-brand-dark">
                         {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
                         {isPlaying ? 'Pause' : 'Preview'}
-                      </button>
-                      <button onClick={deleteRecording} className="px-6 py-3 bg-red-100 text-red-600 font-bold rounded-full flex items-center gap-2 hover:bg-red-200 transition-colors">
-                        <Trash2 className="w-5 h-5" />
-                        Delete
-                      </button>
+                      </Button>
+                      <Button onClick={deleteRecording} variant="destructive" className="gap-2">
+                        <RotateCcw className="w-5 h-5" />
+                        Retake
+                      </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-6">
-                    <button onClick={startRecording} className="w-24 h-24 bg-red-50 text-red-500 rounded-full flex items-center justify-center border-4 border-red-100 hover:scale-110 hover:bg-red-100 transition-all shadow-lg mx-auto">
-                      <Mic className="w-10 h-10" />
-                    </button>
-                    <p className="font-bold text-muted-foreground">Click to start recording</p>
-                  </div>
+                  <button 
+                    onClick={startRecording}
+                    className="w-24 h-24 bg-brand-dark text-white rounded-full flex flex-col items-center justify-center gap-2 hover:bg-brand-dark/90 transition-transform hover:scale-105 mx-auto shadow-lg"
+                  >
+                    <Mic className="w-8 h-8" />
+                  </button>
+                )}
+                
+                {!isRecording && !audioBlob && (
+                  <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground mt-6">Click to start recording</p>
                 )}
               </div>
             </div>
@@ -825,77 +831,83 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             exit={{ opacity: 0, x: -50 }}
             className="space-y-8"
           >
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-border gap-4 sm:gap-0">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 sm:p-6 rounded-[24px] shadow-sm border border-border gap-4 sm:gap-0">
               <div className="flex items-center gap-4">
-                <button 
+                <Button 
                   onClick={() => setStage(STAGES.SELECTION)} 
-                  className="p-2 rounded-full hover:bg-muted transition-colors text-brand-dark"
+                  variant="ghost"
+                  size="icon"
                 >
-                  <ArrowLeft className="w-6 h-6" />
-                </button>
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-3 py-1 rounded-full">Listening Module</span>
-                  <h2 className="text-2xl font-heading mt-1">Listening Assessment</h2>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-pink-600 bg-pink-50 px-3 py-1 rounded-md">Listening Module</span>
+                  <h2 className="text-2xl font-heading mt-1 uppercase text-brand-dark">Listening Test</h2>
                 </div>
               </div>
-              <button
+              <Button
                 onClick={handleListeningSubmit}
                 disabled={isSubmitting}
-                className="w-full sm:w-auto justify-center bg-brand-yellow text-brand-dark px-8 py-3 rounded-full font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md disabled:opacity-50"
+                variant="primary"
+                className="w-full sm:w-auto"
               >
-                {isSubmitting ? 'Evaluating...' : 'Submit Listening Test'} <ArrowRight className="w-5 h-5" />
-              </button>
+                {isSubmitting ? 'Evaluating...' : 'Submit Test'} <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Audio Column */}
-              <div className="bg-white p-8 rounded-[32px] border border-border shadow-sm space-y-8 h-fit lg:sticky lg:top-24">
-                <div className="flex items-center gap-2 text-pink-600 font-bold uppercase tracking-wider text-xs">
+              <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-border shadow-sm space-y-6 lg:h-[650px] lg:sticky lg:top-24">
+                <div className="flex items-center gap-2 text-pink-600 font-bold uppercase tracking-wider text-[11px] bg-pink-50 px-3 py-1.5 rounded-md w-fit">
                   <Headphones className="w-4 h-4" /> Audio Track
                 </div>
-                <h3 className="font-heading text-2xl">{listeningData?.title || 'Listening Test'}</h3>
+                <h3 className="font-heading text-3xl uppercase text-brand-dark">{listeningData?.title || 'Listening Comprehension'}</h3>
                 
                 {listeningData?.audio_url ? (
-                  <div className="bg-pink-50/50 p-6 rounded-2xl border border-pink-100">
-                    <audio 
-                      controls 
-                      src={listeningData.audio_url} 
-                      className="w-full custom-audio-player" 
-                      controlsList="nodownload"
-                    />
-                    <p className="text-xs text-muted-foreground mt-4 font-medium text-center">
-                      Listen to the audio carefully. You can play, pause, and replay as needed.
+                  <div className="bg-muted/30 p-6 rounded-[20px] border border-border/50 flex flex-col items-center justify-center space-y-4">
+                    <audio controls className="w-full">
+                      <source src={listeningData.audio_url} type="audio/mp3" />
+                      Your browser does not support the audio element.
+                    </audio>
+                    <p className="text-xs text-muted-foreground font-medium text-center">
+                      Listen to the audio track carefully. You can play it as many times as you need.
                     </p>
                   </div>
                 ) : (
-                  <div className="p-6 bg-muted rounded-xl text-center text-muted-foreground font-medium">
-                    No audio track available.
+                  <div className="bg-brand-yellow/10 border border-brand-yellow/30 p-6 rounded-[20px] text-center space-y-3">
+                    <IconContainer icon={AlertCircle} color="yellow" size="md" className="mx-auto" />
+                    <p className="text-sm font-bold text-brand-dark">Audio track is currently unavailable.</p>
+                  </div>
+                )}
+                
+                {listeningData?.transcript && (
+                  <div className="mt-8 pt-6 border-t border-border/50">
+                    <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">Transcript (If permitted)</h4>
+                    <div className="text-[14px] text-muted-foreground font-medium leading-relaxed max-h-[250px] overflow-y-auto p-4 bg-muted/20 rounded-xl">
+                      {listeningData.transcript}
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Questions Column */}
-              <div className="space-y-6 lg:h-[650px] lg:overflow-y-auto pr-2 custom-scrollbar">
-                {(listeningData?.questions || []).map((q: any, idx: number) => (
-                  <div key={q.id} className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-4">
-                    <h4 className="font-bold text-base text-brand-dark">
-                      <span className="text-pink-600 mr-2">{idx + 1}.</span>
-                      {q.text}
-                    </h4>
+              <div className="space-y-6 lg:h-[650px] lg:overflow-y-auto pr-2">
+                {listeningData?.questions?.map((q: any) => (
+                  <div key={q.id} className="bg-white p-6 rounded-[24px] border border-border shadow-sm space-y-5">
+                    <h4 className="font-bold text-base text-brand-dark">{q.text}</h4>
 
-                    {/* Options */}
                     {q.options && q.options.length > 0 ? (
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         {q.options.map((opt: any) => {
                           const selected = listeningAnswers[q.id]?.selected_option_id === opt.id;
                           return (
                             <button
                               key={opt.id}
                               onClick={() => handleSelectListeningOption(q.id, opt.id)}
-                              className={`w-full text-left p-3.5 rounded-xl border text-sm font-medium transition-all ${
+                              className={`w-full text-left px-5 py-4 rounded-xl border text-[14px] font-medium transition-all ${
                                 selected
-                                  ? 'border-pink-600 bg-pink-50 font-bold text-pink-700'
-                                  : 'border-border/60 bg-muted/40 hover:bg-muted text-muted-foreground'
+                                  ? 'border-brand-yellow bg-brand-yellow/10 font-bold text-brand-dark'
+                                  : 'border-border/80 bg-muted/30 hover:bg-muted text-muted-foreground'
                               }`}
                             >
                               {opt.text}
@@ -909,17 +921,11 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                         placeholder="Type your answer here..."
                         value={listeningAnswers[q.id]?.text_answer || ''}
                         onChange={(e) => handleListeningTextAnswer(q.id, e.target.value)}
-                        className="w-full bg-muted/50 border border-border/60 rounded-xl p-4 text-sm font-medium outline-none focus:border-pink-300 focus:ring-2 focus:ring-pink-200 transition-all resize-y min-h-[90px]"
+                        className="w-full bg-muted/40 border border-border/80 rounded-xl p-5 text-sm font-medium outline-none focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20 transition-all resize-y min-h-[90px]"
                       />
                     )}
                   </div>
                 ))}
-                
-                {listeningData?.questions?.length === 0 && (
-                  <div className="p-8 text-center text-muted-foreground font-medium bg-white rounded-2xl border border-border">
-                    No questions provided for this listening assessment.
-                  </div>
-                )}
               </div>
             </div>
           </motion.div>
@@ -933,12 +939,11 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             animate={{ opacity: 1, scale: 1 }}
             className="space-y-8"
           >
-            <div className="text-center space-y-3">
-              <div className="w-20 h-20 bg-green-100 rounded-full mx-auto flex items-center justify-center text-green-600">
-                <Award className="w-10 h-10" />
-              </div>
-              <h1 className="font-heading text-5xl">Assessment Evaluation Complete</h1>
-              <p className="text-muted-foreground font-medium text-lg">Here is your detailed performance breakdown.</p>
+            <div className="text-center">
+              <SectionHeader 
+                title={<>Assessment <span className="highlight-yellow inline-block px-2">Complete</span></>}
+                description="Here is your detailed performance breakdown."
+              />
             </div>
 
             {/* READING RESULT DISPLAY */}

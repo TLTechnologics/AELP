@@ -6,6 +6,18 @@ import { Flame, Target, Zap, Clock, TrendingUp } from 'lucide-react';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { FeatureLocked } from '@/components/feature-locked';
 import { LiquidLoader } from '@/components/ui/liquid-loader';
+import { SectionHeader } from '@/components/ui/section-header';
+import { IconContainer } from '@/components/ui/icon-container';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } }
+};
 
 export default function ProgressPage() {
   const { data, isLoading } = useDashboard();
@@ -34,11 +46,11 @@ export default function ProgressPage() {
         const xp = Math.round(total);
         // Map height roughly. max expected is ~300.
         let heightClass = 'h-2';
-        if (xp > 200) heightClass = 'h-48';
-        else if (xp > 150) heightClass = 'h-32';
-        else if (xp > 100) heightClass = 'h-24';
-        else if (xp > 50) heightClass = 'h-16';
-        else if (xp > 0) heightClass = 'h-8';
+        if (xp > 200) heightClass = 'h-64';
+        else if (xp > 150) heightClass = 'h-48';
+        else if (xp > 100) heightClass = 'h-32';
+        else if (xp > 50) heightClass = 'h-24';
+        else if (xp > 0) heightClass = 'h-12';
         return { day: d.date, xp: xp, height: heightClass };
       })
     : [
@@ -53,75 +65,80 @@ export default function ProgressPage() {
 
   return (
     <MainLayout>
-      <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8 pb-12">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-8">
-          <div>
-            <h1 className="font-heading text-3xl sm:text-5xl mb-1 sm:mb-2 uppercase tracking-tight">Your Progress</h1>
-            <p className="text-muted-foreground font-medium text-xs sm:text-lg">Track your learning journey and stay consistent.</p>
-          </div>
-          <div className="bg-brand-yellow/20 text-brand-dark px-4 py-2 sm:px-6 sm:py-3 rounded-2xl font-bold flex items-center gap-2 sm:gap-3 border border-brand-yellow text-xs sm:text-base">
-            <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 fill-orange-500" />
-            <span>{data?.completed_assessments > 0 ? "Active Learner" : "Start Learning!"}</span>
-          </div>
-        </div>
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="space-y-12 pb-24"
+      >
+        <motion.div variants={itemVariants}>
+          <SectionHeader 
+            title={<>Your <span className="highlight-yellow inline-block px-2">Progress</span></>}
+            description="Track your learning journey and stay consistent."
+          >
+            <div className="bg-brand-yellow/20 text-brand-dark px-6 py-3 rounded-2xl font-bold flex items-center gap-3 border border-brand-yellow text-sm">
+              <Flame className="w-6 h-6 text-orange-500 fill-orange-500" />
+              <span>{data?.completed_assessments > 0 ? "Active Learner" : "Start Learning!"}</span>
+            </div>
+          </SectionHeader>
+        </motion.div>
 
         {/* Top Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { label: 'Overall Progress', value: `${data?.overall_progress || 0}%`, icon: Zap, color: 'text-brand-yellow', bg: 'bg-brand-yellow' },
-            { label: 'Assessments', value: data?.completed_assessments || '0', icon: Target, color: 'text-blue-500', bg: 'bg-blue-500' },
-            { label: 'Time Spent', value: '0h', icon: Clock, color: 'text-purple-500', bg: 'bg-purple-500' },
-            { label: 'Accuracy', value: `${data?.average_score || 0}%`, icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-500' },
+            { label: 'Overall Progress', value: `${data?.overall_progress || 0}%`, icon: Zap, color: 'yellow' as const },
+            { label: 'Assessments', value: data?.completed_assessments || '0', icon: Target, color: 'blue' as const },
+            { label: 'Time Spent', value: '0h', icon: Clock, color: 'purple' as const },
+            { label: 'Accuracy', value: `${data?.average_score || 0}%`, icon: TrendingUp, color: 'green' as const },
           ].map((stat, i) => (
-            <div key={i} className="bg-white rounded-2xl sm:rounded-[24px] p-4 sm:p-6 shadow-xs border border-border/40 flex flex-col items-center justify-center text-center">
-              <div className={`w-9 h-9 sm:w-12 sm:h-12 rounded-full ${stat.bg}/10 flex items-center justify-center mb-2 sm:mb-3`}>
-                <stat.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color}`} />
-              </div>
-              <p className="text-[10px] sm:text-xs font-bold text-muted-foreground uppercase tracking-wider mb-0.5 sm:mb-1">{stat.label}</p>
-              <p className="font-heading text-2xl sm:text-3xl">{stat.value}</p>
+            <div key={i} className="bg-white rounded-[24px] p-6 shadow-sm border border-border/80 flex flex-col items-center justify-center text-center hover-card-up">
+              <IconContainer icon={stat.icon} color={stat.color} size="lg" className="mb-4" />
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{stat.label}</p>
+              <p className="font-heading text-4xl text-brand-dark">{stat.value}</p>
             </div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Chart Section */}
-        <div className="bg-white rounded-2xl sm:rounded-[32px] p-4 sm:p-8 shadow-xs border border-border/40">
-          <div className="flex items-center justify-between mb-6 sm:mb-12">
-            <h3 className="font-heading text-lg sm:text-2xl">XP Earned This Week</h3>
-            <select className="bg-muted px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl font-bold text-xs sm:text-sm outline-none cursor-pointer">
+        <motion.div variants={itemVariants} className="bg-white rounded-[32px] p-8 shadow-sm border border-border/80">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-12">
+            <h3 className="font-heading text-3xl text-brand-dark uppercase">XP Earned</h3>
+            <select className="bg-muted/40 border border-border/50 px-4 py-3 rounded-xl font-bold text-sm outline-none cursor-pointer focus:border-brand-yellow focus:ring-2 focus:ring-brand-yellow/20 text-brand-dark uppercase tracking-wider transition-all">
               <option>This Week</option>
               <option>Last Week</option>
               <option>This Month</option>
             </select>
           </div>
 
-          <div className="overflow-x-auto pb-2">
-            <div className="flex items-end justify-between gap-2 sm:gap-4 h-48 sm:h-64 min-w-[280px]">
+          <div className="overflow-x-auto pb-4">
+            <div className="flex items-end justify-between gap-4 h-72 min-w-[500px]">
               {weeklyData.map((data: any, i: number) => (
-                <div key={i} className="flex flex-col items-center gap-2 sm:gap-4 flex-1 group">
+                <div key={i} className="flex flex-col items-center gap-4 flex-1 group relative">
                   {/* Tooltip */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-brand-dark text-white text-[10px] sm:text-xs font-bold px-2 py-1 rounded-lg whitespace-nowrap pointer-events-none">
+                  <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-all bg-brand-dark text-white text-xs font-bold px-3 py-2 rounded-xl whitespace-nowrap pointer-events-none transform translate-y-2 group-hover:translate-y-0">
                     {data.xp} XP
+                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-brand-dark rotate-45" />
                   </div>
                   
                   {/* Bar */}
-                  <div className="w-full bg-muted rounded-t-xl relative overflow-hidden flex items-end justify-center">
+                  <div className="w-full max-w-[60px] bg-muted/40 rounded-t-2xl relative overflow-hidden flex items-end justify-center border-x border-t border-border/50">
                     <motion.div 
                       initial={{ height: 0 }}
                       animate={{ height: data.xp === 0 ? '4px' : '100%' }}
                       transition={{ duration: 1, delay: i * 0.1, type: 'spring' }}
-                      className={`w-full ${data.height} ${data.xp > 300 ? 'bg-brand-yellow' : 'bg-brand-dark'} rounded-t-xl`} 
+                      className={`w-full ${data.height} ${data.xp > 300 ? 'bg-brand-yellow' : 'bg-brand-dark'} rounded-t-2xl hover:brightness-110 transition-all`} 
                     />
                   </div>
                   
                   {/* Label */}
-                  <span className="text-xs sm:text-sm font-bold text-muted-foreground">{data.day}</span>
+                  <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{data.day}</span>
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
-      </div>
+      </motion.div>
     </MainLayout>
   );
 }
