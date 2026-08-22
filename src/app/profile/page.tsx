@@ -131,9 +131,6 @@ export default function ProfilePage() {
             </div>
             
             <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-4 pt-2">
-              <Button variant="outline" size="lg" className="gap-2">
-                <Edit3 className="w-4 h-4" /> Edit Profile
-              </Button>
               <Button 
                 onClick={() => router.push('/settings')}
                 variant="primary" 
