@@ -30,6 +30,7 @@ const studentMobileNavItems = [
   { name: 'Test', href: '/assessment', icon: BookOpen },
   { name: 'Learn', href: '/lesson', icon: Sparkles },
   { name: 'Skills', href: '/skills', icon: TrendingUp },
+  { name: 'Progress', href: '/progress', icon: BarChart },
   { name: 'Results', href: '/results', icon: Award },
 ];
 
@@ -178,7 +179,7 @@ export function Navbar() {
           const isActive = item.href === '/' || item.href === '/teacher' 
             ? pathname === item.href 
             : pathname.startsWith(item.href);
-          const isLocked = !isTeacher && stage === 1 && ['Skills', 'Results', 'Learn'].includes(item.name);
+          const isLocked = !isTeacher && stage === 1 && ['Skills', 'Results', 'Learn', 'Progress'].includes(item.name);
           const Icon = item.icon;
 
           return (
