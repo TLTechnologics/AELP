@@ -2,7 +2,8 @@
 
 import { MainLayout } from '@/components/layout/main-layout';
 import { motion } from 'framer-motion';
-import { Settings, Shield, Award, Edit3, LogOut, Camera, Loader2, BookOpen, PenTool, Headphones, Mic, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { Lock, Shield, Award, Edit3, LogOut, Camera, Loader2, BookOpen, PenTool, Headphones, Mic, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { useRouter } from 'next/navigation';
@@ -38,6 +39,28 @@ export default function ProfilePage() {
   const { data: dashboardData, isLoading: dashLoading } = useDashboard();
   const router = useRouter();
 
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  const handlePasswordChange = async () => {
+    if (!newPassword || newPassword.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+    }
+    setChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setChangingPassword(false);
+    
+    if (error) {
+        alert(error.message);
+    } else {
+        alert('Password updated successfully!');
+        setShowPasswordModal(false);
+        setNewPassword('');
+    }
+  };
+
   const loading = authLoading || dashLoading;
 
   if (loading) {
@@ -72,6 +95,32 @@ export default function ProfilePage() {
 
   return (
     <MainLayout>
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] p-8 max-w-md w-full space-y-6 shadow-xl border border-border/80">
+            <h3 className="font-heading text-3xl text-brand-dark">Change Password</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">New Password</label>
+                <input 
+                  type="password" 
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full bg-muted/40 border border-border/80 rounded-xl px-4 py-3.5 text-brand-dark font-medium focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 focus:border-brand-yellow transition-all"
+                  placeholder="Enter new password (min. 6 characters)"
+                />
+              </div>
+            </div>
+            <div className="flex gap-4 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => setShowPasswordModal(false)}>Cancel</Button>
+              <Button variant="primary" className="flex-1" onClick={handlePasswordChange} disabled={changingPassword}>
+                {changingPassword ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Update Password'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <motion.div 
         variants={containerVariants}
         initial="hidden"
@@ -132,12 +181,12 @@ export default function ProfilePage() {
             
             <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-4 pt-2">
               <Button 
-                onClick={() => router.push('/settings')}
+                onClick={() => setShowPasswordModal(true)}
                 variant="primary" 
                 size="lg" 
                 className="gap-2"
               >
-                <Settings className="w-4 h-4" /> Settings
+                <Lock className="w-4 h-4" /> Change Password
               </Button>
               <Button 
                 onClick={async () => {
