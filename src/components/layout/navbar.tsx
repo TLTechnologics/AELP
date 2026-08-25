@@ -48,7 +48,7 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data } = useDashboard();
-  const { role } = useAuth(false);
+  const { role } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isTeacherPath = pathname.startsWith('/teacher');
