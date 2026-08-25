@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Search,
   Filter,
@@ -11,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   UserCheck,
+  UserPlus,
   Download,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -173,6 +175,15 @@ export default function StudentManagement() {
               Student <span className="highlight-yellow inline-block px-2">Directory</span>
             </h1>
           </div>
+
+          {/* Add Student Button */}
+          <Link
+            href="/teacher/add-student"
+            className="flex items-center gap-2 bg-brand-yellow hover:bg-brand-yellow/90 text-brand-dark font-bold text-sm px-5 py-3 rounded-2xl shadow-md transition-all active:scale-95 hover:scale-105 whitespace-nowrap"
+          >
+            <UserPlus className="w-4 h-4" />
+            Add Student
+          </Link>
 
           {/* Download Button */}
           <button
