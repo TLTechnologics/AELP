@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { Lock, LayoutDashboard, BookOpen, Sparkles, TrendingUp, Award, User, UserPlus, Mic, PenTool, BarChart, ClipboardList, FileText, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 
 const navItems = [
@@ -49,7 +49,16 @@ export function Navbar() {
   const { data } = useDashboard();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isTeacher = pathname.startsWith('/teacher');
+  const isTeacherPath = pathname.startsWith('/teacher');
+  const [isTeacher, setIsTeacher] = useState(isTeacherPath);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const role = localStorage.getItem('userRole');
+      setIsTeacher(isTeacherPath || role === 'teacher');
+    }
+  }, [pathname, isTeacherPath]);
+
   const items = isTeacher ? teacherNavItems : navItems;
   const mobileItems = isTeacher ? teacherMobileNavItems : studentMobileNavItems;
   // Teachers don't have a student stage — default to 4 (fully unlocked)

@@ -6,10 +6,11 @@ export function useDashboard() {
   // so calling /api/dashboard/ (which requires student auth) returns 401 and
   // cascades into fallback dummy data on all other queries.
   const isTeacherPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/teacher');
+  const isTeacherUser = typeof window !== 'undefined' && localStorage.getItem('userRole') === 'teacher';
 
   return useQuery({
     queryKey: ['dashboard'],
-    enabled: !isTeacherPage,
+    enabled: !isTeacherPage && !isTeacherUser,
     queryFn: async () => {
       const { data } = await dashboardService.getDashboard();
       return data;

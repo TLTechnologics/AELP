@@ -55,8 +55,10 @@ export default function LoginPage() {
           .maybeSingle();
           
         if (userData && userData.role === 'teacher') {
+          localStorage.setItem('userRole', 'teacher');
           router.push('/teacher');
         } else {
+          localStorage.setItem('userRole', 'student');
           router.push('/');
         }
       } else {

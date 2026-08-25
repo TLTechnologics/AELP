@@ -25,6 +25,9 @@ export function useAuth(requireAuth = true) {
         } else if (session) {
           try {
             const { data: profile } = await authService.getProfile();
+            if (profile?.role) {
+              localStorage.setItem('userRole', profile.role);
+            }
             if (profile?.role === 'teacher' && pathname === '/') {
               router.push('/teacher');
               return;
