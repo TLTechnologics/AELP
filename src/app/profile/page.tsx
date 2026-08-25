@@ -290,7 +290,6 @@ export default function ProfilePage() {
           </div>
         )}
       </motion.div>
-      </motion.div>
     </MainLayout>
   );
 }
