@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   UserCheck,
+  UserPlus,
   Download,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -174,15 +175,26 @@ export default function StudentManagement() {
             </h1>
           </div>
 
-          {/* Download Button */}
-          <button
-            onClick={handleDownloadCSV}
-            disabled={dbStudents.length === 0}
-            className="flex items-center gap-2 bg-brand-dark hover:bg-brand-dark/90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm px-5 py-3 rounded-2xl shadow-md transition-all active:scale-95 whitespace-nowrap"
-          >
-            <Download className="w-4 h-4" />
-            Download Results
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Add Student Button */}
+            <button
+              onClick={() => router.push('/teacher/add-student')}
+              className="flex items-center gap-2 bg-brand-yellow hover:bg-brand-yellow/90 text-brand-dark font-bold text-sm px-5 py-3 rounded-2xl shadow-md transition-all active:scale-95 whitespace-nowrap"
+            >
+              <UserPlus className="w-4 h-4" />
+              Add Student
+            </button>
+            
+            {/* Download Button */}
+            <button
+              onClick={handleDownloadCSV}
+              disabled={dbStudents.length === 0}
+              className="flex items-center gap-2 bg-brand-dark hover:bg-brand-dark/90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm px-5 py-3 rounded-2xl shadow-md transition-all active:scale-95 whitespace-nowrap"
+            >
+              <Download className="w-4 h-4" />
+              Download Results
+            </button>
+          </div>
         </motion.div>
 
         {/* Search and Filters Bar */}
