@@ -37,8 +37,8 @@ const studentMobileNavItems = [
 
 const teacherMobileNavItems = [
   { name: 'Home', href: '/teacher', icon: LayoutDashboard },
-  { name: 'Lessons', href: '/teacher/lessons', icon: BookOpen },
   { name: 'Students', href: '/teacher/students', icon: User },
+  { name: 'Add', href: '/teacher/add-student', icon: UserPlus },
   { name: 'Analytics', href: '/teacher/analytics', icon: BarChart },
   { name: 'Reports', href: '/teacher/reports', icon: FileText },
 ];

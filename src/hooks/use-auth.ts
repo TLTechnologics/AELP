@@ -33,8 +33,12 @@ export function useAuth(requireAuth = true) {
               router.push(profile?.role === 'teacher' ? '/teacher' : '/');
               return;
             }
-          } catch (e) {
-            console.error('Error fetching profile', e);
+          } catch (e: any) {
+            if (e.code === 'ECONNABORTED' || e.message?.includes('timeout')) {
+              console.warn('Backend server waking up from cold start... Retrying profile load in background.');
+            } else {
+              console.error('Error fetching profile:', e?.message || e);
+            }
           }
         }
       } catch (err) {
