@@ -35,7 +35,7 @@ const itemVariants = {
 };
 
 export default function ProfilePage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, role, loading: authLoading } = useAuth();
   const { data: dashboardData, isLoading: dashLoading } = useDashboard();
   const router = useRouter();
 
@@ -61,10 +61,7 @@ export default function ProfilePage() {
     }
   };
 
-  const [isTeacher, setIsTeacher] = useState(false);
-  useEffect(() => {
-    setIsTeacher(typeof window !== 'undefined' && localStorage.getItem('userRole') === 'teacher');
-  }, []);
+  const isTeacher = role === 'teacher';
 
   const loading = authLoading || (dashLoading && !isTeacher);
 

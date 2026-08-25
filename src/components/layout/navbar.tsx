@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useDashboard } from '@/hooks/use-dashboard';
+import { useAuth } from '@/hooks/use-auth';
 import { Lock, LayoutDashboard, BookOpen, Sparkles, TrendingUp, Award, User, UserPlus, Mic, PenTool, BarChart, ClipboardList, FileText, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
@@ -47,17 +48,11 @@ export function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { data } = useDashboard();
+  const { role } = useAuth(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isTeacherPath = pathname.startsWith('/teacher');
-  const [isTeacher, setIsTeacher] = useState(isTeacherPath);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const role = localStorage.getItem('userRole');
-      setIsTeacher(isTeacherPath || role === 'teacher');
-    }
-  }, [pathname, isTeacherPath]);
+  const isTeacher = isTeacherPath || role === 'teacher';
 
   const items = isTeacher ? teacherNavItems : navItems;
   const mobileItems = isTeacher ? teacherMobileNavItems : studentMobileNavItems;

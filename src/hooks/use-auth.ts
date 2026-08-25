@@ -5,6 +5,9 @@ import { authService } from '@/services/api';
 
 export function useAuth(requireAuth = true) {
   const [user, setUser] = useState<any>(null);
+  const [role, setRole] = useState<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem('userRole') : null
+  );
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
@@ -26,6 +29,7 @@ export function useAuth(requireAuth = true) {
           try {
             const { data: profile } = await authService.getProfile();
             if (profile?.role) {
+              setRole(profile.role);
               localStorage.setItem('userRole', profile.role);
             }
             if (profile?.role === 'teacher' && pathname === '/') {
@@ -68,5 +72,5 @@ export function useAuth(requireAuth = true) {
     };
   }, [requireAuth, router]);
 
-  return { user, loading };
+  return { user, role, loading };
 }
