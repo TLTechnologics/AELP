@@ -552,7 +552,34 @@ async def upload_listening_assessment(
 
 @router.get('/class-analytics')
 def get_class_analytics(db: Session = Depends(get_db)):
-    users = db.query(User).filter(User.role == RoleEnum.STUDENT).all()
+    users = (
+        db.query(User)
+        .options(
+            joinedload(User.student_profile).options(
+                selectinload(Student.assessments).joinedload(StudentAssessment.assessment),
+            )
+        )
+        .filter(User.role == RoleEnum.STUDENT)
+        .all()
+    )
+
+    student_ids = [
+        user.student_profile.id
+        for user in users
+        if user.student_profile is not None
+    ]
+    
+    recordings_by_student = {}
+    if student_ids:
+        recordings = (
+            db.query(SpeakingRecording)
+            .options(joinedload(SpeakingRecording.evaluation))
+            .filter(SpeakingRecording.student_id.in_(student_ids))
+            .all()
+        )
+        for r in recordings:
+            recordings_by_student.setdefault(r.student_id, []).append(r)
+
     students_data = []
 
     total_l = 0
@@ -563,14 +590,12 @@ def get_class_analytics(db: Session = Depends(get_db)):
 
     for u in users:
         try:
-            sp = db.query(Student).filter(Student.user_id == u.id).first()
+            sp = u.student_profile
             if not sp:
                 continue
 
             # Calculate dynamic scores based on assessments
-            sass = db.query(StudentAssessment).filter(
-                StudentAssessment.student_id == sp.id
-            ).all()
+            sass = sp.assessments
             l_scores, r_scores, w_scores, s_scores = [], [], [], []
 
             for sa in sass:
@@ -590,20 +615,11 @@ def get_class_analytics(db: Session = Depends(get_db)):
 
             # Speaking from AI evaluations
             ss = 0
-            try:
-                recordings = db.query(SpeakingRecording).filter(
-                    SpeakingRecording.student_id == sp.id
-                ).all()
-                recording_ids = [r.id for r in recordings]
-                if recording_ids:
-                    ai_evals = db.query(SpeakingEvaluation).filter(
-                        SpeakingEvaluation.recording_id.in_(recording_ids)
-                    ).all()
-                    valid = [e.overall for e in ai_evals if e.overall is not None]
-                    if valid:
-                        ss = sum(valid) / len(valid)
-            except Exception:
-                pass
+            student_recordings = recordings_by_student.get(sp.id, [])
+            if student_recordings:
+                valid_evals = [r.evaluation.overall_score for r in student_recordings if r.evaluation and r.evaluation.overall_score is not None]
+                if valid_evals:
+                    ss = sum(valid_evals) / len(valid_evals)
 
             if not ss and s_scores:
                 ss = sum(s_scores) / len(s_scores)
@@ -665,17 +681,34 @@ def get_class_analytics(db: Session = Depends(get_db)):
 @router.get('/writing-submissions')
 def get_writing_submissions(db: Session = Depends(get_db)):
     submissions = db.query(WritingSubmission).all()
+    
+    sa_ids = [sub.student_assessment_id for sub in submissions if sub.student_assessment_id]
+    sas = {sa.id: sa for sa in db.query(StudentAssessment).filter(StudentAssessment.id.in_(sa_ids)).all()} if sa_ids else {}
+    
+    student_ids = [sa.student_id for sa in sas.values() if sa.student_id]
+    students = {s.id: s for s in db.query(Student).filter(Student.id.in_(student_ids)).all()} if student_ids else {}
+    
+    user_ids = [s.user_id for s in students.values() if s.user_id]
+    users = {u.id: u for u in db.query(User).filter(User.id.in_(user_ids)).all()} if user_ids else {}
+    
+    sub_ids = [sub.id for sub in submissions]
+    evals = {e.submission_id: e for e in db.query(AIEvaluation).filter(AIEvaluation.submission_id.in_(sub_ids)).all()} if sub_ids else {}
+
     res = []
     for sub in submissions:
-        sa = db.query(StudentAssessment).filter(StudentAssessment.id == sub.student_assessment_id).first()
+        sa = sas.get(sub.student_assessment_id)
         if not sa: continue
-        sp = db.query(Student).filter(Student.id == sa.student_id).first()
+        sp = students.get(sa.student_id)
         if not sp: continue
-        u = db.query(User).filter(User.id == sp.user_id).first()
-        eval = db.query(AIEvaluation).filter(AIEvaluation.submission_id == sub.id).first()
+        u = users.get(sp.user_id)
+        if not u: continue
+        eval = evals.get(sub.id)
         
-        word_count = len(sub.content.split())
-        
+        try:
+            weaknesses_data = json.loads(eval.weaknesses) if eval and eval.weaknesses else []
+        except:
+            weaknesses_data = []
+
         res.append({
             'id': str(sub.id),
             'studentId': u.id,
@@ -683,15 +716,15 @@ def get_writing_submissions(db: Session = Depends(get_db)):
             'rollNumber': f"R{sp.id:04d}",
             'class': sp.semester or 'Semester 1',
             'submittedAt': sub.submitted_at.isoformat() if sub.submitted_at else '',
-            'content': sub.content,
-            'wordCount': word_count,
+            'content': sub.content or '',
+            'wordCount': len((sub.content or '').split()),
             'status': 'Evaluated' if eval else 'Pending',
             'evaluation': {
                 'grammar': eval.grammar,
                 'vocabulary': eval.vocabulary,
                 'coherence': eval.coherence,
                 'overall': eval.overall,
-                'strengths': json.loads(eval.weaknesses) if eval.weaknesses else [],
+                'strengths': weaknesses_data,
                 'weaknesses': [],
                 'feedback': eval.feedback
             } if eval else None
@@ -730,7 +763,8 @@ def evaluate_writing(submission_id: int, db: Session = Depends(get_db)):
         client = Groq(api_key=settings.GROQ_API_KEY)
         response = client.chat.completions.create(
             messages=[{'role': 'user', 'content': prompt}],
-            model='llama3-8b-8192',
+            model='qwen/qwen3.6-27b',
+            max_tokens=4096,
             response_format={'type': 'json_object'}
         )
         result = json.loads(response.choices[0].message.content)
@@ -766,12 +800,23 @@ def evaluate_writing(submission_id: int, db: Session = Depends(get_db)):
 @router.get('/speaking-submissions')
 def get_speaking_submissions(db: Session = Depends(get_db)):
     recs = db.query(SpeakingRecording).all()
+    
+    student_ids = [rec.student_id for rec in recs if rec.student_id]
+    students = {s.id: s for s in db.query(Student).filter(Student.id.in_(student_ids)).all()} if student_ids else {}
+    
+    user_ids = [s.user_id for s in students.values() if s.user_id]
+    users = {u.id: u for u in db.query(User).filter(User.id.in_(user_ids)).all()} if user_ids else {}
+    
+    rec_ids = [rec.id for rec in recs]
+    evals = {e.recording_id: e for e in db.query(SpeakingEvaluation).filter(SpeakingEvaluation.recording_id.in_(rec_ids)).all()} if rec_ids else {}
+
     res = []
     for rec in recs:
-        sp = db.query(Student).filter(Student.id == rec.student_id).first()
+        sp = students.get(rec.student_id)
         if not sp: continue
-        u = db.query(User).filter(User.id == sp.user_id).first()
-        eval = db.query(SpeakingEvaluation).filter(SpeakingEvaluation.recording_id == rec.id).first()
+        u = users.get(sp.user_id)
+        if not u: continue
+        eval = evals.get(rec.id)
         
         res.append({
             'id': str(rec.id),
@@ -824,7 +869,8 @@ def evaluate_speaking(recording_id: int, db: Session = Depends(get_db)):
         client = Groq(api_key=settings.GROQ_API_KEY)
         response = client.chat.completions.create(
             messages=[{'role': 'user', 'content': prompt}],
-            model='llama3-8b-8192',
+            model='qwen/qwen3.6-27b',
+            max_tokens=4096,
             response_format={'type': 'json_object'}
         )
         result = json.loads(response.choices[0].message.content)

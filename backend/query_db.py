@@ -1,0 +1,11 @@
+import sqlite3
+conn = sqlite3.connect('aelp.db')
+c = conn.cursor()
+c.execute("SELECT name FROM sqlite_master WHERE type='table'")
+print(c.fetchall())
+c.execute("SELECT * FROM writing_submissions")
+print(c.fetchall())
+c.execute("SELECT * FROM student_assessments")
+print(c.fetchall())
+c.execute("SELECT * FROM students")
+print(c.fetchall())

@@ -6,7 +6,7 @@ client = Groq(api_key=settings.GROQ_API_KEY)
 
 def evaluate_writing(prompt: str, submission: str) -> dict:
     """
-    Evaluates a student's writing submission using Groq API (llama-3.3-70b-versatile).
+    Evaluates a student's writing submission using Groq API (qwen/qwen3.6-27b).
     Returns strict JSON formatted response according to Cambridge English rubric.
     """
     system_prompt = f"""You are a professional Cambridge English examiner.
@@ -39,21 +39,35 @@ Return ONLY valid JSON matching this schema:
 }}
 """
 
-    response = client.chat.completions.create(
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": submission}
-        ],
-        model="llama-3.3-70b-versatile",
-        temperature=0.1,
-        response_format={"type": "json_object"}
-    )
+    import requests
+    from config import settings
+    api_key = settings.GEMINI_API_KEY
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is not set.")
 
-    content = response.choices[0].message.content
-    if not content:
-        raise ValueError("Empty response from Groq API")
+    generate_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={api_key}"
+    payload = {
+        "systemInstruction": {
+            "parts": [{"text": system_prompt}]
+        },
+        "contents": [{
+            "parts": [{"text": submission}]
+        }],
+        "generationConfig": {
+            "temperature": 0.1,
+            "responseMimeType": "application/json"
+        }
+    }
+    
+    response = requests.post(generate_url, json=payload)
+    if not response.ok:
+        raise ValueError(f"Failed to generate content: {response.text}")
         
-    data = json.loads(content)
+    try:
+        content_text = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        data = json.loads(content_text)
+    except (KeyError, IndexError, json.JSONDecodeError) as e:
+        raise ValueError("Failed to parse Gemini API response")
     
     # Calculate overall score if not set
     if "overall" not in data or data["overall"] == 0:
@@ -128,8 +142,9 @@ Return ONLY valid JSON matching this schema:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": transcript_text}
         ],
-        model="llama-3.3-70b-versatile",
+        model="qwen/qwen3.6-27b",
         temperature=0.1,
+        max_tokens=4096,
         response_format={"type": "json_object"}
     )
 
@@ -201,8 +216,9 @@ Return ONLY valid JSON matching this schema:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": transcript_text}
         ],
-        model="llama-3.3-70b-versatile",
+        model="qwen/qwen3.6-27b",
         temperature=0.1,
+        max_tokens=4096,
         response_format={"type": "json_object"}
     )
 
@@ -269,21 +285,35 @@ Confidence must be exactly one of: "Low", "Medium", "High"
 ai_percentage must be an integer from 0 to 100.
 """
 
-    response = client.chat.completions.create(
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Analyze this student essay:\n\n{text}"}
-        ],
-        model="llama-3.3-70b-versatile",
-        temperature=0.1,
-        response_format={"type": "json_object"}
-    )
+    import requests
+    from config import settings
+    api_key = settings.GEMINI_API_KEY
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is not set.")
 
-    content = response.choices[0].message.content
-    if not content:
-        raise ValueError("Empty response from Groq API")
-
-    data = json.loads(content)
+    generate_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={api_key}"
+    payload = {
+        "systemInstruction": {
+            "parts": [{"text": system_prompt}]
+        },
+        "contents": [{
+            "parts": [{"text": f"Analyze this student essay:\n\n{text}"}]
+        }],
+        "generationConfig": {
+            "temperature": 0.1,
+            "responseMimeType": "application/json"
+        }
+    }
+    
+    response = requests.post(generate_url, json=payload)
+    if not response.ok:
+        raise ValueError(f"Failed to generate content: {response.text}")
+        
+    try:
+        content_text = response.json()["candidates"][0]["content"]["parts"][0]["text"]
+        data = json.loads(content_text)
+    except (KeyError, IndexError, json.JSONDecodeError) as e:
+        raise ValueError("Failed to parse Gemini API response")
 
     # Sanitize / enforce defaults
     data["ai_percentage"] = max(0, min(100, int(data.get("ai_percentage", 0))))

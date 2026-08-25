@@ -2,11 +2,15 @@
 
 import { MainLayout } from '@/components/layout/main-layout';
 import { motion } from 'framer-motion';
-import { Settings, Shield, Award, Edit3, LogOut, Camera, Loader2, BookOpen, PenTool, Headphones, Mic } from 'lucide-react';
+import { useState } from 'react';
+import { Lock, Shield, Award, Edit3, LogOut, Camera, Loader2, BookOpen, PenTool, Headphones, Mic, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import { Button } from '@/components/ui/button';
+import { IconContainer } from '@/components/ui/icon-container';
+import { SectionHeader } from '@/components/ui/section-header';
 
 const DEFAULT_BADGES = [
   { id: 'first_steps', name: 'First Steps', icon: '🐣' },
@@ -20,10 +24,42 @@ const DEFAULT_BADGES = [
   { id: 'perfect_score', name: 'Perfect Score', icon: '🎯' },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } }
+};
+
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const { data: dashboardData, isLoading: dashLoading } = useDashboard();
   const router = useRouter();
+
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  const handlePasswordChange = async () => {
+    if (!newPassword || newPassword.length < 6) {
+        alert('Password must be at least 6 characters long');
+        return;
+    }
+    setChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setChangingPassword(false);
+    
+    if (error) {
+        alert(error.message);
+    } else {
+        alert('Password updated successfully!');
+        setShowPasswordModal(false);
+        setNewPassword('');
+    }
+  };
 
   const loading = authLoading || dashLoading;
 
@@ -31,7 +67,7 @@ export default function ProfilePage() {
     return (
       <MainLayout>
         <div className="flex h-[50vh] items-center justify-center">
-            <Loader2 className="w-10 h-10 animate-spin text-brand-dark" />
+            <Loader2 className="w-12 h-12 animate-spin text-brand-yellow" />
         </div>
       </MainLayout>
     );
@@ -59,136 +95,186 @@ export default function ProfilePage() {
 
   return (
     <MainLayout>
-      <div className="max-w-4xl mx-auto space-y-8 pb-12">
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] p-8 max-w-md w-full space-y-6 shadow-xl border border-border/80">
+            <h3 className="font-heading text-3xl text-brand-dark">Change Password</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">New Password</label>
+                <input 
+                  type="password" 
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full bg-muted/40 border border-border/80 rounded-xl px-4 py-3.5 text-brand-dark font-medium focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 focus:border-brand-yellow transition-all"
+                  placeholder="Enter new password (min. 6 characters)"
+                />
+              </div>
+            </div>
+            <div className="flex gap-4 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => setShowPasswordModal(false)}>Cancel</Button>
+              <Button variant="primary" className="flex-1" onClick={handlePasswordChange} disabled={changingPassword}>
+                {changingPassword ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Update Password'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="max-w-5xl mx-auto space-y-8 pb-24"
+      >
+        <motion.div variants={itemVariants}>
+          <SectionHeader 
+            title={<>Learner <span className="highlight-yellow inline-block px-2">Profile</span></>}
+            description="Manage your account, track your progress, and view achievements."
+          />
+        </motion.div>
         
         {/* Simplified Educational Profile Card */}
-        <div className="bg-white rounded-[32px] p-8 shadow-sm border border-border/40 relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-yellow/10 rounded-full blur-3xl pointer-events-none" />
+        <motion.div variants={itemVariants} className="bg-white rounded-[32px] p-8 sm:p-12 shadow-sm border border-border/80 relative overflow-hidden flex flex-col md:flex-row items-center md:items-start gap-8 sm:gap-12 hover-card-up">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-brand-yellow/10 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-100/30 rounded-full blur-[60px] pointer-events-none" />
           
           <div className="relative group shrink-0">
             {avatarUrl ? (
-                <img src={avatarUrl} alt={userName} className="w-32 h-32 rounded-full object-cover shadow-xl border-4 border-white" />
+                <img src={avatarUrl} alt={userName} className="w-40 h-40 rounded-full object-cover shadow-xl border-4 border-white relative z-10" />
             ) : (
-                <div className="w-32 h-32 rounded-full bg-brand-yellow flex items-center justify-center font-heading text-6xl text-brand-dark shadow-xl border-4 border-white uppercase">
+                <div className="w-40 h-40 rounded-full bg-brand-yellow flex items-center justify-center font-heading text-6xl text-brand-dark shadow-xl border-4 border-white relative z-10 uppercase">
                 {userInitial}
                 </div>
             )}
-            <button className="absolute bottom-0 right-0 w-10 h-10 bg-brand-dark text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+            <button className="absolute bottom-2 right-2 w-12 h-12 bg-brand-dark text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 hover:bg-brand-yellow hover:text-brand-dark transition-all z-20">
               <Camera className="w-5 h-5" />
             </button>
+            
+            {/* Decorative ring */}
+            <div className="absolute -inset-4 border-2 border-brand-yellow/30 rounded-full z-0 group-hover:scale-105 transition-transform duration-500 border-dashed animate-spin-slow" />
           </div>
 
-          <div className="flex-1 text-center md:text-left z-10 w-full space-y-4">
-            <h1 className="font-heading text-4xl flex items-center justify-center md:justify-start gap-3 capitalize break-words hyphens-auto">
+          <div className="flex-1 text-center md:text-left z-10 w-full space-y-6">
+            <h1 className="font-heading text-5xl flex items-center justify-center md:justify-start gap-4 capitalize break-words hyphens-auto text-brand-dark">
               {userName}
             </h1>
             
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm font-medium text-muted-foreground bg-slate-50 p-4 rounded-2xl border border-border/40">
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Student ID</span>
-                <span className="text-slate-900 font-bold">{rollNumber}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm font-medium text-muted-foreground bg-muted/40 p-5 rounded-[24px] border border-border/50">
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block">Student ID</span>
+                <span className="text-brand-dark font-bold text-lg">{rollNumber}</span>
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Class</span>
-                <span className="text-slate-900 font-bold">{studentClass}</span>
+              <div className="space-y-1.5 border-l border-border/50 pl-4">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block">Class</span>
+                <span className="text-brand-dark font-bold text-lg">{studentClass}</span>
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Group</span>
-                <span className="text-slate-900 font-bold">{studentGroup}</span>
+              <div className="space-y-1.5 sm:border-l border-border/50 sm:pl-4">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block">Group</span>
+                <span className="text-brand-dark font-bold text-lg">{studentGroup}</span>
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Current Level</span>
-                <span className="text-brand-dark font-bold bg-brand-yellow/30 px-2 py-0.5 rounded text-xs">{currentLevel}</span>
+              <div className="space-y-1.5 border-l border-border/50 pl-4">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground block">Level</span>
+                <span className="text-brand-dark font-bold bg-brand-yellow/30 px-3 py-1 rounded-lg text-sm">{currentLevel}</span>
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-3 pt-2">
-              <button className="bg-muted hover:bg-border/50 text-brand-dark font-bold py-2.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-colors">
-                <Edit3 className="w-4 h-4" /> Edit Profile
-              </button>
-              <button 
-                onClick={() => router.push('/settings')}
-                className="bg-brand-dark hover:bg-brand-dark/90 text-white font-bold py-2.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-md"
+            <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-4 pt-2">
+              <Button 
+                onClick={() => setShowPasswordModal(true)}
+                variant="primary" 
+                size="lg" 
+                className="gap-2"
               >
-                <Settings className="w-4 h-4" /> Settings
-              </button>
-              <button 
+                <Lock className="w-4 h-4" /> Change Password
+              </Button>
+              <Button 
                 onClick={async () => {
                     await supabase.auth.signOut();
                     router.push('/auth/login');
                 }}
-                className="bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                variant="outline" 
+                size="lg" 
+                className="gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
               >
                 <LogOut className="w-4 h-4" /> Logout
-              </button>
+              </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* LRWS Progress Area */}
-            <div className="bg-white rounded-[32px] p-8 shadow-sm border border-border/40 space-y-6">
-                <div className="flex justify-between items-center mb-2">
-                    <h2 className="font-heading text-2xl">LRWS Progress</h2>
+            <motion.div variants={itemVariants} className="bg-white rounded-[32px] p-8 shadow-sm border border-border/80 space-y-8 hover-card-up">
+                <div className="flex justify-between items-center pb-6 border-b border-border/50">
+                    <h2 className="font-heading text-3xl text-brand-dark">Skill Progress</h2>
                     <div className="text-right">
-                        <span className="text-[10px] font-bold uppercase text-slate-400 block">Overall Score</span>
-                        <span className="font-heading text-3xl text-brand-dark">{Math.round(overallScore)}%</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">Overall Score</span>
+                        <span className="font-heading text-4xl text-brand-dark">{Math.round(overallScore)}%</span>
                     </div>
                 </div>
 
-                <div className="space-y-5">
+                <div className="space-y-6">
                     {[
-                        { label: 'Listening', score: listeningScore, icon: Headphones, color: 'text-pink-600', bg: 'bg-pink-100', fill: 'bg-pink-500' },
-                        { label: 'Reading', score: readingScore, icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-100', fill: 'bg-blue-500' },
-                        { label: 'Writing', score: writingScore, icon: PenTool, color: 'text-orange-600', bg: 'bg-orange-100', fill: 'bg-orange-500' },
-                        { label: 'Speaking', score: speakingScore, icon: Mic, color: 'text-purple-600', bg: 'bg-purple-100', fill: 'bg-purple-500' },
+                        { label: 'Listening', score: listeningScore, icon: Headphones, color: 'pink' as const, bg: 'bg-pink-100', fill: 'bg-pink-500' },
+                        { label: 'Reading', score: readingScore, icon: BookOpen, color: 'blue' as const, bg: 'bg-blue-100', fill: 'bg-blue-500' },
+                        { label: 'Writing', score: writingScore, icon: PenTool, color: 'orange' as const, bg: 'bg-orange-100', fill: 'bg-orange-500' },
+                        { label: 'Speaking', score: speakingScore, icon: Mic, color: 'purple' as const, bg: 'bg-purple-100', fill: 'bg-purple-500' },
                     ].map(skill => (
-                        <div key={skill.label} className="space-y-2">
-                            <div className="flex justify-between items-center text-sm font-bold">
-                                <span className="flex items-center gap-2">
-                                    <span className={`w-6 h-6 rounded-md flex items-center justify-center ${skill.bg} ${skill.color}`}>
-                                        <skill.icon className="w-3.5 h-3.5" />
-                                    </span>
-                                    {skill.label}
+                        <div key={skill.label} className="space-y-3">
+                            <div className="flex justify-between items-center text-sm font-bold text-brand-dark">
+                                <span className="flex items-center gap-3">
+                                    <IconContainer icon={skill.icon} color={skill.color} size="sm" />
+                                    <span className="uppercase tracking-wider">{skill.label}</span>
                                 </span>
-                                <span>{Math.round(skill.score)}%</span>
+                                <span className="text-lg">{Math.round(skill.score)}%</span>
                             </div>
-                            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="w-full h-3 bg-muted/40 rounded-full overflow-hidden border border-border/50">
                                 <div className={`h-full ${skill.fill} rounded-full transition-all duration-1000`} style={{ width: `${skill.score}%` }} />
                             </div>
                         </div>
                     ))}
                 </div>
-            </div>
+            </motion.div>
 
             {/* Achievements Grid */}
-            <div className="bg-white rounded-[32px] p-8 shadow-sm border border-border/40">
-            <div className="flex items-center gap-3 mb-6">
-                <Award className="w-7 h-7 text-brand-yellow fill-brand-yellow" />
-                <h2 className="font-heading text-2xl">Badges & Achievements</h2>
-            </div>
+            <motion.div variants={itemVariants} className="bg-white rounded-[32px] p-8 shadow-sm border border-border/80 hover-card-up">
+              <div className="flex items-center justify-between pb-6 border-b border-border/50 mb-8">
+                  <div className="flex items-center gap-4">
+                    <IconContainer icon={Award} color="yellow" size="md" />
+                    <h2 className="font-heading text-3xl text-brand-dark">Achievements</h2>
+                  </div>
+                  <span className="bg-brand-yellow/20 text-brand-dark text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                    {unlockedBadges.length} Unlocked
+                  </span>
+              </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {DEFAULT_BADGES.map((badge, i) => {
-                // Check if unlocked
-                const isUnlocked = unlockedBadges.some((unlockedTitle: string) => unlockedTitle.includes(badge.name.toLowerCase()));
-                
-                return (
-                <motion.div 
-                    key={badge.id}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.05 }}
-                    className={`flex flex-col items-center justify-center text-center p-3 sm:p-4 rounded-2xl border-2 transition-all ${isUnlocked ? 'border-brand-yellow bg-yellow-50/50 shadow-sm' : 'border-border/40 bg-muted/50 grayscale opacity-40'}`}
-                >
-                    <div className="text-4xl sm:text-5xl mb-2 drop-shadow-md">{badge.icon}</div>
-                    <span className="font-bold text-[10px] sm:text-xs leading-tight text-brand-dark">{badge.name}</span>
-                </motion.div>
-                )})}
-            </div>
-            </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+                  {DEFAULT_BADGES.map((badge, i) => {
+                  // Check if unlocked
+                  const isUnlocked = unlockedBadges.some((unlockedTitle: string) => unlockedTitle.includes(badge.name.toLowerCase()));
+                  
+                  return (
+                  <motion.div 
+                      key={badge.id}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.05 }}
+                      className={`flex flex-col items-center justify-center text-center p-5 rounded-[20px] transition-all relative overflow-hidden group ${isUnlocked ? 'bg-brand-yellow/10 border-2 border-brand-yellow shadow-sm hover:-translate-y-1' : 'bg-muted/30 border border-border/50 grayscale opacity-50'}`}
+                  >
+                      {isUnlocked && (
+                        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Sparkles className="w-4 h-4 text-brand-yellow" />
+                        </div>
+                      )}
+                      <div className="text-4xl sm:text-5xl mb-3 drop-shadow-md group-hover:scale-110 transition-transform">{badge.icon}</div>
+                      <span className="font-bold text-[10px] sm:text-xs leading-tight text-brand-dark uppercase tracking-wider">{badge.name}</span>
+                  </motion.div>
+                  )})}
+              </div>
+            </motion.div>
         </div>
-      </div>
+      </motion.div>
     </MainLayout>
   );
 }

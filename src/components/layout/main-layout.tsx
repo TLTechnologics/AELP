@@ -4,10 +4,10 @@ import { Navbar } from './navbar';
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-white bg-grid-pattern text-brand-dark">
+    <div className="min-h-screen bg-brand-muted bg-grid-pattern text-brand-dark">
       <Navbar />
-      <main className="pt-16 md:pt-20 pb-20 lg:pb-8 min-h-screen">
-        <div className="p-3 sm:p-6 md:p-8 max-w-7xl mx-auto">
+      <main className="pt-20 md:pt-24 pb-24 lg:pb-12 min-h-screen">
+        <div className="px-4 sm:px-6 md:px-12 max-w-[1280px] mx-auto w-full">
           {children}
         </div>
       </main>

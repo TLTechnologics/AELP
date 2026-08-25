@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { Anton } from "next/font/google";
 import "./globals.css";
@@ -14,20 +15,27 @@ export const metadata: Metadata = {
   description: "Personalized AI-powered English learning platform.",
 };
 
+import { ThemeProvider } from "@/components/providers/theme-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet" />
       </head>
-      <body className={`${anton.variable} font-sans antialiased bg-muted text-foreground bg-grid-pattern min-h-screen flex flex-col`}>
-        <QueryProvider>
-          {children}
-        </QueryProvider>
+      <body className={`${anton.variable} font-sans antialiased bg-background text-foreground bg-grid-pattern min-h-screen flex flex-col`}>
+
+
+
+        <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" disableTransitionOnChange>
+          <QueryProvider>
+            {children}
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
