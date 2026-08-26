@@ -222,7 +222,7 @@ export default function AnalyticsDashboard() {
             </div>
             
             <div className="space-y-4 divide-y divide-border/20">
-              {promotionReady.map(std => (
+              {promotionReady.map((std: any) => (
                 <div key={std.id} className="flex justify-between items-center pt-4 first:pt-0">
                   <div>
                     <p className="font-bold text-brand-dark text-sm">{std.name}</p>
@@ -244,7 +244,7 @@ export default function AnalyticsDashboard() {
             </div>
             
             <div className="space-y-4 divide-y divide-border/20">
-              {atRisk.map(std => (
+              {atRisk.map((std: any) => (
                 <div key={std.id} className="flex justify-between items-center pt-4 first:pt-0">
                   <div>
                     <p className="font-bold text-brand-dark text-sm">{std.name}</p>
