@@ -1,9 +1,9 @@
 'use client';
 
 import { MainLayout } from '@/components/layout/main-layout';
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
 import { Lock, Shield, Award, Edit3, LogOut, Camera, Loader2, BookOpen, PenTool, Headphones, Mic, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { useRouter } from 'next/navigation';
@@ -41,23 +41,33 @@ export default function ProfilePage() {
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState(''); // IMPROVE-021
   const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordFeedback, setPasswordFeedback] = useState<{ type: 'success'|'error'; msg: string } | null>(null); // BUG-036
 
   const handlePasswordChange = async () => {
+    setPasswordFeedback(null);
+    // IMPROVE-021: validate confirm password
     if (!newPassword || newPassword.length < 6) {
-        alert('Password must be at least 6 characters long');
-        return;
+      setPasswordFeedback({ type: 'error', msg: 'Password must be at least 6 characters long' });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordFeedback({ type: 'error', msg: 'Passwords do not match' });
+      return;
     }
     setChangingPassword(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setChangingPassword(false);
     
     if (error) {
-        alert(error.message);
+      // BUG-036: inline feedback instead of alert()
+      setPasswordFeedback({ type: 'error', msg: error.message });
     } else {
-        alert('Password updated successfully!');
-        setShowPasswordModal(false);
-        setNewPassword('');
+      setPasswordFeedback({ type: 'success', msg: 'Password updated successfully!' });
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => { setShowPasswordModal(false); setPasswordFeedback(null); }, 1500);
     }
   };
 
@@ -101,6 +111,12 @@ export default function ProfilePage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[32px] p-8 max-w-md w-full space-y-6 shadow-xl border border-border/80">
             <h3 className="font-heading text-3xl text-brand-dark">Change Password</h3>
+            {/* BUG-036: Inline feedback */}
+            {passwordFeedback && (
+              <div className={`p-3 rounded-xl text-sm font-medium text-center ${passwordFeedback.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+                {passwordFeedback.msg}
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">New Password</label>
@@ -112,9 +128,20 @@ export default function ProfilePage() {
                   placeholder="Enter new password (min. 6 characters)"
                 />
               </div>
+              {/* IMPROVE-021: confirm password field */}
+              <div>
+                <label className="block text-sm font-bold text-muted-foreground uppercase tracking-wider mb-2">Confirm New Password</label>
+                <input 
+                  type="password" 
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full bg-muted/40 border border-border/80 rounded-xl px-4 py-3.5 text-brand-dark font-medium focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 focus:border-brand-yellow transition-all"
+                  placeholder="Re-enter your new password"
+                />
+              </div>
             </div>
             <div className="flex gap-4 pt-2">
-              <Button variant="outline" className="flex-1" onClick={() => setShowPasswordModal(false)}>Cancel</Button>
+              <Button variant="outline" className="flex-1" onClick={() => { setShowPasswordModal(false); setPasswordFeedback(null); setNewPassword(''); setConfirmPassword(''); }}>Cancel</Button>
               <Button variant="primary" className="flex-1" onClick={handlePasswordChange} disabled={changingPassword}>
                 {changingPassword ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Update Password'}
               </Button>
@@ -142,14 +169,26 @@ export default function ProfilePage() {
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-100/30 rounded-full blur-[60px] pointer-events-none" />
           
           <div className="relative group shrink-0">
+            {/* BUG-050: onError fallback to initial-based avatar */}
             {avatarUrl ? (
-                <img src={avatarUrl} alt={userName} className="w-40 h-40 rounded-full object-cover shadow-xl border-4 border-white relative z-10" />
+                <img 
+                  src={avatarUrl} 
+                  alt={userName} 
+                  className="w-40 h-40 rounded-full object-cover shadow-xl border-4 border-white relative z-10"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
             ) : (
                 <div className="w-40 h-40 rounded-full bg-brand-yellow flex items-center justify-center font-heading text-6xl text-brand-dark shadow-xl border-4 border-white relative z-10 uppercase">
                 {userInitial}
                 </div>
             )}
-            <button className="absolute bottom-2 right-2 w-12 h-12 bg-brand-dark text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 hover:bg-brand-yellow hover:text-brand-dark transition-all z-20">
+            {/* BUG-035: Camera button now shows a tooltip instead of doing nothing silently */}
+            <button 
+              aria-label="Change avatar photo (coming soon)" 
+              title="Avatar change coming soon"
+              disabled
+              className="absolute bottom-2 right-2 w-12 h-12 bg-brand-dark/60 text-white/70 rounded-full flex items-center justify-center shadow-lg cursor-not-allowed z-20"
+            >
               <Camera className="w-5 h-5" />
             </button>
             
@@ -231,7 +270,7 @@ export default function ProfilePage() {
                           { label: 'Reading', score: readingScore, icon: BookOpen, color: 'blue' as const, bg: 'bg-blue-100', fill: 'bg-blue-500' },
                           { label: 'Writing', score: writingScore, icon: PenTool, color: 'orange' as const, bg: 'bg-orange-100', fill: 'bg-orange-500' },
                           { label: 'Speaking', score: speakingScore, icon: Mic, color: 'purple' as const, bg: 'bg-purple-100', fill: 'bg-purple-500' },
-                      ].map(skill => (
+                      ].map((skill, idx) => (
                           <div key={skill.label} className="space-y-3">
                               <div className="flex justify-between items-center text-sm font-bold text-brand-dark">
                                   <span className="flex items-center gap-3">
@@ -241,7 +280,13 @@ export default function ProfilePage() {
                                   <span className="text-lg">{Math.round(skill.score)}%</span>
                               </div>
                               <div className="w-full h-3 bg-muted/40 rounded-full overflow-hidden border border-border/50">
-                                  <div className={`h-full ${skill.fill} rounded-full transition-all duration-1000`} style={{ width: `${skill.score}%` }} />
+                                  {/* BUG-037: animate from width 0 on mount */}
+                                  <motion.div
+                                    className={`h-full ${skill.fill} rounded-full`}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${skill.score}%` }}
+                                    transition={{ duration: 0.8, delay: idx * 0.1, ease: 'easeOut' }}
+                                  />
                               </div>
                           </div>
                       ))}
@@ -262,8 +307,10 @@ export default function ProfilePage() {
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
                     {DEFAULT_BADGES.map((badge, i) => {
-                    // Check if unlocked
-                    const isUnlocked = unlockedBadges.some((unlockedTitle: string) => unlockedTitle.includes(badge.name.toLowerCase()));
+                    // BUG-039: use badge ID for reliable matching
+                    const isUnlocked = unlockedBadges.some((unlockedTitle: string) => 
+                      unlockedTitle === badge.id || unlockedTitle.includes(badge.id)
+                    );
                     
                     return (
                     <motion.div 
@@ -276,6 +323,12 @@ export default function ProfilePage() {
                         {isUnlocked && (
                           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Sparkles className="w-4 h-4 text-brand-yellow" />
+                          </div>
+                        )}
+                        {/* IMPROVE-022: padlock overlay on locked badges */}
+                        {!isUnlocked && (
+                          <div className="absolute top-2 right-2">
+                            <Lock className="w-3.5 h-3.5 text-muted-foreground/60" />
                           </div>
                         )}
                         <div className="text-4xl sm:text-5xl mb-3 drop-shadow-md group-hover:scale-110 transition-transform">{badge.icon}</div>

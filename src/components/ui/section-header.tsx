@@ -16,9 +16,10 @@ export function SectionHeader({ title, description, badge, children }: SectionHe
             {badge}
           </span>
         )}
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-heading uppercase leading-tight tracking-tight text-brand-dark">
+        {/* BUG-048: h2 not h1 — only one h1 per page */}
+        <h2 className="text-3xl sm:text-5xl md:text-6xl font-heading uppercase leading-tight tracking-tight text-brand-dark">
           {title}
-        </h1>
+        </h2>
         {description && (
           <p className="text-base sm:text-xl text-muted-foreground font-medium mt-2 max-w-2xl">
             {description}

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { useDashboard } from '@/hooks/use-dashboard';
 import { 
+  AlertCircle,
   Play, 
   Target, 
   TrendingUp, 
@@ -14,7 +15,7 @@ import {
   Clock, 
   ArrowRight,
   Mic,
-  AlertCircle,
+  Info,
   Lock,
   Trophy,
   PenTool
@@ -107,7 +108,8 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="hidden sm:flex flex-col items-end shrink-0 pl-6 border-l border-white/20">
+          {/* IMPROVE-014: show completeness on all screen sizes */}
+          <div className="flex flex-col items-end shrink-0 pl-6 border-l border-white/20">
             <span className="text-xs font-bold uppercase tracking-wider text-brand-yellow mb-2">Profile Completion</span>
             <span className="text-4xl font-heading text-white">{data?.profile_completeness || 0}%</span>
           </div>
@@ -121,7 +123,8 @@ export default function Home() {
             { label: 'Assessments', value: data?.completed_assessments || 0, sub: 'Completed', icon: Clock, color: 'orange' as const },
             { label: 'Recent Activity', value: data?.recent_activity?.length || 0, sub: 'Last 7 days', icon: BookOpen, color: 'pink' as const },
           ].map((stat, i) => (
-            <div key={i} className="bg-white rounded-[24px] p-6 shadow-sm border border-border/80 hover-card-up relative overflow-hidden group">
+            // BUG-019: stronger shadow + border for elevation on muted background
+            <div key={i} className="bg-white rounded-[24px] p-6 shadow-md border border-border hover-card-up relative overflow-hidden group">
               <IconContainer icon={stat.icon} color={stat.color} size="md" className="mb-4" />
               <p className="text-muted-foreground text-sm font-bold uppercase tracking-wider mb-2">{stat.label}</p>
               <h3 className="font-heading text-4xl text-brand-dark mb-1">{stat.value}</h3>
@@ -172,10 +175,12 @@ export default function Home() {
                                 <span className="text-[11px] font-bold uppercase tracking-wider bg-red-100 text-red-700 px-2 py-1 rounded-md">High Priority</span>
                               )}
                             </div>
-                            <h4 className="text-lg font-bold text-brand-dark mb-1 group-hover:text-brand-yellow transition-colors">{lesson.title}</h4>
+                            {/* BUG-018: readable hover color instead of brand-yellow on white */}
+                            <h4 className="text-lg font-bold text-brand-dark mb-1 group-hover:text-brand-dark/70 transition-colors">{lesson.title}</h4>
                             {lesson.reason && (
                               <div className="text-sm text-muted-foreground flex gap-1.5 items-start">
-                                <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                                {/* BUG-021: Info icon instead of AlertCircle */}
+                                <Info className="w-4 h-4 mt-0.5 shrink-0 text-blue-500" />
                                 <span className="line-clamp-2">{lesson.reason}</span>
                               </div>
                             )}
@@ -186,8 +191,10 @@ export default function Home() {
                           onClick={() => router.push(`/lesson?id=${lesson.id || 1}`)}
                           variant="secondary"
                           size="icon"
+                          aria-label={`Start lesson: ${lesson.title}`}
                           className="shrink-0 sm:w-14 sm:h-14 bg-brand-yellow hover:scale-110 shadow-md"
                         >
+                          {/* BUG-020: fill-brand-dark not fill-white on yellow background */}
                           <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-brand-dark text-brand-dark" />
                         </Button>
                       </div>
@@ -210,7 +217,7 @@ export default function Home() {
               <div className="bg-white rounded-[24px] p-6 border border-border/80 shadow-sm space-y-4 max-h-[500px] overflow-y-auto">
                 {data?.weak_skills?.length > 0 ? (
                   data.weak_skills.map((skill: any, i: number) => (
-                    <div key={i} className="flex flex-col gap-3 p-4 rounded-xl bg-muted/40 border border-border/50 hover:bg-muted transition-colors">
+                    <div key={skill.skill || i} className="flex flex-col gap-3 p-4 rounded-xl bg-muted/40 border border-border/50 hover:bg-muted transition-colors">
                       <div className="flex justify-between items-center">
                         <span className="font-bold text-base text-brand-dark">{skill.skill}</span>
                         <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md ${skill.priority === 'HIGH' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
@@ -222,15 +229,22 @@ export default function Home() {
                         <span className="text-brand-dark">{Math.round(skill.score)}%</span>
                       </div>
                       <div className="h-2 w-full bg-border rounded-full overflow-hidden mt-1">
-                        <div className={`h-full rounded-full transition-all duration-1000 ${skill.priority === 'HIGH' ? 'bg-red-500' : 'bg-orange-500'}`} style={{ width: `${Math.min(Math.max(skill.score, 5), 100)}%` }} />
+                        <motion.div
+                          className={`h-full rounded-full ${skill.priority === 'HIGH' ? 'bg-red-500' : 'bg-orange-500'}`}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(Math.max(skill.score, 5), 100)}%` }}
+                          transition={{ duration: 0.8, delay: i * 0.1, ease: 'easeOut' }}
+                        />
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="py-12 flex flex-col items-center justify-center text-center text-muted-foreground">
-                    <IconContainer icon={Target} color="muted" size="lg" className="mb-4 opacity-50" />
-                    <p className="text-sm font-medium max-w-[200px]">Complete more assessments to analyze your weak skills.</p>
-                  </div>
+                  <EmptyState
+                    icon={Target}
+                    iconColor="muted"
+                    title="No Weak Skills Yet"
+                    description="Complete more assessments to analyze your weak areas."
+                  />
                 )}
               </div>
             </motion.div>

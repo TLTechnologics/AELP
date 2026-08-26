@@ -419,11 +419,19 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               description="Evaluate your English skills and discover where you can improve." 
             />
 
+            {/* BUG-023: staggered entrance animations on all 4 cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-              {/* READING ASSESSMENT CARD */}
+              {/* READING ASSESSMENT CARD — IMPROVE-017: Start Here badge */}
               <motion.div
-                className="bg-white rounded-[24px] p-6 sm:p-8 border border-border shadow-sm hover-card-up flex flex-col justify-between"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0, duration: 0.4 }}
+                className="bg-white rounded-[24px] p-6 sm:p-8 border-2 border-brand-yellow shadow-md hover-card-up flex flex-col justify-between relative overflow-hidden"
               >
+                {/* Start Here ribbon */}
+                <div className="absolute -top-0.5 right-4 bg-brand-dark text-brand-yellow text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-b-xl">
+                  Start Here
+                </div>
                 <div className="space-y-6">
                   <div className="flex justify-between items-start">
                     <IconContainer icon={BookOpen} color="blue" size="lg" />
@@ -441,11 +449,8 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                   </div>
                 </div>
                 <Button
-                  onClick={() => {
-                    setErrorMessage(null);
-                    setStage(STAGES.READING);
-                  }}
-                  variant="outline"
+                  onClick={() => { setErrorMessage(null); setStage(STAGES.READING); }}
+                  variant="secondary"
                   className="w-full mt-auto"
                 >
                   Start Reading <ArrowRight className="w-4 h-4 ml-2" />
@@ -454,6 +459,9 @@ However, not everyone follows the same routine. Some people prefer to wake up la
 
               {/* WRITING ASSESSMENT CARD */}
               <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.08, duration: 0.4 }}
                 className="bg-white rounded-[24px] p-6 sm:p-8 border border-border shadow-sm hover-card-up flex flex-col justify-between"
               >
                 <div className="space-y-6">
@@ -472,20 +480,16 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     <p className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-orange-500" /> Instant Feedback</p>
                   </div>
                 </div>
-                <Button
-                  onClick={() => {
-                    setErrorMessage(null);
-                    setStage(STAGES.WRITING);
-                  }}
-                  variant="outline"
-                  className="w-full mt-auto"
-                >
+                <Button onClick={() => { setErrorMessage(null); setStage(STAGES.WRITING); }} variant="outline" className="w-full mt-auto">
                   Start Writing <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </motion.div>
 
               {/* SPEAKING ASSESSMENT CARD */}
               <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.16, duration: 0.4 }}
                 className="bg-white rounded-[24px] p-6 sm:p-8 border border-border shadow-sm hover-card-up flex flex-col justify-between"
               >
                 <div className="space-y-6">
@@ -504,20 +508,16 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     <p className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-purple-500" /> Advanced Analysis</p>
                   </div>
                 </div>
-                <Button
-                  onClick={() => {
-                    setErrorMessage(null);
-                    setStage(STAGES.SPEAKING);
-                  }}
-                  variant="outline"
-                  className="w-full mt-auto"
-                >
+                <Button onClick={() => { setErrorMessage(null); setStage(STAGES.SPEAKING); }} variant="outline" className="w-full mt-auto">
                   Start Speaking <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </motion.div>
 
               {/* LISTENING ASSESSMENT CARD */}
               <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.24, duration: 0.4 }}
                 className="bg-white rounded-[24px] p-6 sm:p-8 border border-border shadow-sm hover-card-up flex flex-col justify-between"
               >
                 <div className="space-y-6">
@@ -536,14 +536,7 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     <p className="flex items-center gap-2"><Headphones className="w-4 h-4 text-pink-500" /> Custom Audio</p>
                   </div>
                 </div>
-                <Button
-                  onClick={() => {
-                    setErrorMessage(null);
-                    setStage(STAGES.LISTENING);
-                  }}
-                  variant="outline"
-                  className="w-full mt-auto"
-                >
+                <Button onClick={() => { setErrorMessage(null); setStage(STAGES.LISTENING); }} variant="outline" className="w-full mt-auto">
                   Start Listening <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </motion.div>
@@ -585,8 +578,8 @@ However, not everyone follows the same routine. Some people prefer to wake up la
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Passage Column */}
-              <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-border shadow-sm space-y-6 lg:h-[650px] lg:overflow-y-auto lg:sticky lg:top-24">
+              {/* Passage Column — BUG-025: max-h instead of fixed h */}
+              <div className="bg-white p-6 sm:p-8 rounded-[24px] border border-border shadow-sm space-y-6 lg:max-h-[650px] lg:overflow-y-auto lg:sticky lg:top-24">
                 <div className="flex items-center gap-2 text-blue-600 font-bold uppercase tracking-wider text-[11px] bg-blue-50 px-3 py-1.5 rounded-md w-fit">
                   <BookOpen className="w-4 h-4" /> Reading Passage
                 </div>
