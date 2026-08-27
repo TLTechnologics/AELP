@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, BookOpen, FileText, CheckCircle, AlertCircle, Award, Sparkles, ArrowLeft, Mic, Square, Play, Pause, Trash2, RotateCcw, Headphones, PenLine, Clock } from 'lucide-react';
+import { ArrowRight, BookOpen, FileText, CheckCircle, AlertCircle, Award, Sparkles, ArrowLeft, Mic, Square, Play, Pause, Trash2, RotateCcw, Headphones, PenLine, Clock, Upload, FileAudio, FileUp, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useReadingAssessment, useSubmitReading, useSubmitWriting, useSpeakingAssessment, useSubmitSpeaking, useSubmitSpeakingText, useWritingAssessment, useListeningAssessment, useSubmitListening } from '@/hooks/use-assessment';
 import { SectionHeader } from '@/components/ui/section-header';
@@ -28,6 +28,9 @@ export default function AssessmentPage() {
   const [writingSubmission, setWritingSubmission] = useState('');
   
   // Speaking State
+  const [speakingSubmissionMode, setSpeakingSubmissionMode] = useState<'selection' | 'recording' | 'upload' | 'preview'>('selection');
+  const [audioSource, setAudioSource] = useState<'mic' | 'upload' | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
@@ -221,13 +224,14 @@ However, not everyone follows the same routine. Some people prefer to wake up la
   }, [isRecording, isPaused]);
 
   useEffect(() => {
-    if (audioBlob) {
-      const url = URL.createObjectURL(audioBlob);
+    const fileOrBlob = audioFile || audioBlob;
+    if (fileOrBlob) {
+      const url = URL.createObjectURL(fileOrBlob);
       setAudioUrl(url);
       return () => URL.revokeObjectURL(url);
     }
     setAudioUrl(null);
-  }, [audioBlob]);
+  }, [audioBlob, audioFile]);
 
   const startRecording = async () => {
     setErrorMessage(null);
@@ -316,8 +320,38 @@ However, not everyone follows the same routine. Some people prefer to wake up la
   const deleteRecording = () => {
     setAudioBlob(null);
     setAudioUrl(null);
+    setAudioFile(null);
     setRecordingDuration(0);
     setLiveTranscript('');
+    setSpeakingSubmissionMode('selection');
+    setAudioSource(null);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setErrorMessage("File too large. Please choose a smaller audio file under 10MB.");
+      return;
+    }
+
+    if (!file.type.startsWith('audio/')) {
+      setErrorMessage("Invalid audio file. Please upload a supported audio format.");
+      return;
+    }
+
+    setErrorMessage(null);
+    setAudioFile(file);
+    setAudioSource('upload');
+    
+    const url = URL.createObjectURL(file);
+    const audio = new Audio(url);
+    audio.onloadedmetadata = () => {
+      setRecordingDuration(Math.round(audio.duration));
+    };
+
+    setSpeakingSubmissionMode('preview');
   };
 
   const formatDuration = (seconds: number) => {
@@ -339,13 +373,13 @@ However, not everyone follows the same routine. Some people prefer to wake up la
   const handleSpeakingSubmit = async () => {
     setErrorMessage(null);
     
-    if (recordingDuration < 10) {
+    if (audioSource === 'mic' && recordingDuration < 10) {
       setErrorMessage('Please speak for at least 10 seconds.');
       return;
     }
 
-    if (!liveTranscript.trim() && !audioBlob) {
-      setErrorMessage('No speech detected. Please ensure your microphone is working and speak clearly.');
+    if (!liveTranscript.trim() && !audioBlob && !audioFile) {
+      setErrorMessage('No audio file or speech detected. Please provide an audio response.');
       return;
     }
 
@@ -353,20 +387,22 @@ However, not everyone follows the same routine. Some people prefer to wake up la
 
     try {
       let res;
-      if (liveTranscript.trim()) {
+      const targetFile = audioFile || (audioBlob ? new File([audioBlob], 'recording.webm', { type: 'audio/webm' }) : null);
+
+      if (targetFile) {
+        const formData = new FormData();
+        formData.append('audio_file', targetFile);
+        formData.append('assessment_id', speakingData?.id || '1');
+        formData.append('prompt', speakingData?.topic || 'Introduce yourself.');
+        formData.append('duration', recordingDuration.toString());
+        res = await submitSpeakingMutation.mutateAsync(formData);
+      } else if (liveTranscript.trim()) {
         res = await submitSpeakingTextMutation.mutateAsync({
           assessment_id: parseInt(speakingData?.id || '1'),
           prompt: speakingData?.topic || 'Introduce yourself.',
           duration: recordingDuration,
           transcript: liveTranscript
         });
-      } else if (audioBlob) {
-        const formData = new FormData();
-        formData.append('audio_file', audioBlob, 'recording.webm');
-        formData.append('assessment_id', speakingData?.id || '1');
-        formData.append('prompt', speakingData?.topic || 'Introduce yourself.');
-        formData.append('duration', recordingDuration.toString());
-        res = await submitSpeakingMutation.mutateAsync(formData);
       }
       setSpeakingResult(res);
       setActiveModule('speaking');
@@ -726,11 +762,11 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               </div>
               <Button
                 onClick={handleSpeakingSubmit}
-                disabled={isSubmitting || !audioBlob}
+                disabled={isSubmitting || (!audioBlob && !audioFile)}
                 variant="primary"
                 className="w-full sm:w-auto"
               >
-                {isSubmitting ? 'Evaluating...' : 'Submit Recording'} <ArrowRight className="w-5 h-5 ml-2" />
+                {isSubmitting ? 'Evaluating...' : 'Submit Audio'} <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </div>
 
@@ -743,41 +779,154 @@ However, not everyone follows the same routine. Some people prefer to wake up la
               </div>
 
               <div className="py-8">
-                {isRecording ? (
-                  <div className="space-y-10">
-                    <div className="text-6xl font-heading text-red-500 animate-pulse">
-                      {formatDuration(recordingDuration)}
-                    </div>
-                    {/* Fake Waveform Animation */}
-                    <div className="flex items-center justify-center gap-1.5 h-16">
-                      {[1, 2, 3, 4, 5, 6, 7].map(i => (
-                        <motion.div
-                          key={i}
-                          animate={{ height: isPaused ? 12 : [12, 40, 12, 60, 12] }}
-                          transition={{ repeat: Infinity, duration: 1, delay: i * 0.1 }}
-                          className="w-2.5 bg-red-500 rounded-full"
-                        />
-                      ))}
-                    </div>
-                    <div className="flex justify-center gap-6">
-                      {isPaused ? (
-                        <button onClick={resumeRecording} className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center hover:bg-red-200 shadow-sm transition-colors">
-                          <Play className="w-8 h-8 fill-current" />
-                        </button>
-                      ) : (
-                        <button onClick={pauseRecording} className="w-16 h-16 bg-brand-yellow text-brand-dark rounded-full flex items-center justify-center hover:scale-105 shadow-sm transition-transform">
-                          <Pause className="w-8 h-8 fill-current" />
-                        </button>
-                      )}
-                      <button onClick={stopRecording} className="w-16 h-16 bg-brand-dark text-white rounded-full flex items-center justify-center hover:bg-brand-dark/90 shadow-sm transition-colors">
-                        <Square className="w-6 h-6 fill-current" />
+                {speakingSubmissionMode === 'selection' && (
+                  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <h3 className="text-xl font-heading text-brand-dark uppercase">How would you like to respond?</h3>
+                    <p className="text-muted-foreground text-sm font-medium">Choose how you want to submit your speaking response.</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 max-w-2xl mx-auto">
+                      {/* Card 1: Record */}
+                      <button 
+                        onClick={() => setSpeakingSubmissionMode('recording')}
+                        className="group flex flex-col items-center justify-center p-8 bg-white border-2 border-border/60 hover:border-brand-yellow hover:bg-brand-yellow/5 rounded-[24px] transition-all text-center shadow-sm hover:shadow-md"
+                      >
+                        <div className="w-16 h-16 rounded-full bg-brand-dark flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
+                          <Mic className="w-8 h-8" />
+                        </div>
+                        <h4 className="font-heading text-xl text-brand-dark uppercase mb-2">Record on Website</h4>
+                        <p className="text-sm font-medium text-muted-foreground leading-relaxed mb-6">
+                          Record your answer directly using your device microphone.
+                        </p>
+                        <span className="text-sm font-bold text-brand-dark group-hover:text-brand-yellow transition-colors flex items-center gap-2 mt-auto">
+                          Record Now <ArrowRight className="w-4 h-4" />
+                        </span>
+                      </button>
+
+                      {/* Card 2: Upload */}
+                      <button 
+                        onClick={() => setSpeakingSubmissionMode('upload')}
+                        className="group flex flex-col items-center justify-center p-8 bg-white border-2 border-border/60 hover:border-brand-yellow hover:bg-brand-yellow/5 rounded-[24px] transition-all text-center shadow-sm hover:shadow-md relative overflow-hidden"
+                      >
+                        <div className="w-16 h-16 rounded-full bg-brand-dark flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform">
+                          <FileAudio className="w-8 h-8" />
+                        </div>
+                        <h4 className="font-heading text-xl text-brand-dark uppercase mb-2">Upload Audio</h4>
+                        <p className="text-sm font-medium text-muted-foreground leading-relaxed mb-6">
+                          Already have a recording? Upload it from your device.
+                        </p>
+                        <span className="text-sm font-bold text-brand-dark group-hover:text-brand-yellow transition-colors flex items-center gap-2 mt-auto">
+                          Choose File <ArrowRight className="w-4 h-4" />
+                        </span>
                       </button>
                     </div>
                   </div>
-                ) : audioBlob ? (
-                  <div className="space-y-8">
-                    <div className="text-5xl font-heading text-brand-dark">
-                      {formatDuration(recordingDuration)}
+                )}
+
+                {speakingSubmissionMode === 'recording' && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <button 
+                      onClick={() => setSpeakingSubmissionMode('selection')}
+                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-brand-dark flex items-center gap-2 mb-8 mx-auto"
+                    >
+                      <ArrowLeft className="w-3 h-3" /> Choose another method
+                    </button>
+                    
+                    {isRecording ? (
+                      <div className="space-y-10">
+                        <div className="text-6xl font-heading text-red-500 animate-pulse">
+                          {formatDuration(recordingDuration)}
+                        </div>
+                        {/* Fake Waveform Animation */}
+                        <div className="flex items-center justify-center gap-1.5 h-16">
+                          {[1, 2, 3, 4, 5, 6, 7].map(i => (
+                            <motion.div
+                              key={i}
+                              animate={{ height: isPaused ? 12 : [12, 40, 12, 60, 12] }}
+                              transition={{ repeat: Infinity, duration: 1, delay: i * 0.1 }}
+                              className="w-2.5 bg-red-500 rounded-full"
+                            />
+                          ))}
+                        </div>
+                        <div className="flex justify-center gap-6">
+                          {isPaused ? (
+                            <button onClick={resumeRecording} className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center hover:bg-red-200 shadow-sm transition-colors">
+                              <Play className="w-8 h-8 fill-current" />
+                            </button>
+                          ) : (
+                            <button onClick={pauseRecording} className="w-16 h-16 bg-brand-yellow text-brand-dark rounded-full flex items-center justify-center hover:scale-105 shadow-sm transition-transform">
+                              <Pause className="w-8 h-8 fill-current" />
+                            </button>
+                          )}
+                          <button onClick={() => {
+                            stopRecording();
+                            setSpeakingSubmissionMode('preview');
+                            setAudioSource('mic');
+                          }} className="w-16 h-16 bg-brand-dark text-white rounded-full flex items-center justify-center hover:bg-brand-dark/90 shadow-sm transition-colors">
+                            <Square className="w-6 h-6 fill-current" />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="w-24 h-24 bg-brand-dark text-white rounded-full flex items-center justify-center mx-auto shadow-lg">
+                          <Mic className="w-10 h-10" />
+                        </div>
+                        <div>
+                          <h4 className="font-heading text-2xl text-brand-dark uppercase">Ready to Record</h4>
+                          <p className="text-muted-foreground text-sm font-medium mt-2">Make sure your microphone is connected.</p>
+                        </div>
+                        <Button onClick={startRecording} variant="primary" className="h-12 px-8">
+                          Start Recording
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {speakingSubmissionMode === 'upload' && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-xl mx-auto">
+                    <button 
+                      onClick={() => setSpeakingSubmissionMode('selection')}
+                      className="text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-brand-dark flex items-center gap-2 mb-8 mx-auto"
+                    >
+                      <ArrowLeft className="w-3 h-3" /> Choose another method
+                    </button>
+
+                    <div className="border-2 border-dashed border-border/80 rounded-[32px] p-12 bg-muted/20 hover:bg-muted/40 transition-colors relative group">
+                      <input 
+                        type="file" 
+                        accept="audio/*"
+                        onChange={handleFileUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="flex flex-col items-center justify-center space-y-4">
+                        <div className="w-16 h-16 bg-brand-yellow/20 text-brand-dark rounded-full flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                          <FileUp className="w-8 h-8" />
+                        </div>
+                        <h4 className="font-heading text-2xl text-brand-dark uppercase">Upload Audio</h4>
+                        <p className="text-muted-foreground text-sm font-medium">Drag & drop your audio or click to choose a file</p>
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mt-4 bg-white px-3 py-1 rounded-md border shadow-sm">MP3, WAV, M4A, WEBM, OGG (MAX 10MB)</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {speakingSubmissionMode === 'preview' && (audioBlob || audioFile) && (
+                  <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+                    <h4 className="font-heading text-2xl text-brand-dark uppercase">
+                      {audioSource === 'upload' ? 'Uploaded Recording' : 'Your Recording'}
+                    </h4>
+                    
+                    <div className="bg-muted/30 border border-border/60 rounded-[24px] p-6 max-w-sm mx-auto space-y-4 shadow-sm">
+                      {audioSource === 'upload' && audioFile && (
+                        <div className="flex items-center justify-between text-sm font-bold text-brand-dark bg-white p-3 rounded-xl border border-border/40 shadow-sm">
+                          <span className="truncate max-w-[200px]">{audioFile.name}</span>
+                          <span className="text-muted-foreground text-[11px] uppercase px-2 py-1 bg-muted rounded-md">{(audioFile.size / (1024 * 1024)).toFixed(1)} MB</span>
+                        </div>
+                      )}
+                      <div className="text-5xl font-heading text-brand-dark">
+                        {formatDuration(recordingDuration)}
+                      </div>
                     </div>
                     
                     <audio 
@@ -788,27 +937,25 @@ However, not everyone follows the same routine. Some people prefer to wake up la
                     />
                     
                     <div className="flex justify-center gap-4">
-                      <Button onClick={togglePlayback} variant="outline" className="gap-2 text-brand-dark">
+                      <Button onClick={togglePlayback} variant="outline" className="gap-2 text-brand-dark border-2">
                         {isPlaying ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current" />}
-                        {isPlaying ? 'Pause' : 'Preview'}
+                        {isPlaying ? 'Pause' : 'Play Audio'}
                       </Button>
-                      <Button onClick={deleteRecording} variant="destructive" className="gap-2">
+                      
+                      <Button 
+                        onClick={() => {
+                          const previousSource = audioSource;
+                          deleteRecording();
+                          setSpeakingSubmissionMode(previousSource === 'upload' ? 'upload' : 'recording');
+                        }} 
+                        variant="destructive" 
+                        className="gap-2"
+                      >
                         <RotateCcw className="w-5 h-5" />
-                        Retake
+                        {audioSource === 'upload' ? 'Change File' : 'Record Again'}
                       </Button>
                     </div>
                   </div>
-                ) : (
-                  <button 
-                    onClick={startRecording}
-                    className="w-24 h-24 bg-brand-dark text-white rounded-full flex flex-col items-center justify-center gap-2 hover:bg-brand-dark/90 transition-transform hover:scale-105 mx-auto shadow-lg"
-                  >
-                    <Mic className="w-8 h-8" />
-                  </button>
-                )}
-                
-                {!isRecording && !audioBlob && (
-                  <p className="text-sm font-bold uppercase tracking-wider text-muted-foreground mt-6">Click to start recording</p>
                 )}
               </div>
             </div>
