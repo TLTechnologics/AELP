@@ -17,6 +17,7 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { GlobalRouteLoader } from "@/components/layout/global-route-loader";
+import { Suspense } from "react";
 
 export default function RootLayout({
   children,
@@ -32,7 +33,9 @@ export default function RootLayout({
 
         <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
           <QueryProvider>
-            <GlobalRouteLoader />
+            <Suspense fallback={null}>
+              <GlobalRouteLoader />
+            </Suspense>
             {children}
           </QueryProvider>
         </ThemeProvider>
