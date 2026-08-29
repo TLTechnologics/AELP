@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
@@ -84,10 +84,6 @@ export default function TeacherDashboard() {
   const completedWeekly = gradedAssessments.length;
   const needingAttention = students.filter((s: any) => s.status !== 'Good').length;
 
-  if (isLoading) {
-    return <LiquidLoader isLooping={true} />;
-  }
-  
   const avgClassScore = Math.round(
     students.reduce((acc: number, s: any) => acc + s.overallScore, 0) / (totalStudents || 1)
   );
@@ -139,20 +135,30 @@ export default function TeacherDashboard() {
   ].join(' ');
 
   return (
-    <MainLayout>
-      {/* BUG-043: Assign toast notification */}
-      {assignToast && (
-        <div className="fixed bottom-24 lg:bottom-8 left-1/2 -translate-x-1/2 z-[100] bg-brand-dark text-white text-sm font-bold px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-brand-yellow" />
-          Cohort assignment coming soon!
-        </div>
-      )}
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="space-y-8 pb-20"
-      >
+    <>
+      {isLoading && <LiquidLoader isLooping={true} />}
+      <MainLayout>
+        {/* BUG-043: Assign toast notification */}
+        <AnimatePresence>
+          {assignToast && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-24 right-8 bg-green-500 text-white px-6 py-3 rounded-xl shadow-xl z-50 flex items-center gap-3 font-bold"
+            >
+              <CheckCircle className="w-5 h-5 text-white" />
+              Student assigned successfully
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.div 
+          variants={containerVariants} 
+          initial="hidden" 
+          animate="show" 
+          className={`space-y-8 pb-20 ${isLoading ? 'blur-sm opacity-50 pointer-events-none select-none transition-all duration-300' : 'transition-all duration-300'}`}
+        >
         {/* Header Row */}
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
           <div>
@@ -419,5 +425,6 @@ export default function TeacherDashboard() {
 
       </motion.div>
     </MainLayout>
+    </>
   );
 }

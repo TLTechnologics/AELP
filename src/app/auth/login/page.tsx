@@ -48,17 +48,36 @@ export default function LoginPage() {
       setIsLoading(false);
     } else {
       if (authData.user) {
-        const { data: userData } = await supabase
+        let detectedRole = 'student'; // default
+
+        // 1. Check users table
+        const { data: userData, error: userError } = await supabase
           .from('users')
           .select('role')
           .eq('id', authData.user.id)
           .maybeSingle();
 
-        if (userData && userData.role === 'teacher') {
-          localStorage.setItem('userRole', 'teacher');
+        console.log('Users table result:', userData, 'Error:', userError);
+
+        if (userData?.role) {
+          detectedRole = userData.role;
+        } else {
+          // 2. Fallback: check Supabase user_metadata or app_metadata
+          const meta = authData.user.user_metadata;
+          const appMeta = authData.user.app_metadata;
+          console.log('user_metadata:', meta, 'app_metadata:', appMeta);
+          
+          if (meta?.role === 'teacher' || appMeta?.role === 'teacher') {
+            detectedRole = 'teacher';
+          }
+        }
+
+        console.log('Final detected role:', detectedRole);
+
+        localStorage.setItem('userRole', detectedRole);
+        if (detectedRole === 'teacher') {
           router.push('/teacher');
         } else {
-          localStorage.setItem('userRole', 'student');
           router.push('/');
         }
       } else {

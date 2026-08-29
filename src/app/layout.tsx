@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { GlobalRouteLoader } from "@/components/layout/global-route-loader";
 
 export default function RootLayout({
   children,
@@ -29,10 +30,9 @@ export default function RootLayout({
       </head>
       <body className={`${anton.variable} font-sans antialiased bg-background text-foreground bg-grid-pattern bg-radial-glow min-h-screen flex flex-col`}>
 
-
-
         <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
           <QueryProvider>
+            <GlobalRouteLoader />
             {children}
           </QueryProvider>
         </ThemeProvider>

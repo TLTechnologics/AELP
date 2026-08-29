@@ -156,16 +156,16 @@ export default function StudentManagement() {
     URL.revokeObjectURL(url);
   };
 
-  if (isLoading) return <LiquidLoader isLooping />;
-
   return (
-    <MainLayout>
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="space-y-8 pb-20"
-      >
+    <>
+      {isLoading && <LiquidLoader isLooping />}
+      <MainLayout>
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className={`space-y-8 pb-20 ${isLoading ? 'blur-sm opacity-50 pointer-events-none select-none transition-all duration-300' : 'transition-all duration-300'}`}
+        >
         {/* Header Row */}
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
           <div>
@@ -408,5 +408,7 @@ export default function StudentManagement() {
         </motion.div>
       </motion.div>
     </MainLayout>
+    </>
   );
 }
+

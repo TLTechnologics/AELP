@@ -17,13 +17,13 @@ export function BrandLogo({ href, size = 'md', className = '' }: BrandLogoProps)
 
   const logo = (
     <span className={`flex items-center gap-1 group select-none ${className}`}>
-      {/* Icon mark */}
-      <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-brand-dark text-brand-yellow font-heading text-sm font-bold shrink-0 shadow-sm group-hover:bg-brand-yellow group-hover:text-brand-dark transition-colors duration-200">
-        A
+      {/* Icon mark - using official image with mix-blend to preserve white background as transparent */}
+      <span className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 shrink-0 -ml-1">
+        <img src="/aelp-logo.jpg" alt="AELP Logo" className="w-full h-full object-contain mix-blend-multiply" />
       </span>
       {/* Wordmark */}
       <span className={`font-heading ${sizes.text} tracking-tighter text-brand-dark transition-colors`}>
-        ELP<span className={`text-brand-yellow ${sizes.dot}`}>.</span>
+        AELP<span className={`text-brand-yellow ${sizes.dot}`}>.</span>
       </span>
     </span>
   );

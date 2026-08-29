@@ -22,92 +22,92 @@ export function LiquidLoader({ progress = 0, onComplete, isLooping = false }: Li
     }
   }, [progress, isCompleted, onComplete, isLooping]);
 
-  const waveY = 75 - (progress / 100) * 150;
-
-  // BUG-049: Inline clip-path (no external SVG url()) to fix Firefox rendering
-  const pathA = "M 50 10 L 90 90 L 70 90 L 60 70 L 40 70 L 30 90 L 10 90 Z M 50 30 L 45 60 L 55 60 Z";
+  const waveY = 1000 - (progress * 10); // 0 to 100 maps to 1000 to 0
 
   return (
-    // POLISH-006: branded loading screen
-    <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0A0A0A] overflow-hidden gap-8"
-      role="status"
-      aria-label="Loading AELP..."
-    >
-      <AnimatePresence>
-        <motion.div
-          key="loader-container"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.8, ease: "easeInOut" } }}
-          className="relative w-48 h-48 sm:w-64 sm:h-64 flex items-center justify-center"
-        >
-          {/* BUG-049: Inline SVG defs + clip path — resolves Firefox url() issue */}
-          <svg
-            viewBox="0 0 100 100"
-            className="absolute inset-0 w-full h-full"
-            style={{ overflow: 'visible' }}
-            aria-hidden="true"
-          >
+    <AnimatePresence>
+      <motion.div
+        key="loader-overlay"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0, transition: { duration: 0.5, ease: "easeInOut" } }}
+        className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/20 backdrop-blur-[12px] overflow-hidden pointer-events-auto"
+        role="status"
+        aria-label="Loading AELP..."
+      >
+        <div className="relative w-32 h-32 sm:w-48 sm:h-48 flex items-center justify-center mb-1">
+          <svg viewBox="0 0 1000 1000" className="absolute inset-0 w-full h-full overflow-visible drop-shadow-2xl">
             <defs>
-              {/* Inline clipPath — works in all browsers */}
-              <clipPath id="a-clip-inline">
-                <path d={pathA} fillRule="evenodd" />
-              </clipPath>
-              <linearGradient id="wave-gradient-2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="rgba(255,225,124,0.7)" />
-                <stop offset="100%" stopColor="rgba(255,225,124,0.3)" />
+              {/* Inverts the JPG so the White background becomes Black (transparent in mask) 
+                  and the Black 'A' becomes White (opaque in mask). */}
+              <filter id="invert-luminance" colorInterpolationFilters="sRGB">
+                <feColorMatrix type="matrix" values="
+                  -1  0  0  0  1
+                   0 -1  0  0  1
+                   0  0 -1  0  1
+                   0  0  0  1  0
+                " />
+              </filter>
+
+              {/* The mask derived strictly from the official JPG geometry */}
+              <mask id="official-logo-mask">
+                <image 
+                  href="/aelp-logo.jpg" 
+                  width="1000" height="1000" 
+                  preserveAspectRatio="xMidYMid meet" 
+                  filter="url(#invert-luminance)" 
+                />
+              </mask>
+
+              <linearGradient id="liquid-gradient" x1="0" y1="0" x2="0" y2="1">
+                 <stop offset="0%" stopColor="#fcd34d" />
+                 <stop offset="100%" stopColor="#f59e0b" />
               </linearGradient>
             </defs>
 
-            {/* A outline */}
-            <path
-              d={pathA}
-              fill="none"
-              stroke="rgba(255, 255, 255, 0.85)"
-              strokeWidth="1.5"
-              fillRule="evenodd"
-              strokeLinejoin="round"
-            />
+            {/* Base Logo (Dark structure) - Completely transparent background, matches official shape exactly */}
+            <rect width="1000" height="1000" fill="#111" mask="url(#official-logo-mask)" />
 
-            {/* Clipped fill group */}
-            <g clipPath="url(#a-clip-inline)">
-              {/* Liquid wave area */}
-              <motion.rect
-                x="0"
-                y="0"
-                width="100"
-                height="100"
-                fill="url(#wave-gradient-2)"
-                initial={{ y: 100 }}
+            {/* Liquid Fill Overlay - Strictly masked to the EXACT official A geometry */}
+            <g mask="url(#official-logo-mask)">
+              <motion.g
+                initial={{ y: 1000, x: 0 }}
                 animate={isLooping
-                  ? { y: [60, 30, 60] }
-                  : { y: waveY }
+                  ? { y: [1000, 100, 1000], x: [0, -1000, 0] }
+                  : { y: waveY, x: 0 }
                 }
                 transition={isLooping
-                  ? { y: { duration: 4, ease: "easeInOut", repeat: Infinity } }
+                  ? { 
+                      y: { duration: 3.5, ease: "easeInOut", repeat: Infinity },
+                      x: { duration: 3.5, ease: "linear", repeat: Infinity }
+                    }
                   : { y: { type: "tween", ease: "easeOut", duration: 0.8 } }
                 }
-              />
+              >
+                {/* SVG wave path that creates a real liquid surface extending past boundaries */}
+                <path 
+                  d="M -500 0 C -250 -150, 250 150, 500 0 C 750 -150, 1250 150, 1500 0 L 1500 1500 L -500 1500 Z" 
+                  fill="url(#liquid-gradient)" 
+                />
+              </motion.g>
             </g>
           </svg>
-        </motion.div>
-      </AnimatePresence>
+        </div>
 
-      {/* POLISH-006: branded text below the A */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 0.6 }}
-        className="flex flex-col items-center gap-1"
-      >
-        <span className="font-heading text-white text-3xl tracking-widest uppercase">
-          ELP<span className="text-brand-yellow">.</span>
-        </span>
-        <span className="text-white/40 text-xs font-bold uppercase tracking-[0.3em]">
-          {isLooping ? 'Loading...' : `${Math.round(progress)}%`}
-        </span>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          className="flex flex-col items-center gap-2"
+        >
+          <span className="font-heading text-white text-4xl sm:text-5xl tracking-widest uppercase flex items-baseline drop-shadow-md">
+            AELP<span className="text-brand-yellow text-5xl sm:text-6xl leading-none">.</span>
+          </span>
+          <span className="text-white/70 text-xs sm:text-sm font-bold uppercase tracking-[0.4em] drop-shadow-sm mt-1">
+            {isLooping ? 'Loading...' : `${Math.round(progress)}%`}
+          </span>
+        </motion.div>
       </motion.div>
-    </div>
+    </AnimatePresence>
   );
 }
