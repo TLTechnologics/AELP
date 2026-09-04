@@ -9,13 +9,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-supabase_url = os.environ.get("SUPABASE_URL")
-supabase_key = os.environ.get("SUPABASE_SERVICE_KEY") # Or anon key if preferable, but we have service key
+from config import settings
 
-if not supabase_url or not supabase_key:
-    raise ValueError("SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in .env")
+_supabase_client = None
 
-supabase: Client = create_client(supabase_url, supabase_key)
+def get_supabase_client() -> Client:
+    global _supabase_client
+    if _supabase_client is None:
+        url = os.environ.get("SUPABASE_URL") or settings.SUPABASE_URL
+        key = os.environ.get("SUPABASE_SERVICE_KEY") or os.environ.get("SUPABASE_KEY") or settings.SUPABASE_SERVICE_KEY or settings.SUPABASE_KEY
+        if not url or not key:
+            raise HTTPException(status_code=500, detail="Supabase configuration is missing in backend environment.")
+        _supabase_client = create_client(url, key)
+    return _supabase_client
 
 security = HTTPBearer()
 
@@ -23,7 +29,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Security(securi
     token = credentials.credentials
     try:
         # Verify token with Supabase
-        user_response = supabase.auth.get_user(token)
+        user_response = get_supabase_client().auth.get_user(token)
         if not user_response or not user_response.user:
             raise HTTPException(status_code=401, detail="Invalid token or user not found")
             

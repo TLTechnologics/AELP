@@ -17,11 +17,13 @@ app.add_middleware(
         "http://127.0.0.1:3000", 
         "https://aelp-dszy.vercel.app",
         "https://aelp.vercel.app",
+        "https://aelp.vercel.app/",
     ],
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origin_regex=r"^https:\/\/.*\.vercel\.app.*$",
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Health check
