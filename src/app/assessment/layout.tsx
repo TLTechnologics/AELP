@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BrandLogo } from '@/components/ui/brand-logo';
 
 export default function AssessmentLayout({
   children,
@@ -6,16 +7,15 @@ export default function AssessmentLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-muted flex flex-col p-4 relative">
-      {/* Header */}
+    <div className="min-h-screen bg-muted bg-grid-pattern flex flex-col p-4 relative">
+      {/* BUG-022: Complete branded header with full wordmark */}
       <div className="w-full flex justify-between items-center z-50 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-sm">
-            <span className="font-heading text-xl text-primary-foreground">A</span>
-          </div>
-        </div>
-        
-        <Link href="/" className="text-sm md:text-base text-muted-foreground font-bold hover:text-brand-dark transition-colors">
+        <BrandLogo href="/" size="sm" />
+
+        <Link
+          href="/"
+          className="text-sm md:text-base text-muted-foreground font-bold hover:text-brand-dark transition-colors duration-150 uppercase tracking-wider"
+        >
           Exit Assessment
         </Link>
       </div>

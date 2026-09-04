@@ -1,0 +1,396 @@
+============================================================================================
+AELP - AESTHETIC & PROFESSIONAL IMPROVEMENT REPORT
+============================================================================================
+Generated: 2026-08-26
+Scope   : Full frontend review (src/app, src/components, globals.css, layouts)
+============================================================================================
+
+SECTION 1 - GLOBAL / DESIGN SYSTEM
+============================================================================================
+
+[BUG-001] globals.css | DARK MODE FORCED OFF
+  ThemeProvider has forcedTheme="light" in layout.tsx, so the entire dark-mode color palette
+  is dead code. Remove forcedTheme or build a proper theme toggle.
+
+[BUG-002] globals.css | HOVER BOX-SHADOW TOO WEAK
+  .hover-card-up:hover uses near-zero opacity shadows (0.05, 0.01). The lift effect is
+  invisible. Should be at least rgba(15,23,42,0.12) to read as a real elevation change.
+
+[BUG-003] globals.css | GRID PATTERN INVISIBLE
+  .bg-grid-pattern uses 0.02 opacity lines - imperceptible on any monitor.
+  Raise to 0.05-0.08 or use a dot-grid approach with better contrast.
+
+[BUG-004] globals.css | NO @keyframes FOR SPIN-SLOW
+  profile/page.tsx references animate-spin-slow on the decorative dashed ring, but no
+  @keyframes for spin-slow is defined anywhere. The ring will NOT animate.
+
+[BUG-005] globals.css | FONT LOADING RACE CONDITION
+  Satoshi is loaded via fontshare CDN <link> while Anton is via next/font. This split
+  causes FOIT (flash of invisible text). Move Satoshi to next/font or self-host it.
+
+[IMPROVE-001] globals.css | ADD TRANSITION TO body
+  No transition for color/background. If dark mode is re-enabled, colors will flash.
+  Add: transition: background-color 0.25s ease, color 0.25s ease.
+
+[IMPROVE-002] globals.css | NO GLOBAL FOCUS-VISIBLE RING
+  Add: :focus-visible { outline: 2px solid var(--color-brand-yellow); outline-offset: 3px; }
+  to ensure keyboard navigation is always visible across every element.
+
+[IMPROVE-003] globals.css | CUSTOM SCROLLBAR NOT STYLED
+  Several panels use overflow-y-auto but no ::-webkit-scrollbar styles exist.
+  Add thin scrollbar with brand-yellow thumb for a polished look.
+
+[IMPROVE-004] DESIGN SYSTEM | NO PAGE TRANSITION ANIMATION
+  Pages hard-cut on navigation. Add AnimatePresence page wrapper at layout level.
+
+[IMPROVE-005] DESIGN SYSTEM | INCONSISTENT SHADOW TOKENS
+  Cards use shadow-sm, shadow-md, shadow-xs, shadow-xl ad-hoc. Define a consistent
+  shadow scale as CSS variables.
+
+
+SECTION 2 - NAVBAR (src/components/layout/navbar.tsx)
+============================================================================================
+
+[BUG-006] navbar.tsx | NO SCROLL EFFECT ON NAVBAR
+  Navbar always uses bg-white/95. No shadow added on scroll. Add a useScrollY hook
+  to toggle a shadow class once the user scrolls past the hero.
+
+[BUG-007] navbar.tsx | LOCKED NAV ITEMS HAVE NO EXPLANATION ON MOBILE
+  Mobile bottom nav sets href="#" for locked items but shows no tooltip explaining WHY
+  the item is locked. Very confusing for new users.
+
+[BUG-008] navbar.tsx | ACTIVE STATE DOT ON MOBILE IS TOO SMALL
+  The active indicator is a w-1 h-1 yellow dot positioned absolutely -bottom-2.
+  Nearly invisible. Replace with a rounded pill underline or filled background.
+
+[BUG-009] navbar.tsx | MISSING ARIA LABELS ON ICON-ONLY ELEMENTS
+  The mobile profile link (User icon only) has no aria-label. Lock icons on locked
+  nav items also have no accessible description.
+
+[IMPROVE-006] navbar.tsx | LOGO NEEDS A PROPER WORDMARK OR ICON
+  "AELP." as plain text looks unfinished. Add an SVG icon or a colored monogram mark.
+
+[IMPROVE-007] navbar.tsx | LOG OUT BUTTON IS PLAIN UNSTYLED TEXT
+  "Log Out" sits next to Profile pill with no visual differentiation. Add a LogOut icon
+  or give it a subtle danger color (text-red/hover:text-red).
+
+[IMPROVE-008] navbar.tsx | NO ACTIVE BACKGROUND ON MOBILE NAV ITEMS
+  Add a soft bg-brand-yellow/15 pill behind the active icon + label on mobile.
+
+
+SECTION 3 - AUTH LAYOUT & LOGIN PAGE (src/app/auth/*)
+============================================================================================
+
+[BUG-010] auth/layout.tsx | BRAND LOGO INCONSISTENT WITH NAVBAR
+  Auth layout shows yellow box "A" + plain text "AELP" while navbar shows "AELP." in
+  a different style. Unify to a single shared logo component.
+
+[BUG-011] auth/login/page.tsx | HARDCODED COLORS OUTSIDE DESIGN SYSTEM
+  Headlines use text-gray-900 and text-gray-500 instead of text-brand-dark and
+  text-muted-foreground. These will break if the token palette changes.
+
+[BUG-012] auth/login/page.tsx | SIGN-IN BUTTON USES rounded-2xl INSTEAD OF rounded-full
+  Every other primary button in the app is rounded-full (pill shaped). This button
+  breaks the design language. Should use the shared <Button> component.
+
+[BUG-013] auth/login/page.tsx | NO "SIGN UP" LINK
+  No link to registration. New users who land on login have a dead end.
+
+[IMPROVE-009] auth/login/page.tsx | LOGIN CARD NEEDS STRONGER BRAND IDENTITY
+  Add a branded header band (dark background with white logo) or a colored gradient
+  stripe along the top border of the card.
+
+[IMPROVE-010] auth/login/page.tsx | PASSWORD FIELD HAS NO SHOW/HIDE TOGGLE
+  Add an eye/eye-off Lucide icon on the right side to toggle password visibility.
+
+[IMPROVE-011] auth/ & onboarding/ | TWO IDENTICAL DUPLICATE LAYOUT FILES
+  auth/layout.tsx and onboarding/layout.tsx are 100% identical. Extract a shared
+  AuthShellLayout component to prevent future drift.
+
+
+SECTION 4 - ONBOARDING PAGE (src/app/onboarding/page.tsx)
+============================================================================================
+
+[BUG-014] onboarding/page.tsx | AVATAR SELECTION HAS NO SELECTED STATE
+  Emoji avatars can be clicked but no visual state (border, checkmark, scale) shows
+  which is active. The selection is invisible and data is never stored.
+
+[BUG-015] onboarding/page.tsx | LEVEL SELECTION HAS NO SELECTED STATE
+  Same as BUG-014. Hover styles only apply on hover, not on click/selection.
+
+[BUG-016] onboarding/page.tsx | GOALS SELECTION HAS NO SELECTED STATE
+  Same issue. Data from all three steps is silently discarded - nothing is submitted.
+
+[BUG-017] onboarding/page.tsx | STEP TITLE IS LOWERCASE
+  "Choose your avatar" is lowercase while the rest of the app uses UPPERCASE headings.
+  The font-heading class in globals.css applies uppercase universally.
+
+[IMPROVE-012] onboarding/page.tsx | STEP INDICATOR GIVES NO CONTEXT
+  Replace plain progress bars with labeled pill steps: "1 Avatar > 2 Level > 3 Goals".
+
+[IMPROVE-013] onboarding/page.tsx | NO SKIP OPTION
+  Users are forced through all steps. Add "Skip for now" link below Continue button.
+
+
+SECTION 5 - HOME / DASHBOARD (src/app/page.tsx)
+============================================================================================
+
+[BUG-018] page.tsx | LESSON TITLE HOVER COLOR HAS POOR CONTRAST
+  On hover, lesson titles change to text-brand-yellow (#FFE17C) on a white card
+  background. This fails WCAG AA contrast. Change to text-brand-dark or darker gold.
+
+[BUG-019] page.tsx | STAT CARDS BLEND INTO PAGE BACKGROUND
+  White cards on bg-brand-muted (off-white) have near-zero visual separation.
+  Increase shadow or border opacity to make cards clearly "elevated."
+
+[BUG-020] page.tsx | PLAY BUTTON ICON FILL IS WRONG FOR SECONDARY VARIANT
+  "Continue Learning" uses fill-white on the Play icon. When variant="secondary"
+  (yellow background), fill-white creates a white icon on yellow - invisible.
+
+[BUG-021] page.tsx | AlertCircle USED AS DECORATIVE BULLET
+  AlertCircle semantically means "error/warning." Using it as a bullet point next to
+  lesson reason text is misleading. Use Info icon instead.
+
+[IMPROVE-014] page.tsx | NO PROFILE COMPLETENESS ON MOBILE
+  The dark banner's right panel (Profile Completion %) is hidden on mobile.
+  Show a smaller inline badge or percentage on mobile screens.
+
+[IMPROVE-015] page.tsx | WEAK SKILLS PROGRESS BARS HAVE NO MOUNT ANIMATION
+  Bars render at full width immediately. Use motion.div with initial={{ width: 0 }}
+  to animate them in on first render.
+
+[IMPROVE-016] page.tsx | INCONSISTENT EMPTY STATE RENDERING
+  Empty lesson list uses the <EmptyState> component. Empty weak skills uses
+  custom inline HTML. Unify both to use <EmptyState>.
+
+
+SECTION 6 - ASSESSMENT PAGE (src/app/assessment/page.tsx)
+============================================================================================
+
+[BUG-022] assessment/layout.tsx | ASSESSMENT HEADER IS INCOMPLETE
+  Shows only a small "A" box and Exit link. No progress bar or step indicator
+  showing which assessment module/stage the user is currently on.
+
+[BUG-023] assessment/page.tsx | MOTION.DIV ON SELECTION CARDS HAS NO ANIMATION PROPS
+  The four assessment type cards are wrapped in <motion.div> with no variants or
+  animation props - they render as plain static divs.
+
+[BUG-024] assessment/page.tsx | ERROR MESSAGE PERSISTS ACROSS STAGES
+  Errors from one stage linger when moving to another. No auto-clear or stage-change
+  clearing is done for errorMessage state.
+
+[BUG-025] assessment/page.tsx | READING PASSAGE HEIGHT IS HARDCODED 650px
+  lg:h-[650px] breaks if passage is shorter (whitespace) or longer (cuts off).
+  Use max-h with overflow-auto instead.
+
+[BUG-026] assessment/page.tsx | BAR HEIGHT USES PURGED TAILWIND CLASSES
+  Progress bars map data to Tailwind height classes (h-2, h-12, etc.). Tailwind may
+  purge these if not used elsewhere. Use inline style={{ height: X% }} instead.
+
+[IMPROVE-017] assessment/page.tsx | ALL 4 ASSESSMENT CARDS LOOK IDENTICAL
+  No visual priority or "recommended first" indicator for new users. Add a
+  "Start Here" badge on the recommended first assessment.
+
+[IMPROVE-018] assessment/page.tsx | SPEAKING MODULE HAS NO WAVEFORM VISUALIZER
+  Recording UX shows only a timer. Add a real-time waveform or animated pulse ring
+  to confirm audio is being captured.
+
+
+SECTION 7 - PROGRESS PAGE (src/app/progress/page.tsx)
+============================================================================================
+
+[BUG-027] progress/page.tsx | BAR CHART USES CONFLICTING ANIMATION STRATEGIES
+  framer-motion sets height to 100% of the parent, but the parent's visual height is
+  controlled by Tailwind height classes. The two systems conflict.
+
+[BUG-028] progress/page.tsx | TIME SPENT IS HARDCODED "0h"
+  The Time Spent stat always displays "0h". Either wire it to backend or remove card.
+
+[BUG-029] progress/page.tsx | WEEK DROPDOWN HAS NO FUNCTIONALITY
+  The "This Week / Last Week / This Month" select has no onChange handler. Changing
+  the period does nothing. Wire it or add a "Coming soon" badge.
+
+[BUG-030] progress/page.tsx | BAR CHART TOOLTIP IS CLIPPED
+  Tooltip uses absolute -top-12 inside overflow-x-auto container. Short bars will
+  have their tooltips clipped by the container edge.
+
+[IMPROVE-019] progress/page.tsx | NO CHART AXIS LABELS OR REFERENCE LINES
+  No Y-axis values, no grid reference lines. Users can't understand the scale.
+
+
+SECTION 8 - LEARNING PATH PAGE (src/app/path/page.tsx)
+============================================================================================
+
+[BUG-031] path/page.tsx | ROADMAP PROGRESS LINE HARDCODED TO 20%
+  animate={{ height: '20%' }} is always hardcoded regardless of actual progress.
+  Should be calculated from completed vs. total nodes.
+
+[BUG-032] path/page.tsx | ALL NODES AFTER FIRST SHOW AS LOCKED
+  Even completed nodes show a padlock icon. Completed nodes should show a checkmark.
+
+[BUG-033] path/page.tsx | ROADMAP OVERFLOWS ON MOBILE
+  The alternating translateX offsets push cards partially off-screen on narrow
+  devices. Restrict alternating layout to lg+ and use single-column on mobile.
+
+[BUG-034] path/page.tsx | CONNECTING LINE DOES NOT SCALE WITH CONTENT
+  The vertical line uses fixed top-10 bottom-10 offsets regardless of node count.
+
+[IMPROVE-020] path/page.tsx | NO NODE COUNT / PROGRESS SUMMARY
+  No "X of Y completed" text anywhere on the roadmap page.
+
+
+SECTION 9 - PROFILE PAGE (src/app/profile/page.tsx)
+============================================================================================
+
+[BUG-035] profile/page.tsx | CAMERA BUTTON HAS NO FUNCTIONALITY
+  The camera/avatar change button calls no handler. Clicking does nothing but it is
+  visually prominent and implies interactivity.
+
+[BUG-036] profile/page.tsx | PASSWORD CHANGE USES browser alert()
+  Success and error messages use native browser alert(). Replace with inline toast
+  or styled feedback inside the modal.
+
+[BUG-037] profile/page.tsx | LRWS SKILL BARS HAVE NO MOUNT ANIMATION
+  Bars render at full width immediately with no initial={{ width: 0 }} animation.
+
+[BUG-038] profile/page.tsx | animate-spin-slow CLASS DOES NOT EXIST
+  Same as BUG-004. The decorative dashed ring does not animate.
+
+[BUG-039] profile/page.tsx | ACHIEVEMENT BADGE UNLOCK CHECK IS FRAGILE
+  Unlock detection uses partial string matching (.includes()). Use exact IDs instead.
+
+[IMPROVE-021] profile/page.tsx | PASSWORD MODAL HAS NO CONFIRM PASSWORD FIELD
+  Only one input for new password. Add confirm/repeat field to prevent typos.
+
+[IMPROVE-022] profile/page.tsx | LOCKED BADGES NEED A PADLOCK OVERLAY ICON
+  Grayscale + opacity alone is not enough for clarity. Add a small padlock overlay.
+
+
+SECTION 10 - TEACHER DASHBOARD (src/app/teacher/page.tsx)
+============================================================================================
+
+[BUG-040] teacher/page.tsx | RADAR CHART LABELS ARE CLIPPED ON NARROW SCREENS
+  Labels use negative absolute offsets (-top-6, -right-12). These overflow/clip on
+  smaller card sizes or narrow screens.
+
+[BUG-041] teacher/page.tsx | WEEKLY ACTIVITY CHART IS HARDCODED STATIC DATA
+  SVG line chart uses a hardcoded path unrelated to real student submission data.
+  Wire it to real data or label it clearly as "Demo".
+
+[BUG-042] teacher/page.tsx | COHORT SKILL GROUPS ARE HARDCODED STATIC DATA
+  "Cohorts Skill Groups" bar chart uses mock values that never change.
+  Compute them from real student data or remove.
+
+[BUG-043] teacher/page.tsx | "Assign to Cohort" BUTTON DOES NOTHING
+  Button is visually prominent but has no onClick handler.
+
+[BUG-044] teacher/page.tsx | NOTIFICATION TIMESTAMP PARSING IS FRAGILE
+  n.date.split(' ')[1] will break for ISO 8601 date strings. Use Intl.DateTimeFormat.
+
+[BUG-045] teacher/page.tsx | STRONGEST DOMAIN AND GROWTH FOCUS ARE HARDCODED
+  "Reading" (strongest) and "Speaking" (focus) are hardcoded strings. Compute them
+  dynamically from avgL/avgR/avgW/avgS values.
+
+[IMPROVE-023] teacher/page.tsx | NO SEARCH ON STUDENT LIST
+  Can filter by cohort but cannot search for a specific student by name.
+
+[IMPROVE-024] teacher/page.tsx | ALERTS ALWAYS USE AlertTriangle ICON
+  Info-type alerts should use an Info icon, not AlertTriangle (which signals danger).
+
+
+SECTION 11 - UI COMPONENTS
+============================================================================================
+
+[BUG-046] button.tsx | HOVER SCALE ONLY ON SECONDARY VARIANT
+  hover:scale-105 is only on the yellow button. Primary dark button feels less
+  interactive. Add hover:scale-[1.02] to primary variant too.
+
+[BUG-047] icon-container.tsx | SHADOW-INNER ON BRIGHT BACKGROUNDS LOOKS WRONG
+  shadow-inner on pink-50, purple-50 etc. creates a dark smudge effect.
+  Remove shadow-inner or make it conditional.
+
+[BUG-048] section-header.tsx | h1 USED FOR ALL SECTION TITLES (SEO VIOLATION)
+  Multiple <h1> elements per page violates SEO best practices. Change to <h2> inside
+  SectionHeader; only top-level page title should be <h1>.
+
+[BUG-049] liquid-loader.tsx | CLIP-PATH MAY FAIL IN FIREFOX
+  url(#a-clip-path) referencing across elements has known Firefox issues.
+  Test in Firefox and fall back to CSS mask if needed.
+
+[IMPROVE-025] feature-locked.tsx | NO BRANDED ILLUSTRATION
+  Plain gray circle with Lock icon is bland. Add a more expressive branded illustration.
+
+
+SECTION 12 - ACCESSIBILITY & PERFORMANCE
+============================================================================================
+
+[BUG-050] profile/page.tsx | AVATAR IMG HAS NO onError FALLBACK
+  If avatarUrl is broken, the broken image icon shows instead of the initial-based
+  fallback avatar. Add onError handler to swap to the fallback.
+
+[BUG-051] MULTIPLE PAGES | INDEX USED AS REACT KEY
+  .map() uses key={i} across page.tsx, progress, teacher pages, etc. Use stable
+  unique IDs from data instead of array index.
+
+[IMPROVE-026] PERFORMANCE | NO MEMOIZATION ON HEAVY LIST RENDERERS
+  Teacher pages with 100+ students re-render on every state update with no memoization.
+  Add React.memo or useMemo for expensive list renders.
+
+[IMPROVE-027] ACCESSIBILITY | ICON-ONLY BUTTONS NEED aria-label
+  Back arrow in assessment, camera in profile, play buttons in lesson cards all lack
+  aria-label. Screen readers announce them as "button" with zero context.
+
+[IMPROVE-028] PERFORMANCE | SUPABASE CLIENT DYNAMICALLY IMPORTED IN EVENT HANDLER
+  In navbar.tsx, supabase is imported inside the onClick handler. This adds latency
+  to the first logout click. Import at module level instead.
+
+
+SECTION 13 - QUICK WIN POLISH (lowest effort, highest visual impact)
+============================================================================================
+
+[POLISH-001] Add letter-spacing: -0.02em to all h1 font-heading elements site-wide.
+  Current tracking-tight / tracking-normal mix creates uneven visual rhythm at large sizes.
+
+[POLISH-002] Add a radial gradient to the main background:
+  radial-gradient(ellipse at top, rgba(255,225,124,0.06) 0%, transparent 60%).
+  Gives a premium "glow" feel with zero layout cost.
+
+[POLISH-003] Add transition-colors duration-150 ease-in-out to all interactive text links.
+  Many nav links currently have abrupt color changes with no easing.
+
+[POLISH-004] Add a secondary accent color (e.g., indigo/violet) alongside brand-yellow.
+  Using only one accent color for ALL UI states (info, success, warning, danger) lacks
+  semantic clarity.
+
+[POLISH-005] Reduce card border-radius from 1.5rem (--radius) to ~1rem for text-heavy cards.
+  The very large radius makes content cards look like dialogs. Keep large radius only for
+  hero/banner elements.
+
+[POLISH-006] Add the AELP brand name beneath the animated "A" letter in LiquidLoader.
+  Currently the loader shows an abstract "A" with no branding context.
+
+[POLISH-007] Fix the onboarding logo to match the navbar wordmark. First impressions matter
+  and the onboarding screen is the entry point for every new user.
+
+
+============================================================================================
+PRIORITY TRIAGE
+============================================================================================
+
+CRITICAL (breaks UX or shows wrong/hardcoded data):
+  BUG-004, BUG-014, BUG-015, BUG-016, BUG-027, BUG-028, BUG-029, BUG-031, BUG-032,
+  BUG-035, BUG-036, BUG-041, BUG-042, BUG-043, BUG-045
+
+HIGH (noticeable visual defects, brand inconsistency):
+  BUG-001, BUG-006, BUG-010, BUG-011, BUG-012, BUG-018, BUG-040, BUG-048
+
+MEDIUM (UX improvements, missing polish):
+  BUG-002 through BUG-009, BUG-019 through BUG-026, BUG-033, BUG-034,
+  IMPROVE-001 through IMPROVE-028
+
+LOW (minor polish, zero-functionality items):
+  POLISH-001 through POLISH-007
+
+============================================================================================
+TOTAL ISSUES FOUND: 52 (bugs + improvements + polish items)
+============================================================================================

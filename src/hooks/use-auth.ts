@@ -5,6 +5,9 @@ import { authService } from '@/services/api';
 
 export function useAuth(requireAuth = true) {
   const [user, setUser] = useState<any>(null);
+  const [role, setRole] = useState<string | null>(
+    typeof window !== 'undefined' ? localStorage.getItem('userRole') : null
+  );
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
@@ -25,6 +28,10 @@ export function useAuth(requireAuth = true) {
         } else if (session) {
           try {
             const { data: profile } = await authService.getProfile();
+            if (profile?.role) {
+              setRole(profile.role);
+              localStorage.setItem('userRole', profile.role);
+            }
             if (profile?.role === 'teacher' && pathname === '/') {
               router.push('/teacher');
               return;
@@ -34,10 +41,32 @@ export function useAuth(requireAuth = true) {
               return;
             }
           } catch (e: any) {
-            if (e.code === 'ECONNABORTED' || e.message?.includes('timeout')) {
-              console.warn('Backend server waking up from cold start... Retrying profile load in background.');
-            } else {
-              console.error('Error fetching profile:', e?.message || e);
+            console.warn('Backend unavailable, falling back to cached/Supabase role.');
+            // Try to get role from Supabase users table directly
+            let fallbackRole = localStorage.getItem('userRole');
+            if (!fallbackRole && session?.user?.id) {
+              try {
+                const { data: userData } = await supabase
+                  .from('users')
+                  .select('role')
+                  .eq('id', session.user.id)
+                  .maybeSingle();
+                if (userData?.role) {
+                  fallbackRole = userData.role;
+                }
+              } catch { /* ignore */ }
+            }
+            if (fallbackRole) {
+              setRole(fallbackRole);
+              localStorage.setItem('userRole', fallbackRole);
+              if (fallbackRole === 'teacher' && pathname === '/') {
+                router.push('/teacher');
+                return;
+              }
+              if (!requireAuth) {
+                router.push(fallbackRole === 'teacher' ? '/teacher' : '/');
+                return;
+              }
             }
           }
         }
@@ -65,5 +94,5 @@ export function useAuth(requireAuth = true) {
     };
   }, [requireAuth, router]);
 
-  return { user, loading };
+  return { user, role, loading };
 }

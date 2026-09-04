@@ -38,7 +38,7 @@ export function IconContainer({
 
   return (
     <div 
-      className={`flex items-center justify-center shrink-0 shadow-inner ${selectedColor.bg} ${selectedColor.text} ${selectedSize.container} ${className}`}
+      className={`flex items-center justify-center shrink-0 ${selectedColor.bg} ${selectedColor.text} ${selectedSize.container} ${className}`}
       {...props}
     >
       <Icon className={selectedSize.icon} />

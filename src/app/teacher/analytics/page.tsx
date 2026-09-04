@@ -14,7 +14,10 @@ import {
   GraduationCap,
   Users
 } from 'lucide-react';
-import { mockClasses, mockStudents } from '@/lib/teacherMockData';
+import { useQuery } from '@tanstack/react-query';
+import { teacherService } from '@/services/api';
+import { mockClasses } from '@/lib/teacherMockData';
+import { LiquidLoader } from '@/components/ui/liquid-loader';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -32,20 +35,27 @@ const itemVariants = {
 export default function AnalyticsDashboard() {
   const [activeSkillTab, setActiveSkillTab] = useState<'listening' | 'reading' | 'writing' | 'speaking'>('listening');
 
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['teacher-students'],
+    queryFn: teacherService.getStudents
+  });
+
+  const students = response?.data || [];
+
   // Overall calculations across all students
-  const totalStudents = mockStudents.length || 1;
-  const avgOverall = Math.round(mockStudents.reduce((acc, s) => acc + s.overallScore, 0) / totalStudents) || 0;
-  const avgListening = Math.round(mockStudents.reduce((acc, s) => acc + s.listeningScore, 0) / totalStudents) || 0;
-  const avgReading = Math.round(mockStudents.reduce((acc, s) => acc + s.readingScore, 0) / totalStudents) || 0;
-  const avgWriting = Math.round(mockStudents.reduce((acc, s) => acc + s.writingScore, 0) / totalStudents) || 0;
-  const avgSpeaking = Math.round(mockStudents.reduce((acc, s) => acc + s.speakingScore, 0) / totalStudents) || 0;
-  const avgAttendance = Math.round(mockStudents.reduce((acc, s) => acc + s.attendance, 0) / totalStudents) || 0;
+  const totalStudents = students.length || 1;
+  const avgOverall = Math.round(students.reduce((acc: any, s: any) => acc + s.overallScore, 0) / totalStudents) || 0;
+  const avgListening = Math.round(students.reduce((acc: any, s: any) => acc + s.listeningScore, 0) / totalStudents) || 0;
+  const avgReading = Math.round(students.reduce((acc: any, s: any) => acc + s.readingScore, 0) / totalStudents) || 0;
+  const avgWriting = Math.round(students.reduce((acc: any, s: any) => acc + s.writingScore, 0) / totalStudents) || 0;
+  const avgSpeaking = Math.round(students.reduce((acc: any, s: any) => acc + s.speakingScore, 0) / totalStudents) || 0;
+  const avgAttendance = Math.round(students.reduce((acc: any, s: any) => acc + s.attendance, 0) / totalStudents) || 0;
 
   // Ready for promotion (CEFR Level is B2 or higher and score >= 85)
-  const promotionReady = mockStudents.filter(s => s.overallScore >= 80).slice(0, 5);
+  const promotionReady = students.filter((s: any) => s.overallScore >= 80).slice(0, 5);
   
   // At risk (score < 50)
-  const atRisk = mockStudents.filter(s => s.status === 'Critical').slice(0, 5);
+  const atRisk = students.filter((s: any) => s.status === 'Critical').slice(0, 5);
 
   // Skill analysis data block
   const skillDetails = {
@@ -54,36 +64,40 @@ export default function AnalyticsDashboard() {
       average: avgListening,
       subtext: 'Listening scores are down 1.2% this week.',
       metricLabel: 'Weakest Skill Roster',
-      criticalCount: mockStudents.filter(s => s.listeningScore < 50).length,
-      topPerformance: mockStudents.length > 0 ? [...mockStudents].sort((a,b)=>b.listeningScore-a.listeningScore)[0].name : 'N/A'
+      criticalCount: students.filter((s: any) => s.listeningScore < 50).length,
+      topPerformance: students.length > 0 ? [...students].sort((a,b)=>b.listeningScore-a.listeningScore)[0].name : 'N/A'
     },
     reading: {
       title: 'Reading Domain Analysis',
       average: avgReading,
       subtext: 'Reading scores have spiked due to vocabulary drills.',
       metricLabel: 'Top Reading Roster',
-      criticalCount: mockStudents.filter(s => s.readingScore < 50).length,
-      topPerformance: mockStudents.length > 0 ? [...mockStudents].sort((a,b)=>b.readingScore-a.readingScore)[0].name : 'N/A'
+      criticalCount: students.filter((s: any) => s.readingScore < 50).length,
+      topPerformance: students.length > 0 ? [...students].sort((a,b)=>b.readingScore-a.readingScore)[0].name : 'N/A'
     },
     writing: {
       title: 'Writing Domain Analysis',
       average: avgWriting,
       subtext: 'Sentence coherence index represents steady growth.',
       metricLabel: 'Weakest Writing Roster',
-      criticalCount: mockStudents.filter(s => s.writingScore < 50).length,
-      topPerformance: mockStudents.length > 0 ? [...mockStudents].sort((a,b)=>b.writingScore-a.writingScore)[0].name : 'N/A'
+      criticalCount: students.filter((s: any) => s.writingScore < 50).length,
+      topPerformance: students.length > 0 ? [...students].sort((a,b)=>b.writingScore-a.writingScore)[0].name : 'N/A'
     },
     speaking: {
       title: 'Speaking Domain Analysis',
       average: avgSpeaking,
       subtext: 'Focus needed on vowel phonemes and paragraph stressors.',
       metricLabel: 'Weakest Speaking Roster',
-      criticalCount: mockStudents.filter(s => s.speakingScore < 50).length,
-      topPerformance: mockStudents.length > 0 ? [...mockStudents].sort((a,b)=>b.speakingScore-a.speakingScore)[0].name : 'N/A'
+      criticalCount: students.filter((s: any) => s.speakingScore < 50).length,
+      topPerformance: students.length > 0 ? [...students].sort((a,b)=>b.speakingScore-a.speakingScore)[0].name : 'N/A'
     }
   };
 
   const activeSkill = skillDetails[activeSkillTab];
+
+  if (isLoading) {
+    return <LiquidLoader isLooping={true} />;
+  }
 
   return (
     <MainLayout>
@@ -208,7 +222,7 @@ export default function AnalyticsDashboard() {
             </div>
             
             <div className="space-y-4 divide-y divide-border/20">
-              {promotionReady.map(std => (
+              {promotionReady.map((std: any) => (
                 <div key={std.id} className="flex justify-between items-center pt-4 first:pt-0">
                   <div>
                     <p className="font-bold text-brand-dark text-sm">{std.name}</p>
@@ -230,7 +244,7 @@ export default function AnalyticsDashboard() {
             </div>
             
             <div className="space-y-4 divide-y divide-border/20">
-              {atRisk.map(std => (
+              {atRisk.map((std: any) => (
                 <div key={std.id} className="flex justify-between items-center pt-4 first:pt-0">
                   <div>
                     <p className="font-bold text-brand-dark text-sm">{std.name}</p>

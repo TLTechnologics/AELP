@@ -16,6 +16,8 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { GlobalRouteLoader } from "@/components/layout/global-route-loader";
+import { Suspense } from "react";
 
 export default function RootLayout({
   children,
@@ -27,12 +29,13 @@ export default function RootLayout({
       <head>
         <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet" />
       </head>
-      <body className={`${anton.variable} font-sans antialiased bg-background text-foreground bg-grid-pattern min-h-screen flex flex-col`}>
+      <body className={`${anton.variable} font-sans antialiased bg-background text-foreground bg-grid-pattern bg-radial-glow min-h-screen flex flex-col`}>
 
-
-
-        <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light" disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="light" disableTransitionOnChange>
           <QueryProvider>
+            <Suspense fallback={null}>
+              <GlobalRouteLoader />
+            </Suspense>
             {children}
           </QueryProvider>
         </ThemeProvider>

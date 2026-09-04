@@ -16,20 +16,23 @@ export function FeatureLocked({
   const router = useRouter();
   
   return (
-    <div className="flex flex-col items-center justify-center py-20 px-4 text-center min-h-[60vh]">
+    <div className="flex flex-col items-center justify-center py-20 px-4 text-center min-h-[60vh] bg-brand-yellow/10 rounded-[32px] border border-brand-yellow/20 relative overflow-hidden">
+      {/* Decorative background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-brand-yellow/30 rounded-full blur-[80px] pointer-events-none" />
+      
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6 shadow-inner"
+        className="w-24 h-24 bg-brand-yellow rounded-full flex items-center justify-center mb-6 shadow-md border-4 border-white relative z-10"
       >
-        <Lock className="w-10 h-10 text-muted-foreground" />
+        <Lock className="w-10 h-10 text-brand-dark" />
       </motion.div>
       
       <motion.h2 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="text-4xl font-heading mb-4 text-brand-dark"
+        className="text-4xl sm:text-5xl font-heading mb-4 text-brand-dark relative z-10"
       >
         {title}
       </motion.h2>
@@ -38,7 +41,7 @@ export function FeatureLocked({
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="text-lg text-muted-foreground max-w-md mb-8 font-medium"
+        className="text-lg text-brand-dark/70 max-w-md mb-8 font-medium relative z-10"
       >
         {message}
       </motion.p>

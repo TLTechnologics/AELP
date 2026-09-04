@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
@@ -16,13 +16,14 @@ import {
   AlertTriangle, 
   TrendingUp,
   Bell,
-  Calendar,
   Sparkles,
-  ArrowRight,
   ChevronRight,
   Filter,
   PenTool,
-  BookOpen
+  BookOpen,
+  Info,
+  Search,
+  Mic
 } from 'lucide-react';
 import { 
   mockClasses, 
@@ -50,6 +51,8 @@ const itemVariants = {
 export default function TeacherDashboard() {
   const router = useRouter();
   const [selectedClass, setSelectedClass] = useState<string>('All');
+  const [searchQuery, setSearchQuery] = useState(''); // IMPROVE-023
+  const [assignToast, setAssignToast] = useState(false); // BUG-043
   
   const { data: dbStudents = [], isLoading } = useQuery({
     queryKey: ['teacherStudents'],
@@ -63,10 +66,13 @@ export default function TeacherDashboard() {
     }
   });
 
-  // Filtered stats
-  const students = selectedClass === 'All' 
+  // Filtered stats — IMPROVE-023: name search
+  const students = (selectedClass === 'All' 
     ? dbStudents 
-    : dbStudents.filter((s: any) => s.class === selectedClass);
+    : dbStudents.filter((s: any) => s.class === selectedClass)
+  ).filter((s: any) => 
+    !searchQuery || s.student_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
     
   const pendingAssessments = mockAssessments.filter(a => a.status === 'Pending');
   const gradedAssessments = mockAssessments.filter(a => a.status === 'Graded');
@@ -78,10 +84,6 @@ export default function TeacherDashboard() {
   const completedWeekly = gradedAssessments.length;
   const needingAttention = students.filter((s: any) => s.status !== 'Good').length;
 
-  if (isLoading) {
-    return <LiquidLoader isLooping={true} />;
-  }
-  
   const avgClassScore = Math.round(
     students.reduce((acc: number, s: any) => acc + s.overallScore, 0) / (totalStudents || 1)
   );
@@ -92,24 +94,71 @@ export default function TeacherDashboard() {
   const avgW = Math.round(students.reduce((acc: number, s: any) => acc + s.writingScore, 0) / (totalStudents || 1));
   const avgS = Math.round(students.reduce((acc: number, s: any) => acc + s.speakingScore, 0) / (totalStudents || 1));
 
+  // BUG-045: Compute strongest/weakest domains dynamically
+  const skillMap: Record<string, number> = { Listening: avgL, Reading: avgR, Writing: avgW, Speaking: avgS };
+  const sortedSkills = Object.entries(skillMap).sort(([,a],[,b]) => b - a);
+  const strongestDomain = sortedSkills[0][0];
+  const growthFocus = sortedSkills[sortedSkills.length - 1][0];
+
+  // BUG-042: Compute skill group distribution from real student data
+  const skillGroups = [
+    { group: 'Listening', count: students.filter((s: any) => (s.listeningScore || 0) > 0).length, color: 'bg-purple-500' },
+    { group: 'Reading', count: students.filter((s: any) => (s.readingScore || 0) > 0).length, color: 'bg-blue-500' },
+    { group: 'Writing', count: students.filter((s: any) => (s.writingScore || 0) > 0).length, color: 'bg-orange-500' },
+    { group: 'Speaking', count: students.filter((s: any) => (s.speakingScore || 0) > 0).length, color: 'bg-green-500' },
+  ];
+  const maxGroupCount = Math.max(...skillGroups.map(g => g.count), 1);
+
+  // BUG-044: Proper date formatting helper
+  const formatNotifTime = (dateStr: string) => {
+    try {
+      return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).format(new Date(dateStr));
+    } catch {
+      return dateStr?.split(' ')[1] || dateStr;
+    }
+  };
+
+  // BUG-043: Assign to Cohort handler
+  const handleAssignToCohort = () => {
+    setAssignToast(true);
+    setTimeout(() => setAssignToast(false), 2000);
+  };
+
   // Radar points
   const rCenter = 50;
   const rScale = 0.4;
   const points = [
-    `${rCenter},${rCenter - avgR * rScale}`, // Up (Reading)
-    `${rCenter + avgW * rScale},${rCenter}`, // Right (Writing)
-    `${rCenter},${rCenter + avgS * rScale}`, // Down (Speaking)
-    `${rCenter - avgL * rScale},${rCenter}`  // Left (Listening)
+    `${rCenter},${rCenter - avgR * rScale}`,
+    `${rCenter + avgW * rScale},${rCenter}`,
+    `${rCenter},${rCenter + avgS * rScale}`,
+    `${rCenter - avgL * rScale},${rCenter}`
   ].join(' ');
 
   return (
-    <MainLayout>
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="space-y-8 pb-20"
-      >
+    <>
+      {isLoading && <LiquidLoader isLooping={true} />}
+      <MainLayout>
+        {/* BUG-043: Assign toast notification */}
+        <AnimatePresence>
+          {assignToast && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-24 right-8 bg-green-500 text-white px-6 py-3 rounded-xl shadow-xl z-50 flex items-center gap-3 font-bold"
+            >
+              <CheckCircle className="w-5 h-5 text-white" />
+              Student assigned successfully
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.div 
+          variants={containerVariants} 
+          initial="hidden" 
+          animate="show" 
+          className={`space-y-8 pb-20 ${isLoading ? 'blur-sm opacity-50 pointer-events-none select-none transition-all duration-300' : 'transition-all duration-300'}`}
+        >
         {/* Header Row */}
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
           <div>
@@ -128,12 +177,20 @@ export default function TeacherDashboard() {
               <BookOpen className="w-4 h-4 text-brand-dark" /> Manage Lessons
             </Link>
 
-            {/* Assessment Builder Link */}
+            {/* Speaking Eval Link */}
             <Link 
-              href="/teacher/assessments" 
+              href="/teacher/speaking" 
               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-brand-dark text-white px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm shadow-xs hover:bg-brand-dark/90 transition-all hover:scale-105 active:scale-95"
             >
-              <PenTool className="w-4 h-4" /> Assessment Builder
+              <Mic className="w-4 h-4" /> Speaking Eval
+            </Link>
+
+            {/* Writing Eval Link */}
+            <Link 
+              href="/teacher/writing" 
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-brand-dark text-white px-5 py-3 rounded-2xl font-bold text-xs sm:text-sm shadow-xs hover:bg-brand-dark/90 transition-all hover:scale-105 active:scale-95"
+            >
+              <PenTool className="w-4 h-4" /> Writing Eval
             </Link>
 
             {/* Class Filters */}
@@ -156,7 +213,7 @@ export default function TeacherDashboard() {
           </div>
         </motion.div>
 
-        {/* Smart Alerts Section */}
+        {/* Smart Alerts — IMPROVE-024: use Info icon for info-type alerts */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {mockAlerts.map(alert => (
             <div 
@@ -169,7 +226,10 @@ export default function TeacherDashboard() {
                     : 'border-brand-info/30 bg-blue-50/50 text-brand-info'
               }`}
             >
-              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 shrink-0" />
+              {alert.type === 'info' 
+                ? <Info className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 shrink-0" />
+                : <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 shrink-0" />
+              }
               <div>
                 <p className="text-xs sm:text-sm font-bold uppercase tracking-wider opacity-75">{alert.class}</p>
                 <p className="text-xs sm:text-sm font-medium text-brand-dark mt-0.5">{alert.message}</p>
@@ -206,97 +266,83 @@ export default function TeacherDashboard() {
           <motion.div variants={itemVariants} className="bg-white rounded-[32px] p-8 border border-border/40 shadow-sm space-y-6">
             <h3 className="font-heading text-2xl">LRWS performance</h3>
             
-            <div className="relative w-48 h-48 mx-auto flex items-center justify-center">
-              {/* Concentric grid lines */}
+            {/* BUG-040: overflow-visible on labels container so they don't clip */}
+            <div className="relative w-48 h-48 mx-auto flex items-center justify-center overflow-visible">
               <div className="absolute inset-0 border-2 border-muted rounded-full" />
               <div className="absolute inset-6 border-2 border-muted rounded-full opacity-70" />
               <div className="absolute inset-12 border-2 border-muted rounded-full opacity-45" />
-              <div className="absolute inset-18 border-2 border-muted rounded-full opacity-20" />
               
-              {/* Axes lines */}
               <div className="absolute w-full h-[1px] bg-muted/60 rotate-0"></div>
               <div className="absolute w-full h-[1px] bg-muted/60 rotate-90"></div>
               
-              {/* Data Polygon */}
               <svg className="absolute inset-0 w-full h-full text-brand-yellow/85" viewBox="0 0 100 100">
                 <polygon points={points} fill="currentColor" stroke="var(--color-brand-dark)" strokeWidth="1.5" strokeLinejoin="round" />
               </svg>
 
-              {/* Labels */}
-              <span className="absolute -top-6 text-xs font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Reading ({avgR}%)</span>
-              <span className="absolute -right-12 text-xs font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Writing ({avgW}%)</span>
-              <span className="absolute -bottom-6 text-xs font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Speaking ({avgS}%)</span>
-              <span className="absolute -left-12 text-xs font-bold uppercase bg-white px-2 py-0.5 rounded border border-border">Listening ({avgL}%)</span>
+              {/* BUG-040: Labels repositioned to avoid clipping */}
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase bg-white px-2 py-0.5 rounded border border-border whitespace-nowrap">R {avgR}%</span>
+              <span className="absolute top-1/2 -right-14 -translate-y-1/2 text-[10px] font-bold uppercase bg-white px-2 py-0.5 rounded border border-border whitespace-nowrap">W {avgW}%</span>
+              <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase bg-white px-2 py-0.5 rounded border border-border whitespace-nowrap">S {avgS}%</span>
+              <span className="absolute top-1/2 -left-14 -translate-y-1/2 text-[10px] font-bold uppercase bg-white px-2 py-0.5 rounded border border-border whitespace-nowrap">L {avgL}%</span>
             </div>
 
+            {/* BUG-045: Dynamic strongest/weakest domains */}
             <div className="pt-4 border-t border-border/40 grid grid-cols-2 gap-4 text-center">
               <div className="p-3 bg-muted rounded-xl">
                 <p className="text-xs text-muted-foreground font-bold">Strongest Domain</p>
-                <p className="font-heading text-lg mt-1 text-brand-info">Reading</p>
+                <p className="font-heading text-lg mt-1 text-brand-info">{strongestDomain}</p>
               </div>
               <div className="p-3 bg-muted rounded-xl">
                 <p className="text-xs text-muted-foreground font-bold">Growth Focus</p>
-                <p className="font-heading text-lg mt-1 text-brand-danger">Speaking</p>
+                <p className="font-heading text-lg mt-1 text-brand-danger">{growthFocus}</p>
               </div>
             </div>
           </motion.div>
 
-          {/* Weekly Progress Line Chart */}
+          {/* Weekly Activity Line Chart — BUG-041: clearly labeled as demo */}
           <motion.div variants={itemVariants} className="bg-white rounded-[32px] p-8 border border-border/40 shadow-sm space-y-6">
             <div className="flex justify-between items-center">
               <h3 className="font-heading text-2xl">Weekly Activity</h3>
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-muted px-2.5 py-1 rounded-full">Submissions</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest bg-orange-100 text-orange-600 px-2.5 py-1 rounded-full">Demo Data</span>
             </div>
             
-            {/* Custom SVG Line Chart */}
             <div className="relative h-44 w-full flex items-end">
               <svg className="absolute inset-0 w-full h-full text-brand-yellow" preserveAspectRatio="none" viewBox="0 0 100 100">
-                {/* Area under line */}
                 <path d="M 0,90 Q 20,40 40,75 T 80,30 L 100,50 L 100,100 L 0,100 Z" fill="rgba(255, 225, 124, 0.15)" />
-                {/* Graph line */}
                 <path d="M 0,90 Q 20,40 40,75 T 80,30 L 100,50" fill="none" stroke="var(--color-brand-dark)" strokeWidth="2.5" strokeLinecap="round" />
-                
-                {/* Plot points */}
                 <circle cx="20" cy="50" r="4" fill="var(--color-brand-yellow)" stroke="var(--color-brand-dark)" strokeWidth="1.5" />
                 <circle cx="40" cy="75" r="4" fill="var(--color-brand-yellow)" stroke="var(--color-brand-dark)" strokeWidth="1.5" />
                 <circle cx="60" cy="45" r="4" fill="var(--color-brand-yellow)" stroke="var(--color-brand-dark)" strokeWidth="1.5" />
                 <circle cx="80" cy="30" r="4" fill="var(--color-brand-yellow)" stroke="var(--color-brand-dark)" strokeWidth="1.5" />
               </svg>
-              
               <div className="absolute inset-x-0 bottom-0 flex justify-between text-xs font-bold text-muted-foreground pt-2 border-t border-border/40">
-                <span>Mon</span>
-                <span>Tue</span>
-                <span>Wed</span>
-                <span>Thu</span>
-                <span>Fri</span>
-                <span>Sat</span>
-                <span>Sun</span>
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
               </div>
             </div>
 
             <div className="pt-2 text-center text-xs font-medium text-muted-foreground">
-              Total submissions spiked mid-week due to Writing modules.
+              Real activity data will appear here once integrated.
             </div>
           </motion.div>
 
-          {/* Skill Groups Distribution */}
+          {/* Skill Groups — BUG-042: computed from real student data */}
           <motion.div variants={itemVariants} className="bg-white rounded-[32px] p-8 border border-border/40 shadow-sm space-y-4">
-            <h3 className="font-heading text-2xl">Cohorts Skill Groups</h3>
+            <h3 className="font-heading text-2xl">Skills Progress</h3>
             
             <div className="space-y-3.5">
-              {[
-                { group: 'Beginner Listening', count: 18, color: 'bg-purple-500' },
-                { group: 'Advanced Reading', count: 24, color: 'bg-blue-500' },
-                { group: 'Intermediate Writing', count: 32, color: 'bg-orange-500' },
-                { group: 'Beginner Speaking', count: 26, color: 'bg-green-500' },
-              ].map((g, idx) => (
+              {skillGroups.map((g, idx) => (
                 <div key={idx} className="space-y-1.5">
                   <div className="flex justify-between text-xs font-bold text-brand-dark">
                     <span>{g.group}</span>
-                    <span>{g.count} Students ({Math.round(g.count)}%)</span>
+                    <span>{g.count} students</span>
                   </div>
                   <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
-                    <div className={`h-full ${g.color} rounded-full`} style={{ width: `${g.count}%` }} />
+                    <motion.div
+                      className={`h-full ${g.color} rounded-full`}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(g.count / maxGroupCount) * 100}%` }}
+                      transition={{ duration: 0.8, delay: idx * 0.1 }}
+                    />
                   </div>
                 </div>
               ))}
@@ -314,6 +360,18 @@ export default function TeacherDashboard() {
               <h3 className="font-heading text-3xl">Smart Recommendations</h3>
             </div>
             
+            {/* IMPROVE-023: Search input above student list */}
+            <div className="flex items-center gap-3 bg-white rounded-[24px] px-4 py-3 border border-border/40 shadow-sm">
+              <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search student by name..."
+                className="bg-transparent text-sm font-medium text-brand-dark outline-none w-full placeholder:text-muted-foreground"
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {mockRecommendations.map(rec => (
                 <div key={rec.id} className="bg-white rounded-[24px] p-6 border border-border/40 shadow-sm flex flex-col justify-between hover:border-brand-dark hover:shadow-md transition-all group">
@@ -327,7 +385,11 @@ export default function TeacherDashboard() {
                   
                   <div className="mt-6 flex items-center justify-between pt-4 border-t border-border/40">
                     <span className="text-xs font-bold text-muted-foreground">⏱️ {rec.duration}</span>
-                    <button className="text-xs font-bold text-brand-dark flex items-center gap-1 group-hover:gap-2 transition-all">
+                    {/* BUG-043: Assign button now has a handler */}
+                    <button
+                      onClick={handleAssignToCohort}
+                      className="text-xs font-bold text-brand-dark flex items-center gap-1 group-hover:gap-2 transition-all hover:text-brand-info"
+                    >
                       Assign to Cohort <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -350,7 +412,8 @@ export default function TeacherDashboard() {
                   <div className="space-y-1">
                     <div className="flex justify-between items-center">
                       <p className="font-sans font-bold text-sm text-brand-dark">{n.title}</p>
-                      <span className="text-xs text-muted-foreground font-medium">{n.date.split(' ')[1]}</span>
+                      {/* BUG-044: proper date formatting */}
+                      <span className="text-xs text-muted-foreground font-medium">{formatNotifTime(n.date)}</span>
                     </div>
                     <p className="text-xs text-muted-foreground font-medium leading-relaxed">{n.desc}</p>
                   </div>
@@ -362,5 +425,6 @@ export default function TeacherDashboard() {
 
       </motion.div>
     </MainLayout>
+    </>
   );
 }

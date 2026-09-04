@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
   Search,
   Filter,
@@ -157,16 +156,16 @@ export default function StudentManagement() {
     URL.revokeObjectURL(url);
   };
 
-  if (isLoading) return <LiquidLoader isLooping />;
-
   return (
-    <MainLayout>
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="space-y-8 pb-20"
-      >
+    <>
+      {isLoading && <LiquidLoader isLooping />}
+      <MainLayout>
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className={`space-y-8 pb-20 ${isLoading ? 'blur-sm opacity-50 pointer-events-none select-none transition-all duration-300' : 'transition-all duration-300'}`}
+        >
         {/* Header Row */}
         <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
           <div>
@@ -176,24 +175,26 @@ export default function StudentManagement() {
             </h1>
           </div>
 
-          {/* Add Student Button */}
-          <Link
-            href="/teacher/add-student"
-            className="flex items-center gap-2 bg-brand-yellow hover:bg-brand-yellow/90 text-brand-dark font-bold text-sm px-5 py-3 rounded-2xl shadow-md transition-all active:scale-95 hover:scale-105 whitespace-nowrap"
-          >
-            <UserPlus className="w-4 h-4" />
-            Add Student
-          </Link>
-
-          {/* Download Button */}
-          <button
-            onClick={handleDownloadCSV}
-            disabled={dbStudents.length === 0}
-            className="flex items-center gap-2 bg-brand-dark hover:bg-brand-dark/90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm px-5 py-3 rounded-2xl shadow-md transition-all active:scale-95 whitespace-nowrap"
-          >
-            <Download className="w-4 h-4" />
-            Download Results
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Add Student Button */}
+            <button
+              onClick={() => router.push('/teacher/add-student')}
+              className="flex items-center gap-2 bg-brand-yellow hover:bg-brand-yellow/90 text-brand-dark font-bold text-sm px-5 py-3 rounded-2xl shadow-md transition-all active:scale-95 whitespace-nowrap"
+            >
+              <UserPlus className="w-4 h-4" />
+              Add Student
+            </button>
+            
+            {/* Download Button */}
+            <button
+              onClick={handleDownloadCSV}
+              disabled={dbStudents.length === 0}
+              className="flex items-center gap-2 bg-brand-dark hover:bg-brand-dark/90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm px-5 py-3 rounded-2xl shadow-md transition-all active:scale-95 whitespace-nowrap"
+            >
+              <Download className="w-4 h-4" />
+              Download Results
+            </button>
+          </div>
         </motion.div>
 
         {/* Search and Filters Bar */}
@@ -407,5 +408,7 @@ export default function StudentManagement() {
         </motion.div>
       </motion.div>
     </MainLayout>
+    </>
   );
 }
+
