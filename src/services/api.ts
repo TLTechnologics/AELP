@@ -69,13 +69,13 @@ export const lessonService = {
   getLearningPath: () => apiClient.get('/lessons/path'),
   getLesson: (id: string) => apiClient.get(`/lessons/${id}`),
   getLessons: (params?: { skill?: string; difficulty?: string; search?: string }) => 
-    apiClient.get('/teacher/lessons', { params }).catch(() => apiClient.get('/lessons', { params })),
+    apiClient.get('/lessons', { params }),
   createLesson: (data: FormData) => 
-    apiClient.post('/teacher/lessons', data).catch(() => apiClient.post('/lessons', data)),
+    apiClient.post('/lessons', data),
   updateLesson: (id: number | string, data: FormData) => 
-    apiClient.put(`/teacher/lessons/${id}`, data).catch(() => apiClient.put(`/lessons/${id}`, data)),
+    apiClient.put(`/lessons/${id}`, data),
   deleteLesson: (id: number | string) => 
-    apiClient.delete(`/teacher/lessons/${id}`).catch(() => apiClient.delete(`/lessons/${id}`)),
+    apiClient.delete(`/lessons/${id}`),
 };
 
 export const assessmentService = {

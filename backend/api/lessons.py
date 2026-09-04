@@ -92,12 +92,30 @@ def get_lessons(
     search: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
+    # If DB has no lessons yet, populate SEED_LESSONS into DB
+    if not db.query(Lesson).first():
+        try:
+            for seed in SEED_LESSONS:
+                new_seed = Lesson(
+                    title=seed["title"],
+                    description=seed["description"],
+                    content=seed["content"],
+                    audio_url=seed["audio_url"],
+                    skill_domain=seed["skill_domain"],
+                    difficulty=seed["difficulty"],
+                    estimated_time=seed["estimated_time"]
+                )
+                db.add(new_seed)
+            db.commit()
+        except Exception:
+            db.rollback()
+
     query = db.query(Lesson)
     
     if skill and skill.lower() != "all":
-        query = query.filter(Lesson.skill_domain == skill.lower())
+        query = query.filter(Lesson.skill_domain.ilike(skill))
     if difficulty and difficulty.lower() != "all":
-        query = query.filter(Lesson.difficulty == difficulty.lower())
+        query = query.filter(Lesson.difficulty.ilike(difficulty))
     if search:
         search_pattern = f"%{search}%"
         query = query.filter(
@@ -107,22 +125,6 @@ def get_lessons(
         )
         
     lessons = query.order_by(desc(Lesson.id)).all()
-    
-    # If DB has no lessons yet, populate SEED_LESSONS into DB
-    if not db.query(Lesson).first():
-        for seed in SEED_LESSONS:
-            new_seed = Lesson(
-                title=seed["title"],
-                description=seed["description"],
-                content=seed["content"],
-                audio_url=seed["audio_url"],
-                skill_domain=seed["skill_domain"],
-                difficulty=seed["difficulty"],
-                estimated_time=seed["estimated_time"]
-            )
-            db.add(new_seed)
-        db.commit()
-        lessons = db.query(Lesson).order_by(desc(Lesson.id)).all()
 
     result = []
     for l in lessons:

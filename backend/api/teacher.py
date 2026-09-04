@@ -347,9 +347,12 @@ def delete_student(student_id: str, db: Session = Depends(get_db)):
 
 @router.post("/students")
 def create_student(data: StudentCreateRequest, db: Session = Depends(get_db)):
-    # 1. Create in Supabase Auth
+    supabase_client = get_supabase()
+    user_id = None
+    
+    # 1. Try creating in Supabase Auth
     try:
-        user_response = get_supabase().auth.admin.create_user({
+        user_response = supabase_client.auth.admin.create_user({
             "email": data.email,
             "password": data.password,
             "email_confirm": True,
@@ -357,32 +360,62 @@ def create_student(data: StudentCreateRequest, db: Session = Depends(get_db)):
                 "full_name": data.full_name
             }
         })
-        
         user_id = user_response.user.id
+    except Exception as auth_err:
+        err_msg = str(auth_err).lower()
+        if "already registered" in err_msg or "already exists" in err_msg:
+            # Look up existing user
+            try:
+                users_list = supabase_client.auth.admin.list_users()
+                for u in users_list:
+                    if u.email and u.email.lower() == data.email.lower():
+                        user_id = u.id
+                        # Update password & confirm
+                        supabase_client.auth.admin.update_user_by_id(
+                            u.id,
+                            {"password": data.password, "email_confirm": True}
+                        )
+                        break
+            except Exception as lookup_err:
+                print(f"Error looking up existing user: {lookup_err}")
         
-        # 2. Add to postgres users table
-        new_user = User(
-            id=user_id,
-            email=data.email,
-            full_name=data.full_name,
-            role=RoleEnum.STUDENT
-        )
-        db.add(new_user)
-        
-        # 3. Add to students table
-        new_student = Student(
-            user_id=user_id,
-            semester=data.semester,
-            current_level="Beginner",
-            overall_progress=0,
-            listening_score=0,
-            reading_score=0,
-            writing_score=0
-        )
-        db.add(new_student)
+        if not user_id:
+            raise HTTPException(status_code=400, detail=f"Auth error: {auth_err}")
+
+    # 2. Add / Upsert in postgres users table
+    try:
+        existing_user = db.query(User).filter(User.id == user_id).first()
+        if not existing_user:
+            new_user = User(
+                id=user_id,
+                email=data.email,
+                full_name=data.full_name,
+                role=RoleEnum.STUDENT
+            )
+            db.add(new_user)
+        else:
+            existing_user.email = data.email
+            existing_user.full_name = data.full_name
+            existing_user.role = RoleEnum.STUDENT
+
+        # 3. Add / Upsert student profile
+        existing_student = db.query(Student).filter(Student.user_id == user_id).first()
+        if not existing_student:
+            new_student = Student(
+                user_id=user_id,
+                semester=data.semester,
+                current_level="Beginner",
+                overall_progress=0,
+                listening_score=0,
+                reading_score=0,
+                writing_score=0
+            )
+            db.add(new_student)
+        else:
+            existing_student.semester = data.semester
+            
         db.commit()
-        
-        return {"success": True, "message": "Student created successfully"}
+        return {"success": True, "message": "Student created successfully", "user_id": user_id}
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
