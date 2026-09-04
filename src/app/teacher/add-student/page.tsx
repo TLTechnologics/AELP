@@ -32,9 +32,11 @@ export default function AddStudentPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const key = (name === 'full_name' || name === 'name') ? 'fullName' : name;
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [key]: value
     }));
   };
 
@@ -120,6 +122,8 @@ export default function AddStudentPage() {
                 <input 
                   type="text" 
                   name="fullName"
+                  id="full_name"
+                  data-testid="student-fullname"
                   value={formData.fullName}
                   onChange={handleChange}
                   required
