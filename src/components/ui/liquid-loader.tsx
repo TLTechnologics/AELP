@@ -56,7 +56,7 @@ export function LiquidLoader({ progress = 0, onComplete, isLooping = false }: Li
       >
         <div className="relative w-40 h-40 sm:w-56 sm:h-56 flex items-center justify-center mb-6">
           
-          <svg viewBox="0 0 1000 1000" className="absolute inset-0 w-full h-full overflow-visible z-10 drop-shadow-2xl">
+          <svg viewBox="0 0 1000 1000" className="absolute inset-0 w-full h-full overflow-visible z-10">
             <defs>
               {/* Extracts the AELP logo into a perfect silhouette by removing the white background */}
               <filter id="logo-silhouette" colorInterpolationFilters="sRGB">
@@ -64,7 +64,7 @@ export function LiquidLoader({ progress = 0, onComplete, isLooping = false }: Li
                   0 0 0 0 1
                   0 0 0 0 1
                   0 0 0 0 1
-                  -3.33 -3.33 -3.33 1 9
+                  -10 -10 -10 1 28
                 " />
               </filter>
 
