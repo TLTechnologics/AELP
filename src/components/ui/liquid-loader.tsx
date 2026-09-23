@@ -53,75 +53,87 @@ export function LiquidLoader({ progress = 0, onComplete, isLooping = false }: Li
       >
         <div className="relative w-32 h-32 sm:w-48 sm:h-48 flex items-center justify-center mb-4">
           
-          {/* Base AELP Logo - Untouched, clearly visible */}
-          <img 
-            src="/aelp-logo.jpg" 
-            alt="AELP Logo" 
-            className="absolute inset-0 w-full h-full mix-blend-multiply object-contain z-0 drop-shadow-md" 
-          />
-
-          {/* Liquid Overlay Masked to Logo */}
-          <svg viewBox="0 0 1000 1000" className="absolute inset-0 w-full h-full overflow-visible z-10">
+          <svg viewBox="0 0 1000 1000" className="absolute inset-0 w-full h-full overflow-visible z-10 drop-shadow-xl">
             <defs>
-              <filter id="invert-luminance" colorInterpolationFilters="sRGB">
+              {/* 
+                This filter extracts the AELP logo perfectly by making pure white (the JPEG background) transparent, 
+                and turning everything else into a solid white silhouette for masking.
+                Formula: Alpha = -3.33*(R+G+B) + 1*A + 9. 
+                Pure white (1,1,1) -> Alpha 0
+                Slightly dark/colored (<0.9) -> Alpha 1
+              */}
+              <filter id="logo-silhouette" colorInterpolationFilters="sRGB">
                 <feColorMatrix type="matrix" values="
-                  -1  0  0  0  1
-                   0 -1  0  0  1
-                   0  0 -1  0  1
-                   0  0  0  1  0
+                  0 0 0 0 1
+                  0 0 0 0 1
+                  0 0 0 0 1
+                  -3.33 -3.33 -3.33 1 9
                 " />
               </filter>
 
+              {/* The master mask that perfectly isolates the logo shape without the white box */}
               <mask id="official-logo-mask">
                 <image 
                   href="/aelp-logo.jpg" 
                   width="1000" height="1000" 
                   preserveAspectRatio="xMidYMid meet" 
-                  filter="url(#invert-luminance)" 
+                  filter="url(#logo-silhouette)" 
                 />
               </mask>
 
-              {/* Translucent water gradient for glassy/liquid feel */}
-              <linearGradient id="water-gradient" x1="0" y1="0" x2="0" y2="1">
-                 <stop offset="0%" stopColor="rgba(255, 255, 255, 0.8)" />
-                 <stop offset="30%" stopColor="rgba(255, 255, 255, 0.4)" />
-                 <stop offset="100%" stopColor="rgba(255, 255, 255, 0.1)" />
-              </linearGradient>
+              {/* The wave mask that rises and falls to simulate liquid filling */}
+              <mask id="wave-mask">
+                <motion.g
+                  initial={{ y: 1000, x: 0 }}
+                  animate={isLooping
+                    ? { y: waveYKeyframes, x: waveXKeyframes }
+                    : { y: progressY, x: [0, -1000] }
+                  }
+                  transition={isLooping
+                    ? { 
+                        y: { duration: 6, ease: "easeInOut", repeat: Infinity, times: waveTimes },
+                        x: { duration: 6, ease: "linear", repeat: Infinity, times: waveTimes }
+                      }
+                    : { 
+                        y: { type: "tween", ease: "easeOut", duration: 0.8 },
+                        x: { duration: 2, ease: "linear", repeat: Infinity }
+                      }
+                  }
+                >
+                  <path 
+                    d="M -1000 0 
+                       C -750 -120, -250 120, 0 0 
+                       C 250 -120, 750 120, 1000 0 
+                       C 1250 -120, 1750 120, 2000 0 
+                       C 2250 -120, 2750 120, 3000 0 
+                       L 3000 1500 L -1000 1500 Z" 
+                    fill="white" 
+                  />
+                </motion.g>
+              </mask>
             </defs>
 
-            {/* The liquid layer */}
+            {/* Base Logo (Empty State) - Faint glass-like opacity, perfectly clipped to remove the white box */}
+            <g mask="url(#official-logo-mask)" opacity="0.25">
+              <image 
+                href="/aelp-logo.jpg" 
+                width="1000" height="1000" 
+                preserveAspectRatio="xMidYMid meet" 
+              />
+            </g>
+
+            {/* Filled Logo (Liquid State) - Full original colors, revealed organically by the flowing wave mask */}
             <g mask="url(#official-logo-mask)">
-              <motion.g
-                initial={{ y: 1000, x: 0 }}
-                animate={isLooping
-                  ? { y: waveYKeyframes, x: waveXKeyframes }
-                  : { y: progressY, x: [0, -1000] }
-                }
-                transition={isLooping
-                  ? { 
-                      y: { duration: 6, ease: "easeInOut", repeat: Infinity, times: waveTimes },
-                      x: { duration: 6, ease: "linear", repeat: Infinity, times: waveTimes }
-                    }
-                  : { 
-                      y: { type: "tween", ease: "easeOut", duration: 0.8 },
-                      x: { duration: 2, ease: "linear", repeat: Infinity }
-                    }
-                }
-              >
-                {/* 
-                  Double width wave path to allow continuous scrolling over x 
-                  Creates a smooth rolling wave effect
-                */}
-                <path 
-                  d="M -1000 0 
-                     C -750 -120, -250 120, 0 0 
-                     C 250 -120, 750 120, 1000 0 
-                     C 1250 -120, 1750 120, 2000 0 
-                     C 2250 -120, 2750 120, 3000 0 
-                     L 3000 1500 L -1000 1500 Z" 
-                  fill="url(#water-gradient)" 
+              <g mask="url(#wave-mask)">
+                <image 
+                  href="/aelp-logo.jpg" 
+                  width="1000" height="1000" 
+                  preserveAspectRatio="xMidYMid meet" 
                 />
-              </motion.g>
+                
+                {/* Subtle glassy reflection over the liquid portion to enhance the water feel */}
+                <rect width="1000" height="1000" fill="rgba(255,255,255,0.15)" style={{ mixBlendMode: 'overlay' }} />
+              </g>
             </g>
           </svg>
         </div>
