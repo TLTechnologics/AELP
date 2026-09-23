@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useAnimation } from "framer-motion";
 
 interface LiquidLoaderProps {
   progress?: number; // 0 to 100
@@ -12,6 +12,11 @@ interface LiquidLoaderProps {
 export function LiquidLoader({ progress = 0, onComplete, isLooping = false }: LiquidLoaderProps) {
   const [isCompleted, setIsCompleted] = useState(false);
   const [dots, setDots] = useState("");
+
+  const wave1Controls = useAnimation();
+  const wave2Controls = useAnimation();
+  const wave3Controls = useAnimation();
+  const textControls = useAnimation();
 
   useEffect(() => {
     if (!isLooping && progress >= 100 && !isCompleted) {
@@ -32,16 +37,79 @@ export function LiquidLoader({ progress = 0, onComplete, isLooping = false }: Li
     return () => clearInterval(interval);
   }, [isLooping, isCompleted]);
 
-  // Map progress (0-100) to Y coordinates for non-looping mode
-  const progressY = 1200 - progress * 15;
+  // Organic, randomized continuous wave animation loop
+  useEffect(() => {
+    if (!isLooping) return;
+    let isMounted = true;
 
-  // Seamless 10-second animation loop sequence
-  // 0-40%: Liquid flows in and fills
-  // 40-60%: Liquid waves gently at the top
-  // 60-90%: Liquid rolls back out
-  // 90-100%: Empty hold
-  const waveTimes = [0, 0.4, 0.6, 0.9, 1];
-  const duration = 10;
+    // A helper to run an infinite, randomized tide cycle for a wave
+    const runTideCycle = async (
+      controls: any,
+      baseTopY: number,
+      baseDuration: number,
+      invertX: boolean
+    ) => {
+      // Start below the logo
+      let currentX = -2000 + Math.random() * 500;
+      await controls.set({ y: 1200, x: currentX });
+
+      while (isMounted) {
+        // Randomize the next cycle's parameters to feel organic and unpredictable
+        const topY = baseTopY + (Math.random() * 80 - 40); // Slight height variation
+        const upDuration = baseDuration + Math.random() * 2.0; // Randomize fill speed
+        const downDuration = baseDuration + Math.random() * 2.0; // Randomize drain speed
+        
+        // Randomize how far the wave travels horizontally (tide moving in and out)
+        const xTravel = 800 + Math.random() * 600; 
+        const nextXIn = invertX ? currentX + xTravel : currentX - xTravel;
+        const nextXOut = invertX ? nextXIn - xTravel * 0.8 : nextXIn + xTravel * 0.8;
+
+        // Flow IN and UP
+        await controls.start({
+          y: topY,
+          x: nextXIn,
+          transition: { duration: upDuration, ease: "easeInOut" }
+        });
+
+        if (!isMounted) break;
+
+        // Flow OUT and DOWN immediately (no static hold/jump)
+        await controls.start({
+          y: 1200,
+          x: nextXOut,
+          transition: { duration: downDuration, ease: "easeInOut" }
+        });
+
+        currentX = nextXOut;
+      }
+    };
+
+    // Start all 3 waves with different base parameters to create parallax and depth
+    runTideCycle(wave1Controls, -350, 4.0, false);  // Back wave, tallest, fastest
+    runTideCycle(wave2Controls, -150, 4.5, true);   // Mid wave, medium height, opposite flow
+    runTideCycle(wave3Controls, 50, 5.0, false);    // Front wave, lowest, slowest
+
+    // Text pulsing loop
+    const runTextPulse = async () => {
+      while (isMounted) {
+        await textControls.start({ opacity: 1, transition: { duration: 2.5, ease: "easeInOut" } });
+        if (!isMounted) break;
+        await textControls.start({ opacity: 0.6, transition: { duration: 2.5, ease: "easeInOut" } });
+      }
+    };
+    runTextPulse();
+
+    return () => {
+      isMounted = false;
+      wave1Controls.stop();
+      wave2Controls.stop();
+      wave3Controls.stop();
+      textControls.stop();
+    };
+  }, [isLooping, wave1Controls, wave2Controls, wave3Controls, textControls]);
+
+  // Non-looping progress tracking
+  const progressY = 1200 - progress * 15;
 
   return (
     <AnimatePresence>
@@ -58,7 +126,6 @@ export function LiquidLoader({ progress = 0, onComplete, isLooping = false }: Li
           
           <svg viewBox="0 0 1000 1000" className="absolute inset-0 w-full h-full overflow-visible z-10">
             <defs>
-              {/* Extracts the AELP logo into a perfect silhouette by removing the white background */}
               <filter id="logo-silhouette" colorInterpolationFilters="sRGB">
                 <feColorMatrix type="matrix" values="
                   0 0 0 0 1
@@ -68,7 +135,6 @@ export function LiquidLoader({ progress = 0, onComplete, isLooping = false }: Li
                 " />
               </filter>
 
-              {/* Master mask that isolates the logo shape */}
               <mask id="official-logo-mask">
                 <image 
                   href="/aelp-logo.jpg" 
@@ -78,45 +144,30 @@ export function LiquidLoader({ progress = 0, onComplete, isLooping = false }: Li
                 />
               </mask>
 
-              {/* Wave 1: Back layer, tallest, fastest, tinted yellow */}
               <mask id="wave-1-mask">
                 <motion.path 
-                  d="M -2000 0 C -1750 200, -1250 -200, -1000 0 C -750 200, -250 -200, 0 0 C 250 200, 750 -200, 1000 0 C 1250 200, 1750 -200, 2000 0 C 2250 200, 2750 -200, 3000 0 C 3250 200, 3750 -200, 4000 0 V 2000 H -2000 Z" 
+                  d="M -4000 0 C -3750 250, -3250 -250, -3000 0 C -2750 250, -2250 -250, -2000 0 C -1750 250, -1250 -250, -1000 0 C -750 250, -250 -250, 0 0 C 250 250, 750 -250, 1000 0 C 1250 250, 1750 -250, 2000 0 C 2250 250, 2750 -250, 3000 0 C 3250 250, 3750 -250, 4000 0 C 4250 250, 4750 -250, 5000 0 C 5250 250, 5750 -250, 6000 0 V 2000 H -4000 Z" 
                   fill="white"
-                  initial={{ y: 1200, x: -1000 }}
-                  animate={isLooping ? { y: [1200, -300, -300, 1200, 1200], x: [-1000, -500, 0, -500, -1000] } : { y: progressY - 300, x: [0, -1000] }}
-                  transition={isLooping
-                    ? { y: { duration, ease: "easeInOut", repeat: Infinity, times: waveTimes }, x: { duration, ease: "easeInOut", repeat: Infinity, times: waveTimes } }
-                    : { y: { type: "tween", ease: "easeOut", duration: 0.8 }, x: { duration: 3, ease: "linear", repeat: Infinity } }
-                  }
+                  animate={isLooping ? wave1Controls : { y: progressY - 300, x: [0, -1000] }}
+                  transition={isLooping ? {} : { y: { type: "tween", ease: "easeOut", duration: 0.8 }, x: { duration: 3, ease: "linear", repeat: Infinity } }}
                 />
               </mask>
 
-              {/* Wave 2: Middle layer, medium height, inverted phase, tinted dark gray */}
               <mask id="wave-2-mask">
                 <motion.path 
-                  d="M -2000 0 C -1750 -300, -1250 300, -1000 0 C -750 -300, -250 300, 0 0 C 250 -300, 750 300, 1000 0 C 1250 -300, 1750 300, 2000 0 C 2250 -300, 2750 300, 3000 0 C 3250 -300, 3750 300, 4000 0 V 2000 H -2000 Z" 
+                  d="M -4000 0 C -3750 -350, -3250 350, -3000 0 C -2750 -350, -2250 350, -2000 0 C -1750 -350, -1250 350, -1000 0 C -750 -350, -250 350, 0 0 C 250 -350, 750 350, 1000 0 C 1250 -350, 1750 350, 2000 0 C 2250 -350, 2750 350, 3000 0 C 3250 -350, 3750 350, 4000 0 C 4250 -350, 4750 350, 5000 0 C 5250 -350, 5750 350, 6000 0 V 2000 H -4000 Z" 
                   fill="white"
-                  initial={{ y: 1200, x: 0 }}
-                  animate={isLooping ? { y: [1200, -150, -150, 1200, 1200], x: [0, -500, -1000, -500, 0] } : { y: progressY - 150, x: [0, -1000] }}
-                  transition={isLooping
-                    ? { y: { duration, ease: "easeInOut", repeat: Infinity, times: waveTimes }, x: { duration, ease: "easeInOut", repeat: Infinity, times: waveTimes } }
-                    : { y: { type: "tween", ease: "easeOut", duration: 0.8 }, x: { duration: 4, ease: "linear", repeat: Infinity } }
-                  }
+                  animate={isLooping ? wave2Controls : { y: progressY - 150, x: [0, -1000] }}
+                  transition={isLooping ? {} : { y: { type: "tween", ease: "easeOut", duration: 0.8 }, x: { duration: 4, ease: "linear", repeat: Infinity } }}
                 />
               </mask>
 
-              {/* Wave 3: Front layer, lowest, widest organic wave, full color */}
               <mask id="wave-3-mask">
                 <motion.path 
-                  d="M -4000 0 C -3500 400, -2500 -400, -2000 0 C -1500 400, -500 -400, 0 0 C 500 400, 1500 -400, 2000 0 C 2500 400, 3500 -400, 4000 0 C 4500 400, 5500 -400, 6000 0 V 2000 H -4000 Z" 
+                  d="M -6000 0 C -5500 500, -4500 -500, -4000 0 C -3500 500, -2500 -500, -2000 0 C -1500 500, -500 -500, 0 0 C 500 500, 1500 -500, 2000 0 C 2500 500, 3500 -500, 4000 0 C 4500 500, 5500 -500, 6000 0 C 6500 500, 7500 -500, 8000 0 V 2000 H -6000 Z" 
                   fill="white"
-                  initial={{ y: 1200, x: -2000 }}
-                  animate={isLooping ? { y: [1200, 50, 50, 1200, 1200], x: [-2000, -1000, 0, -1000, -2000] } : { y: progressY, x: [0, -2000] }}
-                  transition={isLooping
-                    ? { y: { duration, ease: "easeInOut", repeat: Infinity, times: waveTimes }, x: { duration, ease: "easeInOut", repeat: Infinity, times: waveTimes } }
-                    : { y: { type: "tween", ease: "easeOut", duration: 0.8 }, x: { duration: 5, ease: "linear", repeat: Infinity } }
-                  }
+                  animate={isLooping ? wave3Controls : { y: progressY, x: [0, -2000] }}
+                  transition={isLooping ? {} : { y: { type: "tween", ease: "easeOut", duration: 0.8 }, x: { duration: 5, ease: "linear", repeat: Infinity } }}
                 />
               </mask>
             </defs>
@@ -146,7 +197,6 @@ export function LiquidLoader({ progress = 0, onComplete, isLooping = false }: Li
             <g mask="url(#official-logo-mask)">
               <g mask="url(#wave-3-mask)">
                 <image href="/aelp-logo.jpg" width="1000" height="1000" preserveAspectRatio="xMidYMid meet" />
-                {/* Subtle glassy reflection over the liquid portion */}
                 <rect width="1000" height="1000" fill="rgba(255,255,255,0.15)" style={{ mixBlendMode: 'overlay' }} />
               </g>
             </g>
@@ -165,8 +215,7 @@ export function LiquidLoader({ progress = 0, onComplete, isLooping = false }: Li
           </span>
           
           <motion.div 
-            animate={isLooping ? { opacity: [0.6, 1, 1, 0.6, 0.6] } : { opacity: 1 }}
-            transition={isLooping ? { duration, ease: "easeInOut", repeat: Infinity, times: waveTimes } : {}}
+            animate={textControls}
             className="flex items-center"
           >
             <span className="text-white/80 text-sm sm:text-base font-bold uppercase tracking-[0.3em] drop-shadow-sm ml-2">
